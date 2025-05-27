@@ -97,8 +97,10 @@ For stepwise evaluation, please run
 ```bash
 python mlrbench/evals/review_idea.py
 ```
+## Acknowledgement
+Implementation of (multimodal) LLM engine in our codebase is inspired by the [VisionAgent](https://github.com/landing-ai/vision-agent.git) project. We are grateful for their pioneering efforts.
 
-## 📄 Citation
+## Citation
 Please cite our paper if you find our work helpful:
 ```bibtex
 @article{chen2025mlrbench,
