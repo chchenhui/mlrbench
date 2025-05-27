@@ -1,0 +1,7 @@
+Title: Self-Consistency–Evidence Calibration for Hallucination-Aware Uncertainty in LLMs
+
+Motivation:  
+Foundation models often convey outputs with high confidence yet still hallucinate, undermining trust in critical settings (e.g., medicine, law). Existing UQ methods—ensembles or Bayesian approximations—are too costly at scale and rarely pinpoint when hallucinations occur. We need a lightweight, interpretable mechanism that both quantifies uncertainty and flags potential fabrications without sacrificing the model’s generative creativity.
+
+Main Idea:  
+We propose a two-stage inference pipeline. First, perform self-consistency sampling: generate k diverse chains-of-thought per prompt. Second, for each chain, retrieve supporting evidence from an external knowledge store and compute an agreement score (semantic overlap + retrieval match). Token- and segment-level uncertainty scores are derived from inter-chain variance and evidence alignment. At decode time, high-uncertainty tokens trigger a dynamic hallucination penalty, gently steering the model toward safer alternatives. We will validate on open-domain QA and summarization benchmarks, measuring (1) calibration of uncertainty vs. true error rates, (2) hallucination reduction, and (3) impact on output diversity. This method requires no weight updates, scales linearly with k, and provides actionable risk scores for human oversight.

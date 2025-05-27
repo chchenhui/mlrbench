@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 8,
+        "justification": "The proposal aligns well with the task description of making discrete, non-differentiable components differentiable for gradient-based optimization. It specifically addresses combinatorial optimization problems, which fall within the scope of the workshop. The proposal is consistent with the research idea of developing a training-free approach that preserves optimality guarantees while enabling gradient-based learning. The methodology leverages KKT conditions and implicit differentiation as outlined in the idea. The proposal also builds upon the literature review by addressing key challenges identified, particularly solution quality preservation and training data requirements. It differentiates itself from existing approaches like those using Gumbel-Softmax (paper 1) or relaxation techniques (papers 3, 6) by focusing on optimality preservation without training data. However, there could be stronger connections drawn to some of the papers mentioned in the literature review, particularly papers 5, 7, and 8 which also deal with differentiable optimization for combinatorial problems."
+    },
+    "Clarity": {
+        "score": 9,
+        "justification": "The proposal is exceptionally clear and well-structured. It clearly defines the problem (making combinatorial optimization differentiable without compromising optimality), presents a coherent methodology (transforming discrete problems into continuous convex ones and using KKT conditions for implicit differentiation), and outlines specific applications and evaluation metrics. The mathematical formulations are precise and well-explained, with clear notation and step-by-step derivations of the approach. The experimental design is comprehensive, covering multiple problem classes (MWIS, TSP, JSSP) with specific evaluation metrics. The proposal also clearly articulates expected outcomes, limitations, and future work. The only minor improvement could be in providing more concrete examples of how the continuous reformulations would work for specific problem instances to make the approach more immediately graspable."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal presents a novel approach to differentiable combinatorial optimization by focusing on optimality-preserving transformations and implicit differentiation through KKT conditions. This differentiates it from existing approaches that rely on relaxations or extensive training. The key innovation lies in the combination of: (1) transforming discrete problems into equivalent continuous convex formulations, (2) using KKT conditions for implicit differentiation, and (3) providing a training-free approach that preserves optimality guarantees. However, some individual components of the approach draw from existing techniques - implicit differentiation and KKT conditions are established methods, and continuous reformulations of discrete problems have been explored in optimization literature. The novelty is more in the specific combination and application to differentiable combinatorial optimization rather than in developing entirely new mathematical techniques. The proposal could benefit from more explicitly highlighting what specific mathematical innovations it contributes beyond existing approaches."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal demonstrates strong technical soundness through its rigorous mathematical formulation. The approach is grounded in established optimization theory, particularly KKT conditions and convex optimization. The transformation from discrete to continuous problems is well-justified, with specific examples for MWIS and TSP that illustrate how optimality can be preserved. The gradient computation through implicit differentiation is mathematically sound, with clear derivations of the necessary equations. The experimental design is comprehensive and includes appropriate evaluation metrics to validate the approach. The proposal also acknowledges potential limitations and challenges, such as problem-specific transformations and scalability issues. However, there could be more detailed discussion of potential numerical stability issues when solving the KKT systems, especially for large-scale problems, and more rigorous proof of when the continuous reformulations are guaranteed to yield integer solutions for the original discrete problems."
+    },
+    "Feasibility": {
+        "score": 6,
+        "justification": "The proposal presents a feasible approach for certain classes of combinatorial problems, but there are significant challenges that affect overall feasibility. The continuous reformulations for MWIS and TSP are well-defined, and the implicit differentiation approach is mathematically tractable. However, several practical challenges emerge: (1) The approach requires problem-specific transformations, which may not exist or be easy to derive for all combinatorial problems; (2) Solving and differentiating through the KKT conditions for large-scale problems could be computationally expensive, potentially limiting scalability; (3) The numerical stability of the approach when solving the linear system for gradient computation could be problematic in practice; (4) The proposal acknowledges that many combinatorial problems may not admit convex reformulations, which significantly limits the scope of applicable problems. While the approach is feasible for the specific problems mentioned (MWIS, TSP, JSSP), its generalizability to broader classes of combinatorial problems remains uncertain without additional theoretical development."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a significant challenge in machine learning: integrating discrete combinatorial optimization into differentiable learning pipelines without compromising solution quality or requiring extensive training data. This has broad implications for numerous applications including routing, scheduling, resource allocation, and network design. The training-free nature of the approach is particularly valuable for industrial applications where data may be limited but solution quality is critical. The ability to backpropagate through optimization layers would enable end-to-end training of systems with combinatorial components, potentially leading to more efficient and effective solutions in domains where discrete decisions are essential. The theoretical contributions to understanding the relationship between discrete and continuous optimization could also inspire new research directions. However, the significance is somewhat limited by the potential constraints on which problems can be effectively reformulated using this approach, as acknowledged in the limitations section."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Addresses a significant challenge in integrating discrete combinatorial optimization into differentiable learning pipelines",
+            "Provides a training-free approach that preserves optimality guarantees, unlike many existing methods",
+            "Presents a mathematically rigorous framework with clear derivations and justifications",
+            "Comprehensive experimental design covering multiple problem classes with appropriate evaluation metrics",
+            "Clear articulation of expected outcomes, limitations, and future work"
+        ],
+        "weaknesses": [
+            "Requires problem-specific transformations that may not exist or be easy to derive for all combinatorial problems",
+            "Potential scalability issues when solving and differentiating through KKT conditions for large-scale problems",
+            "Limited to problems that can be reformulated as continuous convex problems, which excludes many combinatorial problems",
+            "Could provide more detailed discussion of numerical stability issues and when continuous reformulations are guaranteed to yield integer solutions"
+        ]
+    }
+}

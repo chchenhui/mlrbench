@@ -1,0 +1,7 @@
+Title: Meta-Theory: A Meta-Learning Framework for ToM in Conversational AI
+
+Motivation:  
+Current dialogue systems lack the flexibility to infer individual users’ beliefs, intentions, and knowledge gaps, leading to generic or misaligned responses. Rapidly adapting Theory of Mind (ToM) capabilities can improve personalization, trust, and efficiency in human-AI communication.
+
+Main Idea:  
+We propose a meta-learning approach that endows conversational agents with a lightweight ToM module capable of few-shot adaptation to new users. First, we pretrain on a synthetic corpus of multi-turn dialogues annotated with latent mental states (e.g., belief, goal, knowledge). We then apply Model-Agnostic Meta-Learning (MAML) so the ToM module learns to update its inference parameters using only a handful of user-specific exchanges. During deployment, the agent jointly optimizes dialogue generation and ToM inference, yielding responses that anticipate the user’s perspective. We will evaluate on both simulated bench-marks and live user studies, measuring adaptation speed, perceived empathy, and task success. This framework aims to advance personalized HCI, improve user satisfaction, and set a foundation for socially aware AI.

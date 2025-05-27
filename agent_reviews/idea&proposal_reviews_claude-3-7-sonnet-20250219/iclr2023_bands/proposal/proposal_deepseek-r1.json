@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal aligns exceptionally well with the task description, research idea, and literature review. It directly addresses the workshop's question of developing 'a general defense method against a variety of backdoor attacks and even unseen attacks' by proposing MetaShield, a meta-learning framework for domain-agnostic backdoor detection. The proposal incorporates elements from the literature review, including references to TextGuard, ReVeil, BELT, and cross-domain threats in federated learning. It maintains consistency with the original research idea of creating a unified, lightweight detector that adapts to unseen tasks and trigger types with minimal clean data. The methodology section clearly outlines how the framework will work across CV, NLP, and FL domains, which aligns with the workshop's focus on exploring connections between attacks and defenses among different domains."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is well-structured and clearly articulated. The research objectives are explicitly stated, and the methodology is presented in a logical sequence with appropriate technical details. The three-stage framework (meta-training, fine-tuning, deployment) is well-defined, and the mathematical formulations add precision to the explanation. The experimental design, including baselines, datasets, and metrics, is thoroughly outlined. However, there are a few areas that could benefit from additional clarification: (1) the exact mechanism for extracting 'universal backdoor signatures' could be more explicitly defined, (2) the relationship between the contrastive learning approach during fine-tuning and the initial MAML training could be better explained, and (3) some technical details about how the system handles different input modalities (e.g., text vs. images) during feature extraction could be elaborated."
+    },
+    "Novelty": {
+        "score": 8,
+        "justification": "The proposal demonstrates significant novelty in several aspects. The core innovation lies in applying meta-learning to create a domain-agnostic backdoor detector that can generalize across modalities (vision, NLP, federated learning) - a gap clearly identified in the literature review. While meta-learning itself is not new, and has been applied to backdoor detection as mentioned in the literature (arXiv:2405.12345, arXiv:2407.98765), this proposal extends these approaches in novel ways: (1) it specifically targets cross-modal transfer, (2) it incorporates a few-shot calibration mechanism for rapid deployment, and (3) it introduces a contrastive learning approach for fine-tuning with only clean samples. The combination of these elements represents a fresh perspective on backdoor detection that addresses limitations in current domain-specific approaches. The proposal doesn't claim to introduce entirely new algorithmic components, but rather innovates through the integration and application of existing techniques to solve an important cross-domain security challenge."
+    },
+    "Soundness": {
+        "score": 7,
+        "justification": "The proposal is generally sound and built on established theoretical foundations. The use of MAML for meta-learning is appropriate for the task, and the mathematical formulations for task-specific detectors and meta-learning updates are technically correct. The approach to feature extraction from penultimate layers is well-justified by prior work in transfer learning. However, there are some aspects that could benefit from stronger theoretical justification: (1) the assumption that backdoor signatures share common patterns across domains that can be captured by a meta-learner needs more theoretical support, (2) the contrastive learning approach during fine-tuning lacks detailed justification for why it would effectively calibrate to new domains, and (3) the proposal doesn't fully address potential distribution shifts between meta-training domains and deployment domains. The experimental design is comprehensive, with appropriate baselines and metrics, but would benefit from more detailed power analysis to ensure statistical significance of the expected outcomes."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal presents a feasible approach with reasonable resource requirements. The three-stage framework is implementable using existing deep learning libraries and meta-learning algorithms. The datasets mentioned (CIFAR-10, ImageNet, SST-2, etc.) are publicly available, and the baseline methods are well-documented in the literature. The computational requirements, while not explicitly stated, appear manageable for standard research computing resources. However, several practical challenges may affect implementation: (1) creating diverse and realistic backdoor triggers across multiple domains will require significant engineering effort, (2) ensuring consistent feature extraction across different model architectures (ResNet vs. BERT) may be challenging, (3) the few-shot adaptation with only 10-20 clean samples may be optimistic for complex domains, and (4) the evaluation against adaptive attackers who are aware of MetaShield is not fully addressed. While these challenges don't render the proposal infeasible, they do introduce implementation complexities that could affect the timeline and outcomes."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a critical gap in machine learning security - the lack of unified, cross-domain backdoor defenses. This is particularly significant given the proliferation of pre-trained models and the increasing integration of multimodal systems in real-world applications. If successful, MetaShield would provide several important contributions: (1) a practical defense tool that could be deployed across diverse ML systems with minimal adaptation, (2) theoretical insights into the nature of backdoor signatures across domains, and (3) a benchmark for evaluating future cross-modal defenses. The expected outcomes (>90% detection AUC across domains, <5% false positives with few-shot adaptation) would represent meaningful improvements over domain-specific approaches. The proposal also aligns well with the workshop's goal of expanding research on backdoor defenses beyond computer vision. The public release of cross-modal backdoor datasets would further benefit the research community. While the significance is high, it falls short of transformative as the approach builds upon existing meta-learning techniques rather than introducing fundamentally new paradigms."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Addresses a critical gap in backdoor defense research by developing a unified, cross-modal approach",
+            "Well-structured methodology with clear technical foundations in meta-learning",
+            "Practical focus on few-shot adaptation with minimal clean data requirements",
+            "Comprehensive experimental design across multiple domains (CV, NLP, FL)",
+            "Strong alignment with the workshop's focus on general defense methods against diverse backdoor attacks"
+        ],
+        "weaknesses": [
+            "Limited theoretical justification for why backdoor signatures would share common patterns across domains",
+            "Insufficient details on handling the significant differences in feature spaces between modalities",
+            "Lacks discussion of potential adversarial adaptations against the proposed defense",
+            "The few-shot adaptation with only 10-20 clean samples may be optimistic for complex domains"
+        ]
+    }
+}

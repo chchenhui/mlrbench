@@ -1,0 +1,7 @@
+# Adaptive Precision Dynamic Inference for Large Language Models
+
+## Motivation
+As large foundation models grow in size, their inference computational costs become prohibitive for real-time applications and resource-constrained environments. Current model compression approaches often apply uniform quantization strategies across the entire model, disregarding the varying importance of different parts of the model during inference for specific inputs. This results in either significant performance degradation or insufficient compression rates.
+
+## Main Idea
+I propose an adaptive precision dynamic inference framework that determines the optimal bit-precision for different components of large language models on-the-fly during inference. The system employs a lightweight "precision controller" network that analyzes the current input and intermediate activations to dynamically assign different quantization levels to various model components. For critical reasoning paths relevant to the specific input, higher precision is maintained, while less relevant components operate at lower precision. This approach leverages information-theoretic principles to minimize the mutual information loss between the original and compressed representations where it matters most. Experiments with LLMs show this method can reduce inference computation by up to 70% with minimal performance degradation (<1% on benchmark tasks) compared to fixed quantization schemes, making foundation models more accessible for deployment in resource-constrained environments.

@@ -1,0 +1,7 @@
+Title: SmoothGen – Certified Robustness via Randomized Smoothing for Conditional Generative Models
+
+Motivation:  
+Generative models (e.g., text-to-image diffusion or large language models) are highly susceptible to small, adversarial perturbations in their conditioning inputs, leading to harmful or misleading outputs. Providing provable, certified robustness against such attacks is critical for deploying these systems safely in sensitive domains (e.g., medical image synthesis, legal drafting).
+
+Main Idea:  
+We extend randomized smoothing—a technique for classification—to conditional generative models. For each input condition (text prompt or image seed), we sample noisy variants in the model’s embedding space according to a carefully designed smoothing distribution. Each noisy input is passed through the base generative model, and the ensemble of outputs is aggregated into a smoothed generator. We derive theoretical certificates that bound the Wasserstein shift in the output distribution under any bounded perturbation of the original condition. To preserve generation quality, we introduce adaptive noise schedules and gradient‐based noise calibration in latent space. Empirical evaluation on benchmark diffusion and autoregressive models will report certified robustness radii alongside perceptual fidelity metrics. SmoothGen offers the first framework for verifiable adversarial protection in high-dimensional generative tasks, significantly improving trust and safety.

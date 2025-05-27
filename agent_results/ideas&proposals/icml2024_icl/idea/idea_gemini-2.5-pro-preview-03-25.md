@@ -1,0 +1,5 @@
+**Title:** Meta-Learned Prompt Optimization for Robust In-Context Learning
+
+**Motivation:** In-context learning (ICL) heavily relies on the quality and format of prompts, including demonstration examples. Manually crafting optimal prompts is challenging and brittle; small variations can drastically alter performance. This research aims to automate prompt optimization to enhance ICL robustness and effectiveness across diverse tasks.
+
+**Main Idea:** We propose a meta-learning approach where a meta-optimizer learns to generate effective prompt structures (e.g., selection, ordering, formatting of demonstration examples) for ICL tasks. The meta-optimizer will be trained over a distribution of ICL tasks, aiming to minimize the downstream task loss achieved by the LLM using the generated prompts. This involves exploring gradient-based or reinforcement learning techniques to optimize the discrete prompt space. Expected outcomes include an automated method for generating robust, high-performing prompts for ICL, reducing manual effort and improving reliability against variations in task specification or demonstration quality.

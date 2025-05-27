@@ -1,0 +1,40 @@
+{
+    "Consistency": {
+        "score": 8,
+        "justification": "The proposal is well-aligned with the task description, research idea, and literature review. It directly addresses the workshop's call for research on data curation for foundation models, specifically in multi-modal settings, which is a key theme. The methodology follows the research idea of using clustering and influence functions. It also acknowledges challenges like efficiency and bias mentioned in the literature review and task description. The focus on pruning/up-weighting based on influence scores fits squarely within 'practical strategies for curating data' and 'addressing side effects of data curation on fairness'. A minor point is that the 'hierarchical' aspect mentioned in the title and idea isn't strongly elaborated upon in the proposal body itself, slightly reducing perfect alignment."
+    },
+    "Clarity": {
+        "score": 7,
+        "justification": "The proposal is mostly clear and well-structured. The problem statement, the high-level two-stage approach (clustering and influence-driven curation), and the expected outcomes are clearly articulated. The experimental design and evaluation metrics are also well-defined. However, the technical details within the methodology lack precision. For instance, the exact nature of the 'low-rank Hessian approximation' used for cluster influence, the specific clustering algorithm, and the mechanism for 'pruning and up-weighting' based on influence scores are not fully specified, leaving some ambiguity in how the core method operates."
+    },
+    "Novelty": {
+        "score": 8,
+        "justification": "The proposal demonstrates notable originality. While influence functions (like DataInf) and data clustering are existing techniques, the proposed combination and application context are novel. Specifically, applying influence functions in an amortized fashion at the *cluster* level, derived from *cross-modal* embeddings, for the purpose of curating large-scale multi-modal datasets for FMs, represents a fresh approach. It differs from prior work focusing on individual point influence or fairness-driven data augmentation (like Chameleon). The novelty lies in the specific pipeline designed for multi-modal FM data curation challenges."
+    },
+    "Soundness": {
+        "score": 6,
+        "justification": "The proposal is somewhat sound, building on established concepts like cross-modal embeddings, clustering, and influence functions. Using approximations for influence functions is a recognized necessity for large models. However, the proposal lacks rigor in its technical formulation. Key details are missing: how cluster-level influence is precisely calculated and justified as a proxy for the influence of constituent points, the specific low-rank Hessian approximation method, and the exact criteria for pruning/up-weighting. The assumption that semantic clusters are the right level for influence amortization needs stronger justification or empirical validation plans. The mathematical notations provided are high-level placeholders rather than complete definitions."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal is largely feasible with existing technologies. Pre-trained multi-modal models, clustering libraries, and influence function approximation techniques are available. The evaluation plan uses standard benchmarks. However, significant computational resources will be required for embedding large datasets, clustering, calculating influence scores (even approximated ones across many clusters), and training/evaluating the FMs. The efficiency of the influence calculation step, especially if iterated or applied to a large number of clusters, remains a potential bottleneck. The feasibility depends on the scale of the experiments intended, but the core ideas are implementable for research purposes."
+    },
+    "Significance": {
+        "score": 9,
+        "justification": "The proposal addresses a highly significant and timely problem: the curation of massive, often noisy and biased, multi-modal datasets used to train foundation models. An effective, principled method for data curation based on influence could lead to substantial improvements in model training efficiency (reduced cost), model performance (accuracy, robustness), and fairness (bias mitigation). Given the increasing importance of multi-modal FMs, developing scalable data-centric techniques like the one proposed has high potential impact on the field and aligns perfectly with the goals of the DATA-FM workshop."
+    },
+    "OverallAssessment": {
+        "score": 7,
+        "strengths": [
+            "Addresses a critical and relevant problem in multi-modal FM development (data curation).",
+            "Proposes a novel approach combining clustering and amortized influence functions.",
+            "Strong potential impact on training efficiency, model performance, and fairness.",
+            "Well-aligned with the workshop themes and goals."
+        ],
+        "weaknesses": [
+            "Lacks technical depth and rigor in the methodology section, particularly regarding the influence calculation and curation mechanism.",
+            "Potential computational scalability challenges for the influence estimation step.",
+            "The 'hierarchical' aspect mentioned in the title/idea is underdeveloped in the proposal."
+        ]
+    }
+}

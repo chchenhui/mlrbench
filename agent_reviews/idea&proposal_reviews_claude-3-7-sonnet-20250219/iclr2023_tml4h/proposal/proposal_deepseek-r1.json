@@ -1,0 +1,43 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the workshop's focus on trustworthy ML for healthcare, particularly targeting multi-modal fusion, uncertainty estimation, and explainability. The methodology implements the core idea of dynamic modality reliability estimation using Bayesian neural networks and self-supervised learning as outlined in the research idea. The proposal also builds upon the literature review by acknowledging and extending recent work (MDA, DRIFA-Net, DrFuse) on multi-modal fusion with attention mechanisms, while specifically addressing the identified challenges of modality heterogeneity, missing data, noise, interpretability, and uncertainty estimation. The experimental design using MIMIC datasets aligns with those mentioned in the literature review (DrFuse). The only minor inconsistency is that while the literature review mentions HEALNet's work with TCGA cancer datasets, the proposal mentions using TCGA but doesn't elaborate on which specific cancer types will be studied."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is well-structured and clearly articulated, with distinct sections covering introduction, methodology, and expected outcomes. The technical approach is explained with appropriate mathematical formulations that define the reliability score calculation, self-supervised learning objective, and attention-based fusion mechanism. The experimental design clearly outlines datasets, corruption simulation methods, baselines, and evaluation metrics. However, there are a few areas that could benefit from additional clarification: (1) The exact implementation details of the Bayesian neural networks are somewhat vague, particularly regarding the variational inference procedure; (2) The proposal mentions 'synthetic corruptions' but could more explicitly define the full set of corruption types K used in the self-supervised learning task; (3) While the proposal mentions 'task-specific loss,' it doesn't specify which loss functions will be used for different medical tasks (classification, regression, etc.). Despite these minor issues, the overall proposal is logically structured and comprehensible."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal demonstrates good novelty by combining several existing techniques in a novel way to address an important problem. The core innovation lies in the dynamic modality reliability estimation framework that integrates Bayesian uncertainty quantification with self-supervised corruption prediction to guide multi-modal fusion. This approach extends beyond existing methods like MDA and DRIFA-Net by explicitly modeling uncertainty per modality and using it to dynamically adjust fusion weights. The self-supervised corruption prediction task is a clever addition that helps the model learn to identify unreliable features. However, many of the individual components (Bayesian neural networks, attention-based fusion, self-supervised learning) have been previously explored in the literature, albeit not in this specific combination for medical multi-modal fusion. The proposal builds incrementally on existing approaches rather than introducing fundamentally new concepts or architectures. The novelty is solid but not groundbreaking."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal demonstrates strong technical soundness with well-founded methodological choices. The use of Bayesian neural networks for uncertainty quantification is theoretically justified and appropriate for the task. The mathematical formulations for reliability scoring, attention-based fusion, and the self-supervised learning objective are technically correct and well-presented. The experimental design is comprehensive, with appropriate datasets, baselines, and evaluation metrics that cover multiple aspects of model performance (accuracy, calibration, robustness, interpretability). The corruption simulation approach is well-designed to test the model's robustness under various degradation scenarios. The proposal also acknowledges the need to balance task-specific and self-supervised losses through a hyperparameter λ. One minor limitation is that the proposal doesn't fully address how the model will handle completely missing modalities (as opposed to corrupted ones) during inference, though this is implied in the attention mechanism. Overall, the technical approach is rigorous and well-justified."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal presents a feasible research plan that can be implemented with existing technologies and datasets. The MIMIC-IV, MIMIC-CXR, and TCGA datasets are publicly available and widely used in medical ML research. The proposed methods (Bayesian neural networks, attention mechanisms, self-supervised learning) have established implementations in modern deep learning frameworks. The corruption simulation techniques are straightforward to implement. However, there are some feasibility concerns: (1) Bayesian neural networks can be computationally expensive and challenging to train, potentially requiring significant computational resources; (2) The proposal doesn't specify the computational requirements or expected training time; (3) While the datasets are available, preparing multi-modal data from these sources requires significant preprocessing and alignment work; (4) The evaluation involving clinician assessments of attention maps would require clinical partnerships that aren't explicitly addressed in the proposal. Despite these challenges, the overall approach is implementable with reasonable resources and expertise in deep learning and medical data analysis."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a critical challenge in medical AI: building trustworthy multi-modal fusion models that can handle real-world data imperfections. This work has significant potential impact on clinical ML deployment by: (1) Improving robustness to corrupted or missing modalities, which is essential for real-world clinical settings; (2) Providing uncertainty-aware predictions that can flag low-confidence cases for clinician review, enhancing safety; (3) Offering interpretability through attention maps that highlight which modalities influenced the decision. The expected outcomes are ambitious but reasonable (>5% improvement over baselines under 30% corruption, well-calibrated uncertainties with Brier scores <0.1). The proposal also promises open-source benchmarks and guidelines that could benefit the broader research community. The significance is particularly high given the growing importance of multi-modal approaches in precision medicine and the current gap between research performance and clinical deployment. The work directly addresses multiple trustworthiness challenges identified in the workshop description."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Addresses a critical challenge in trustworthy medical AI with a well-designed technical approach",
+            "Combines Bayesian uncertainty quantification with self-supervised learning in a novel way for modality reliability estimation",
+            "Comprehensive experimental design with appropriate datasets, baselines, and evaluation metrics",
+            "Strong potential for clinical impact through improved robustness, uncertainty awareness, and interpretability",
+            "Well-aligned with the workshop's focus on trustworthy ML for healthcare"
+        ],
+        "weaknesses": [
+            "Some implementation details are underspecified, particularly regarding Bayesian neural networks",
+            "Computational feasibility concerns with Bayesian methods that may require significant resources",
+            "Relies on combining existing techniques rather than introducing fundamentally new approaches",
+            "Lacks specific details on handling completely missing modalities during inference",
+            "Clinical evaluation component requires partnerships that aren't explicitly addressed"
+        ]
+    }
+}

@@ -1,0 +1,5 @@
+**Title:** Adversarial Instruction Generation for Automated LLM Guardrail Testing
+
+**Motivation:** Ensuring large language models (LLMs) consistently follow safety and behavioral guardrails (e.g., avoiding harmful content, maintaining neutrality) is critical. Manual testing is insufficient to cover the vast instruction space, potentially missing subtle failures.
+
+**Main Idea:** We propose an automated framework where one LLM (the "Challenger") is trained or prompted to generate diverse and challenging instructions specifically designed to probe the adherence of a target instruction-following LLM to predefined guardrails. The Challenger focuses on creating edge cases and adversarial inputs likely to elicit undesirable responses. The target LLM's outputs are then evaluated automatically (e.g., using classifiers or another evaluator LLM) against the specified guardrails. This creates a continuous "stress-testing" loop, enabling scalable, efficient identification and mitigation of guardrail violations, thereby enhancing model safety and reliability.

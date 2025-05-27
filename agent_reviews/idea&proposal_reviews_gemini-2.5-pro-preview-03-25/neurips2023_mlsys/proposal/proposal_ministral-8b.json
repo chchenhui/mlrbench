@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal is excellently aligned with the task description, research idea, and literature review. It directly addresses the task's call for 'Applying ML for compute sustainability, including power/energy/carbon optimization' and 'energy-aware job scheduling'. It faithfully translates the research idea (DRL for energy/carbon-aware scheduling, state/action/reward, simulation+testbed validation) into a structured proposal. It situates itself well within the provided literature, acknowledging recent work (CarbonClipper, PCAPS, CarbonScaler, MARL) and aiming to advance the field by using DRL for joint, dynamic optimization of energy cost and carbon intensity alongside performance constraints. The plan to release an open framework also aligns with the task's emphasis on open and reproducible science."
+    },
+    "Clarity": {
+        "score": 9,
+        "justification": "The proposal is crystal clear and well-defined. The background, objectives, methodology (including state, action, reward, training/validation phases, and MDP formulation), and expected outcomes/impact are articulated concisely and without significant ambiguity. The structure is logical and easy to follow. Minor details like the exact features in the state vector or the specific SLA penalty function could be elaborated, but the overall proposal is immediately understandable."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal demonstrates notable originality. While DRL for scheduling and carbon-aware computing are existing areas, the specific combination proposed in GreenSched – using a single-agent DRL (PPO) approach to dynamically optimize for *both* real-time energy cost *and* grid carbon intensity forecasts, while balancing SLA penalties, and incorporating actions like power capping and VM migration – offers a fresh perspective compared to the cited literature. CarbonClipper uses online optimization, PCAPS focuses on precedence constraints, CarbonScaler on elasticity, and the MARL paper uses a different RL paradigm for geo-distributed workloads. GreenSched's novelty lies in this specific DRL formulation for joint, dynamic energy/carbon/performance optimization in a single-datacenter context (implied). It's not entirely groundbreaking but offers a distinct and valuable contribution."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal is sound and mostly rigorous. It is based on the solid theoretical foundation of Markov Decision Processes (MDPs) and employs a standard, powerful DRL algorithm (PPO). The proposed methodology (simulation-based training followed by real-world fine-tuning) is a well-established practice in ML for Systems. The state, action, and reward components are conceptually appropriate for the problem. The mathematical formulation of the MDP objective is correct. Potential weaknesses include the sensitivity to the quality of external forecasts (energy, carbon) and the simulator's fidelity, as well as the challenge of tuning the reward weights (\\alpha, \\beta, \\gamma) effectively. The sim2real gap is acknowledged via testbed validation but strategies to bridge it could be more detailed."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal is largely feasible with existing technology (DRL libraries, Kubernetes, simulators). The plan is generally realistic. However, there are moderate challenges. Building a high-fidelity simulator requires significant effort and access to representative trace data. Obtaining accurate, real-time energy price and carbon intensity forecasts can be difficult depending on the region and provider. Training DRL agents is computationally intensive and requires careful hyperparameter tuning. Integrating the custom scheduler into Kubernetes and handling potential scalability issues for large clusters requires non-trivial engineering effort. Achieving the ambitious 15-40% reduction targets is uncertain and depends heavily on workload characteristics and operational constraints."
+    },
+    "Significance": {
+        "score": 9,
+        "justification": "The proposal is highly significant and impactful. It addresses the critical and timely problem of reducing the substantial energy consumption and carbon footprint of cloud datacenters, directly aligning with global sustainability goals and the workshop's specific interests. Success would lead to tangible environmental benefits and potentially significant operational cost savings for datacenter operators. The plan to release GreenSched as an open-source framework greatly amplifies its potential impact, fostering adoption, reproducibility, and further research in the sustainable computing community. It has the potential to make meaningful contributions to the ML for Systems field."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "High relevance and significance, addressing a critical sustainability problem.",
+            "Clear objectives and well-defined DRL-based methodology.",
+            "Strong alignment with the workshop's themes (ML for Systems, Sustainability).",
+            "Sound technical approach using established ML techniques.",
+            "Plan for open-source release enhances potential impact and reproducibility."
+        ],
+        "weaknesses": [
+            "Feasibility challenges related to simulation fidelity, data acquisition (forecasts), DRL training complexity, and system integration/scalability.",
+            "Novelty is good but builds upon existing lines of work rather than being entirely groundbreaking.",
+            "Achieving the specific targeted reduction percentages is ambitious and not guaranteed.",
+            "Could elaborate more on mitigating sim2real challenges and handling scalability."
+        ]
+    }
+}

@@ -1,0 +1,5 @@
+**Title:** Surgical Circuit Interventions for Targeted Harm Reduction in Foundation Models
+
+**Motivation:** Foundation models risk generating harmful content. Current mitigation strategies like full fine-tuning are costly and can impair general abilities. Precisely targeted interventions are needed to address specific harms without broad performance degradation.
+
+**Main Idea:** This research aims to identify minimal neural circuits within foundation models causally responsible for specific undesirable behaviours (e.g., generating specific types of bias or toxicity) using techniques like causal tracing. We will then develop highly targeted, computationally efficient intervention methods, such as applying learned, low-rank 'circuit breakers' or precise activation offsets during inference, specifically designed to neutralize the identified harmful pathway. The objective is to surgically disable targeted harmful outputs with negligible impact on the model's overall fluency and capabilities, validated on safety and general performance benchmarks.

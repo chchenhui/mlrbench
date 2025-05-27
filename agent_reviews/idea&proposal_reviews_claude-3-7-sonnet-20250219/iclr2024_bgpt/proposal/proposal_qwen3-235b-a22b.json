@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the workshop's goal of bridging the gap between theory and practice in deep learning, specifically focusing on optimization theory and the Edge of Stability phenomenon. The DCAO optimizer leverages theoretical insights about loss landscape curvature to create a practical optimization tool. The proposal incorporates key concepts from the literature review, including adaptive gradient methods at the Edge of Stability, Hessian-informed hyperparameter optimization, and trajectory alignment. It addresses the computational challenges mentioned in the literature review by using stochastic Lanczos iterations for efficient Hessian approximation. The methodology, theoretical analysis, and experimental design all consistently support the core idea of using curvature information to improve optimization."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is well-structured and clearly articulated. The introduction effectively establishes the background, motivation, and objectives. The methodology section provides detailed algorithmic descriptions, including mathematical formulations and pseudocode. The theoretical analysis section outlines convergence bounds under appropriate assumptions. The experimental design is comprehensive, covering datasets, models, evaluation metrics, and ablation studies. The expected outcomes and impact are clearly stated. However, there are a few areas that could benefit from additional clarity: (1) the relationship between the proposed adaptation rules and existing adaptive optimizers could be more explicitly defined, (2) some technical terms (e.g., 'axis-aligned curvature adaptation') are introduced without full explanation, and (3) the pseudocode could include more details on the implementation of the curvature estimation procedure."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal presents a novel approach to optimization by explicitly incorporating curvature information into update rules through dynamic adjustment of hyperparameters. While individual components (Hessian approximation, adaptive learning rates) have been explored in prior work like Hi-DLR and ADLER mentioned in the literature review, DCAO's integration of spectral radius and spectral gap metrics to simultaneously adjust learning rate, momentum, and weight decay represents a fresh perspective. The proposal builds upon existing theoretical work on the Edge of Stability but extends it into a practical optimizer framework. However, the core idea of using Hessian information to guide optimization is not entirely new, and some aspects of the approach bear similarities to existing second-order and adaptive methods. The novelty lies more in the specific combination of techniques and the focus on operationalizing theoretical insights rather than in introducing fundamentally new optimization concepts."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal demonstrates strong technical foundations and rigor. The mathematical formulations for hyperparameter adaptation are well-defined and justified based on curvature properties. The theoretical analysis provides convergence bounds under (L_1, L_2)-smoothness, a generalized framework appropriate for non-smooth neural network landscapes. The use of stochastic Lanczos iterations for Hessian approximation is well-founded in numerical linear algebra. The experimental design includes appropriate baselines, datasets, and evaluation metrics. The proposal acknowledges computational challenges and addresses them through efficient approximation techniques. The connection between the Edge of Stability phenomenon and the proposed adaptation rules is theoretically sound. However, some assumptions about the relationship between spectral properties and optimal hyperparameters could benefit from more rigorous justification, and the theoretical guarantees for non-convex settings (which are most relevant to deep learning) could be more comprehensive."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal presents a feasible approach with reasonable computational requirements. The use of stochastic Lanczos iterations for Hessian approximation is a practical choice that balances accuracy and efficiency. The authors claim only a 3% runtime overhead compared to standard optimizers, citing the ADLER paper as validation. The integration into existing training pipelines is straightforward, as shown in the pseudocode. The experimental design uses standard datasets and models that are widely available. However, there are some feasibility concerns: (1) the accuracy of low-rank Hessian approximations in very large models may be limited, (2) the proposed 3% overhead may be optimistic for large language models with billions of parameters, (3) the frequency of curvature probing introduces a trade-off between accuracy and efficiency that may require careful tuning, and (4) the implementation details for distributed training scenarios are not fully addressed."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a significant challenge in deep learning optimization: bridging theoretical insights about loss landscape geometry with practical optimization tools. If successful, DCAO could improve training stability, convergence speed, and generalization across a range of deep learning tasks. The work directly contributes to the workshop's goal of narrowing the gap between theory and practice. The potential impact extends beyond the specific optimizer to influence how researchers think about incorporating geometric information into optimization algorithms. The proposal could lead to new families of optimizers tailored to non-smooth loss landscapes. The expected improvements in training stability (50% fewer divergences) and convergence speed (20% reduction in epochs) would be meaningful practical contributions. The work also has educational value in demonstrating how theoretical concepts like the Edge of Stability can be operationalized. However, the magnitude of improvement over state-of-the-art optimizers remains to be empirically validated, and the significance depends partly on how well the approach generalizes across different architectures and tasks."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Strong alignment with the workshop's goal of bridging theory and practice in deep learning optimization",
+            "Well-formulated mathematical framework for incorporating curvature information into optimizer dynamics",
+            "Comprehensive experimental design with appropriate baselines and evaluation metrics",
+            "Addresses a significant challenge in deep learning optimization with potential broad impact",
+            "Builds effectively on recent theoretical work on the Edge of Stability phenomenon"
+        ],
+        "weaknesses": [
+            "Some implementation details for very large models and distributed training scenarios are underdeveloped",
+            "The novelty lies more in the integration of existing techniques rather than fundamentally new concepts",
+            "Theoretical guarantees for non-convex settings could be more comprehensive",
+            "The claimed computational efficiency may be optimistic for billion-parameter models"
+        ]
+    }
+}

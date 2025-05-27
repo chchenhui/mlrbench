@@ -1,0 +1,34 @@
+{
+    "Clarity": {
+        "score": 7,
+        "justification": "The paper is generally well-written and structured. The core idea of 'Neural Weight Archeology' and the proposed NWPA framework are introduced in a clear manner. The motivation, related work, and methodology sections are logically laid out. Mathematical formulations for the graph representation and GNN updates are provided. The experimental setup and results, including the poor performance, are presented directly. However, there's a significant disconnect between the described GNN methodology (operating on the internal graph structure of a single neural network) and what the provided code seems to implement (operating on a graph of different models within a batch). This discrepancy, not apparent from the paper alone, reduces clarity regarding what was actually tested. The abstract's claim of 'competitive performance in regression' is also debatable given the highly negative R2 scores, even if MSE/MAE are lower."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The central concept of 'Neural Weight Archeology' – systematically analyzing neural network weights as a primary data modality to infer a diverse set of model properties (like training data characteristics, generalization ability, architectural attributes) without extensive inference runs – is a novel and ambitious framing. The proposed NWPA framework, which combines graph neural networks with attention mechanisms specifically for this task, represents a novel application of these techniques. While GNNs and attention are established, their integrated use for this broad 'weight decoding' problem is original. The aim to create a benchmark for this type of analysis, as mentioned in the introduction, would also be a novel contribution if realized at scale. The paper aligns well with the workshop's theme of exploring weights as a new data modality."
+    },
+    "Soundness": {
+        "score": 1,
+        "justification": "The paper suffers from critical flaws in its experimental methodology and execution, rendering its findings unreliable and its conclusions unsupported. \n1. **Critically Small Dataset**: Experiments are based on only 10 models, split into 70%/15%/15% for train/val/test. This results in approximately 7 training samples, 1-2 validation, and 1-2 test samples. Such a small dataset is wholly inadequate for training or evaluating any deep learning model, including the proposed NWPA, and makes generalization impossible. The paper acknowledges this as a limitation but underestimates its severity.\n2. **Fundamental GNN Implementation Flaw**: The paper describes representing individual neural networks as graphs (nodes=neurons, edges=weights) and using a GNN to process this internal structure. However, the provided code for the NWPA model (in `models/nwpa.py`) reveals that the GNN operates on a batch of models, constructing a fully connected adjacency matrix *between these different model instances within the batch*. It does not process the internal graph structure of each model as described. This is a fundamental mismatch between the proposed methodology and the actual implementation, meaning the core hypothesis about analyzing internal weight connectivity patterns with GNNs was not tested.\n3. **Extremely Poor and Misinterpreted Results**: NWPA achieves 0% accuracy in classification tasks. In regression, all models (including NWPA) yield massively negative R² scores (e.g., NWPA R² is -3.7 million), indicating they perform much worse than a simple mean predictor. While NWPA has lower MSE/MAE than baselines, its R² score is worse than the 'STATISTICS' baseline. The abstract's claim of 'competitive performance in regression' is misleading given these R² values. The paper acknowledges poor results but attributes them primarily to dataset size, without recognizing the GNN implementation flaw.\n4. **Consequences of Flaws**: Due to the minuscule dataset and the incorrect GNN application, the reported experimental results (e.g., 0% accuracy for NWPA, negative R² scores) are likely artifacts of these flaws rather than meaningful evaluations of the proposed NWA concept. The visualizations and analyses based on these experiments are therefore also not reliable."
+    },
+    "Significance": {
+        "score": 2,
+        "justification": "The problem addressed—understanding and decoding information from neural network weights directly—is highly significant, especially given the proliferation of models and the goals of the workshop. A successful framework for 'Neural Weight Archeology' could have a substantial impact on model auditing, selection, and interpretability. However, this paper, in its current form, makes a negligible contribution towards this goal. Due to the critical flaws in soundness (extremely small dataset, fundamental GNN implementation error, and resulting poor/unreliable results), the paper fails to provide any credible evidence for the viability or potential of its proposed NWA framework. The experimental results are not reproducible in a meaningful way (i.e., to validate the paper's claims, as the claims are based on a flawed premise/implementation). Therefore, the work is unlikely to have any lasting impact on the field beyond serving as a potential example of experimental pitfalls. The significant problem remains largely unaddressed by this specific contribution."
+    },
+    "Overall": {
+        "score": 2,
+        "strengths": [
+            "Addresses an important and timely research problem relevant to the workshop's theme.",
+            "The conceptual idea of 'Neural Weight Archeology' is interesting and potentially valuable.",
+            "The paper is generally well-structured and attempts to be transparent about its (numerically) poor experimental outcomes."
+        ],
+        "weaknesses": [
+            "Critically insufficient dataset size (10 models) for training and evaluation, rendering results statistically meaningless.",
+            "Fundamental flaw in the core NWPA model's GNN implementation: it does not analyze the internal graph structure of individual models as described, but rather a graph of models within a batch. This means the central hypothesis was not properly tested.",
+            "Extremely poor experimental results (e.g., 0% classification accuracy for NWPA, highly negative R² scores for all models in regression) that indicate the tested system is not functional or the task is intractable with the current setup.",
+            "Misleading interpretation of regression results in the abstract and analysis, claiming 'competitive performance' for NWPA despite very poor R² scores.",
+            "The conclusions about the potential of the NWA framework are not supported by the flawed experimental evidence presented."
+        ]
+    },
+    "Confidence": 5
+}

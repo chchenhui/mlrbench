@@ -1,0 +1,41 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description (DATA-FM workshop themes like curation, attribution, fairness, efficiency for FMs), the research idea (hierarchical influence-driven curation), and the literature review (building on DataInf, addressing challenges like efficiency and bias). It directly tackles multiple workshop themes, including Data Collection & Curation, Data Attribution (at cluster level), Fairness, and Benchmarks & Evaluations for multi-modal FMs. The methodology clearly operationalizes the core research idea, and the significance section explicitly links the work to workshop goals."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is mostly clear and well-articulated. The objectives are explicitly stated, the methodology is broken down into logical stages (clustering, influence estimation, curation), and the experimental plan is detailed. Mathematical notations are used appropriately, although the influence approximation formula could benefit from slightly more explanation regarding the choice of \\\\lambda_{r+1}. The mention of 'Algorithm 1' without providing it is a minor omission. The overall structure is logical and easy to follow, making the core concepts understandable."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal demonstrates notable originality. While influence functions and efficient approximations like DataInf exist (and are cited), the core novelty lies in the hierarchical approach: applying influence estimation at the *cluster* level rather than individual data points, specifically for *multi-modal* foundation models. This amortization strategy combined with iterative reweighting/pruning for multi-modal data curation represents a fresh perspective distinct from prior work focused on single modalities or individual sample influence. It's a clever combination and extension of existing ideas rather than a completely groundbreaking concept."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal is sound and mostly rigorous. It builds upon established techniques like cross-modal embeddings (CLIP/FLAVA), k-means clustering, and influence function approximations (low-rank Hessian, stochastic Lanczos, referencing DataInf). The rationale for cluster-level amortization (scalability) is clear. The mathematical formulation for influence approximation is based on standard methods. The optimization problem for reweighting is well-defined. Minor potential weaknesses include the sensitivity of clustering to the initial embedding model, the stability of low-rank Hessian approximations across iterations, and the assumption that mini-batch gradients accurately represent cluster gradients, but the overall approach is technically well-founded."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal is largely feasible but presents significant computational challenges. Clustering large datasets and computing embeddings is standard. However, repeatedly computing gradients, low-rank Hessian approximations (even with stochastic methods), and fine-tuning large multi-modal FMs across iterative rounds requires substantial computational resources (acknowledged by mentioning 8 A100 GPUs). The success depends on the efficiency of the low-rank approximation and the number of iterations needed. While technically possible with the stated resources, the computational cost might be high, posing a moderate risk to completing all planned experiments within typical timeframes. The datasets and evaluation metrics are standard and accessible."
+    },
+    "Significance": {
+        "score": 9,
+        "justification": "The proposal is highly significant and impactful. It addresses critical challenges in training large multi-modal FMs: high computational cost, energy consumption, and dataset biases. Achieving substantial data reduction (20-50%) with minimal performance loss and improved fairness would be a major contribution. The potential to lower training costs, reduce environmental impact, and enhance model trustworthiness is substantial. Furthermore, the work's implications for data attribution and marketplaces align well with pressing societal and economic questions surrounding large datasets. It directly addresses key goals of the DATA-FM workshop."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Strong alignment with the DATA-FM workshop's focus on critical data challenges in FMs.",
+            "Addresses significant problems: computational cost, data efficiency, fairness, and attribution in multi-modal settings.",
+            "Proposes a novel hierarchical approach combining clustering and amortized influence estimation.",
+            "Methodology is generally sound, building on existing techniques.",
+            "Comprehensive experimental plan with relevant datasets, baselines, and metrics."
+        ],
+        "weaknesses": [
+            "High computational cost and potential scalability challenges associated with iterative influence estimation and fine-tuning.",
+            "Novelty is more in the application and combination of methods rather than a fundamental breakthrough.",
+            "Some implementation details (e.g., stability of approximations, optimal number of clusters/iterations) require careful empirical validation."
+        ]
+    }
+}

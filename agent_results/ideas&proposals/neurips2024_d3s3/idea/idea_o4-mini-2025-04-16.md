@@ -1,0 +1,7 @@
+Title: Conditional Neural Operator for Probabilistic Inverse Modeling in Turbulent Flows
+
+Motivation:  
+Accurate and fast inversion of high-dimensional PDE parameters (e.g., turbulent flow fields) is critical for control, design, and uncertainty quantification. Conventional inference relies on repeated expensive solvers and provides limited posterior estimates under data scarcity.
+
+Main Idea:  
+We propose a Conditional Neural Operator (CNO) that jointly learns the forward PDE solution map and an approximate posterior over input parameters given sparse observations. A Fourier Neural Operator (FNO) encodes the PDE structure, while a conditional normalizing flow models the posterior distribution. We train both modules end-to-end via amortized variational inference on synthetically generated Navier–Stokes simulations. At inference time, the CNO delivers real-time posterior samples, supports backpropagation through the surrogate for gradient-based design, and quantifies epistemic and aleatoric uncertainty. We will benchmark speed-accuracy trade-offs, assess calibration of predictive intervals, and demonstrate inverse flow identification and control tasks. This framework bridges the simulation-to-real gap by offering a fast, differentiable, and uncertainty-aware inversion engine for complex physical systems.

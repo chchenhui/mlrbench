@@ -1,0 +1,8 @@
+**Title:**  
+Benchmarking Trustworthiness in GenAI for Healthcare: A Framework for Safety, Reliability, and Ethical Disparity Assessment  
+
+**Motivation:**  
+Trust in Generative AI (GenAI) for healthcare is critical due to high-stakes applications like diagnosis and treatment, where errors or biases can harm patients. Current benchmarks for evaluating GenAI trustworthiness are fragmented, focusing on isolated risks (e.g., bias or robustness) without holistic, standardized metrics. This gap hinders regulatory compliance and clinical adoption. Developing a unified framework to systematically assess safety, reliability, and ethical disparities is essential to ensure GenAI systems meet rigorous healthcare standards and address stakeholder concerns.  
+
+**Main Idea:**  
+We propose a multidisciplinary benchmarking framework that evaluates GenAI models across three dimensions: (1) **Safety** (robustness to adversarial inputs, error propagation in clinical workflows), (2) **Reliability** (consistency across diverse patient populations, reproducibility under varying data conditions), and (3) **Ethical Disparities** (demographic bias in treatment recommendations, data privacy risks). The methodology integrates clinical datasets (e.g., MIMIC-III, EHRs), adversarial testing, and fairness audits, validated by clinicians, ethicists, and policymakers. Expected outcomes include a standardized scorecard for GenAI trustworthiness, enabling developers to identify vulnerabilities and regulators to enforce compliance. This framework could accelerate safe, equitable GenAI deployment, fostering trust while aligning with policies like HIPAA and the EU AI Act.

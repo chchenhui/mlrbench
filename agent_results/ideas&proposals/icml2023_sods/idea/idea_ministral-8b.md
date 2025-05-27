@@ -1,0 +1,7 @@
+### Title: "Gradient-Based Discrete Sampling using Adaptive Embedding Networks"
+
+### Motivation:
+Efficient sampling and optimization in discrete space are crucial for various applications such as language modeling and protein structure prediction. Existing methods often struggle with high-dimensional discrete spaces, especially when dealing with complex, long-range correlations. This research aims to address these challenges by leveraging gradient information and adaptive embedding techniques to enhance sampling efficiency.
+
+### Main Idea:
+The proposed research idea focuses on developing a novel gradient-based discrete sampling method that combines adaptive embedding networks with gradient-based MCMC algorithms. The adaptive embedding network will dynamically map discrete spaces to continuous spaces, leveraging gradient information to improve sampling efficiency. The gradient-based MCMC algorithm will then be applied in the continuous space, followed by mapping the samples back to the discrete space. This hybrid approach will be particularly effective for black-box objectives and problems involving complex correlations. The expected outcomes include significantly improved sampling and optimization performance, as well as reduced computational complexity. The potential impact is a more efficient and scalable approach for various applications, including modern language models and protein structure prediction.

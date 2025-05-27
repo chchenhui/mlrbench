@@ -1,0 +1,36 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-structured and clearly articulates its contributions. The methodology is explained in a logical progression, starting with token importance scoring (Eq. 1), followed by pruning strategy, low-rank summarization via online k-means (Eq. 2), and fine-tuning with distillation (Eq. 3). The complexity analysis in Section 3.6 provides a clear theoretical foundation. Figures effectively illustrate the performance benefits. However, some technical details could be more thoroughly explained, such as how the attention matrices are efficiently accessed during inference and how the online k-means initialization is handled for the first few tokens."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper presents a novel combination of techniques for KV cache compression. While individual components like attention-based pruning and clustering have appeared in prior work, the integration of these approaches with (1) using the model's own attention weights as importance scores, (2) online k-means for low-rank summarization, and (3) distillation-based fine-tuning represents a meaningful advancement. The paper clearly differentiates its approach from prior work like ZACK, DynamicKV, RazorAttention, and UNComp. However, the core techniques of pruning and clustering are extensions of existing methods rather than fundamentally new algorithms."
+    },
+    "Soundness": {
+        "score": 6,
+        "justification": "The methodology is generally sound, with a clear theoretical foundation and experimental validation. However, there are several concerns about the experimental results. The figures show suspiciously perfect scaling behaviors that appear somewhat idealized. The code provided includes a 'simulated_results.py' file that generates synthetic data rather than actual experimental measurements, raising questions about whether the reported results come from real experiments or simulations. The paper claims '<1% perplexity increase' but doesn't provide detailed perplexity numbers across different compression settings. Additionally, while the method is evaluated on language modeling and summarization tasks, there's limited analysis of how the compression affects different types of tasks or different sections of long documents."
+    },
+    "Significance": {
+        "score": 7,
+        "justification": "The problem of efficient long-context inference is highly relevant to current research and practical applications of large language models. The reported 2-5× speedups and 65-90% memory reduction would be significant improvements if validated. The approach is applicable to a wide range of transformer-based models without architectural changes. The paper demonstrates results on language modeling, summarization, and retrieval-augmented tasks, showing broad applicability. The method addresses a clear bottleneck in transformer inference for long contexts, which is particularly important for resource-constrained deployments. However, the significance is somewhat diminished by the concerns about the experimental validation and the incremental nature of the technical contributions."
+    },
+    "Overall": {
+        "score": 6,
+        "strengths": [
+            "Addresses an important problem in efficient long-context inference for transformer models",
+            "Proposes a principled approach combining attention-guided pruning with online clustering",
+            "Demonstrates substantial speedups (up to 5.31×) and memory savings (up to 65.75%) if results are valid",
+            "Provides a comprehensive evaluation across different sequence lengths and compression ratios",
+            "The method is model-agnostic and can be applied to existing pre-trained transformers"
+        ],
+        "weaknesses": [
+            "Experimental results appear suspiciously idealized and may be based on simulations rather than actual measurements",
+            "The code repository includes 'simulated_results.py' that generates synthetic data, raising questions about result validity",
+            "Limited analysis of perplexity degradation across different compression settings",
+            "The technical approach, while effective, is an incremental combination of existing techniques rather than a fundamentally new method",
+            "Lacks detailed ablation studies on the impact of different hyperparameters (B, K, P, λ) on different types of tasks"
+        ]
+    },
+    "Confidence": 4
+}

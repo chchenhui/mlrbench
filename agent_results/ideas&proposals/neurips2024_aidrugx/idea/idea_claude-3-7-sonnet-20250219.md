@@ -1,0 +1,9 @@
+# RNA-GUIDE: Generative Universal Interface for Dynamic mRNA Enhancement
+
+## Motivation
+Current mRNA vaccines face challenges in translational efficiency, stability, and targeted delivery, limiting their therapeutic potential. Traditional optimization approaches are often trial-and-error based and require extensive wet-lab validation. A comprehensive AI system that can simultaneously optimize multiple aspects of mRNA therapeutics would significantly accelerate development time, reduce costs, and enhance efficacy of emerging RNA therapeutics for various diseases and conditions.
+
+## Main Idea
+RNA-GUIDE is a multi-objective optimization framework that integrates several specialized foundational models to holistically design mRNA therapeutics. The system encompasses: (1) A codon optimization module that learns from ribosome profiling data to maximize translation efficiency; (2) A UTR design component that leverages transformer-based architecture to generate 5' and 3' UTRs with optimal secondary structures for stability; (3) A sequence-to-function predictor that estimates immunogenicity and degradation kinetics; and (4) A cell-type specificity module that optimizes delivery by predicting tissue tropism. 
+
+The framework employs a novel reinforcement learning approach where the reward function integrates predictions from all components, allowing simultaneous optimization across multiple parameters. RNA-GUIDE would generate mRNA sequences with tailored properties for specific therapeutic applications, significantly reducing experimental iterations and accelerating the development of more effective mRNA therapeutics.

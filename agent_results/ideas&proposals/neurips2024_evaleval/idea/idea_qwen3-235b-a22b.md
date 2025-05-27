@@ -1,0 +1,11 @@
+1. **Title**: *ParticipatoryAI: A Collaborative Framework for Multistakeholder Impact Assessment of Generative AI Systems*  
+
+2. **Motivation**: Generative AI (GAI) permeates critical societal domains, yet its broader impacts—like reinforcing biases or displacing creative labor—are often assessed through narrow technical or institutional lenses. Current evaluations lack systematic inclusion of marginalized voices, domain experts outside AI, and end-users directly affected by these systems. This gap perpetuates inequities, risks harmful deployments, and undermines trust. Developing inclusive, interdisciplinary evaluation frameworks is urgent to ensure GAI aligns with societal values and equitable outcomes.  
+
+3. **Main Idea**: We propose *ParticipatoryAI*, a hybrid human-AI framework enabling collaborative impact assessment through structured, multistakeholder engagement. The system would:  
+- **Aggregate multidisciplinary perspectives** using a modular toolkit where stakeholders (e.g., artists for image-generation tools, gig workers for content-automation systems) document risks via structured surveys, interactive demos, and participatory workshops.  
+- **Leverage NLP and causal modeling** to map stakeholder inputs (qualitative narratives + quantitative metrics) into standardized "impact profiles," identifying bias, misuse potential, and downstream economic effects.  
+- **Improve scalability** via federated learning, enabling institutions to train domain-specific GAI risk detectors while preserving stakeholder privacy.  
+- **Generate actionable recommendations** through interpretable models that prioritize marginalized voices and quantify tradeoffs between technical performance and societal harm.  
+
+Expected outcomes include open-source tools for participatory audits, benchmark datasets for equity-centric evaluation, and policy guidelines for global AI governance. This framework could become the foundation for next-generation AI impact assessments, ensuring democratized input while maintaining rigorous technical validation.

@@ -1,0 +1,7 @@
+Title: Sim2Act: Self-Supervised Action Data Generation for Multi-Modal Decision Making Models
+
+Motivation:  
+Foundation models excel at vision–language understanding but lack action-conditioned data, limiting their ability to plan and control in sequential decision-making tasks. By automatically generating large-scale, paired (observation, language, action) datasets, we can improve sample efficiency and generalization in downstream control, planning, and robotics applications.
+
+Main Idea:  
+Sim2Act leverages diverse simulated environments (e.g., 3D navigation, manipulation arenas) to produce rich action-annotated data. We first sample natural language task descriptions and deploy a base foundation model to propose exploratory policies in the simulator. As the agent interacts, we log (visual frame, task prompt, executed action) triplets. This synthetic corpus is used to fine-tune a vision-language model augmented with an action-prediction head, trained via a combination of contrastive learning and behavior cloning. Iteratively, improved policies bootstrap more complex interactions, yielding multi-task, long-horizon behaviors. We expect Sim2Act to close the “actions gap,” enabling foundation models to perform efficient planning and control in both simulated and real-world robotic settings.

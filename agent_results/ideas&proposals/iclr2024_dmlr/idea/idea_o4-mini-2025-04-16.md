@@ -1,0 +1,7 @@
+Title: Uncertainty-Driven Model-Assisted Curation for Multi-Domain Foundation Models
+
+Motivation:
+Building large‐scale datasets across diverse domains is costly and error-prone. Current model-assisted pipelines either flood curators with low‐value samples or miss domain nuances. By guiding human annotators toward high-impact examples with model-estimated uncertainty, we can accelerate curation, improve data quality, and ensure broad domain coverage for foundation models.
+
+Main Idea:
+We propose UMC (Uncertainty-driven Model-assisted Curation), an iterative pipeline that (1) deploys a diverse ensemble of pre-trained domain specialists to score unlabeled data by predictive confidence and inter-model disagreement; (2) clusters low‐confidence or high‐disagreement samples and routes them to human curators through an interactive interface; (3) retrains foundation models on the augmented, human-verified data; and (4) updates uncertainty estimates for the remaining pool. A multi-armed bandit allocator dynamically balances exploration (new domains) and exploitation (hard samples) to optimize labeling budgets. Expected outcomes include a 30–50% reduction in annotation costs, improved robustness to dataset shift, and richer domain coverage. This approach accelerates high-quality, scalable dataset construction for vision, language, and beyond.

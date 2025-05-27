@@ -1,0 +1,7 @@
+# Multimodal Scaffolding for Enhanced LLM Theory of Mind
+
+## Motivation
+Theory of Mind (ToM) - the ability to attribute mental states to others - remains a significant challenge for current LLMs. While they can mimic ToM in language-based tasks, they struggle with genuine understanding of others' beliefs and intentions, especially in dynamic, real-world scenarios. This limitation stems from their text-only training, preventing them from developing robust representations of how agents interact with physical environments and how beliefs relate to perceptual access.
+
+## Main Idea
+I propose developing a multimodal ToM framework where LLMs are systematically exposed to visual scenarios paired with mental state descriptions. The approach involves three stages: 1) Pre-training on a curated dataset of videos depicting false-belief scenarios with annotated mental states, 2) Implementing a novel attention mechanism that explicitly tracks perceptual access across agents (who saw what and when), and 3) Evaluating on a battery of increasingly complex ToM tasks requiring prediction of actions based on beliefs rather than reality. This framework would enable LLMs to ground language-based ToM reasoning in perceptual experience, bridging the gap between linguistic competence and genuine understanding of minds. Success would not only advance AI capabilities but also provide insights into how multisensory integration contributes to social cognition in humans.

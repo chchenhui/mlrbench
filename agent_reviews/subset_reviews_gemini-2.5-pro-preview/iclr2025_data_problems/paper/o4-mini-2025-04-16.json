@@ -1,0 +1,36 @@
+{
+    "Consistency": {
+        "score": 4,
+        "justification": "The paper exhibits several inconsistencies. Firstly, the abstract and conclusion claim 'competitive downstream performance,' which is contradicted by the experimental results showing a significant drop in Recall@1 (from 32.5 to 10.0) and performance worse than random sampling on all recall metrics. Secondly, the research proposal aimed for a data reduction with 'minimal degradation (≤1%) in downstream metrics,' a goal clearly not met by the 69% relative drop in Recall@1. Thirdly, the experimental setup uses K=5 clusters, a stark deviation from the K≈1000 proposed, without adequate justification; this change significantly alters the nature of the 'semantically coherent groups' envisioned. While the paper's structure aligns with the research idea and proposal in terms of methodology sections, these core contradictions and deviations in performance claims and experimental parameters significantly lower the consistency score."
+    },
+    "Clarity": {
+        "score": 5,
+        "justification": "The paper is generally well-structured and the writing is mostly understandable. However, clarity is hampered by a few key issues. 'Algorithm 1' is referenced multiple times in the methodology but is not provided in the paper text, making it difficult to fully grasp the procedural details. The crucial parameter choice of K=5 clusters is not justified, obscuring the rationale behind this decision. Most importantly, the repeated use of 'competitive performance' to describe results that show a substantial performance decrease (and underperformance relative to random sampling) is misleading and reduces the clarity of the paper's actual findings and contributions."
+    },
+    "Completeness": {
+        "score": 4,
+        "justification": "The paper is incomplete in several aspects when compared to the research proposal and standard reporting practices. Algorithm 1, central to the methodology, is missing. The experimental validation is narrower than proposed: it uses only a subset of one dataset (MS COCO) instead of the three datasets planned (MS COCO, Visual Genome, Conceptual Captions), and fully reports results for only one task (image-caption retrieval) while the proposal included image captioning and VQA. Quantitative results for the ablation studies (effect of K, r, etc.) are absent, with only qualitative 'insights' provided. Furthermore, fairness improvements are mentioned qualitatively in the analysis but are not substantiated with quantitative metrics in the main results table, making it difficult to assess this claim. The expected outcomes from the proposal, particularly regarding performance degradation, are not met and this discrepancy is not adequately addressed."
+    },
+    "Soundness": {
+        "score": 3,
+        "justification": "The paper's soundness is severely undermined by its experimental methodology and results. The choice of K=5 clusters for a dataset like MS COCO is extremely low and lacks justification; such coarse clustering likely fails to capture meaningful semantic groups and may be a primary cause of poor performance. Critically, the proposed InfluenceSpace method performs significantly worse than the Random Sampling baseline on all reported recall metrics (e.g., Recall@1 of 10.0 vs. 30.0 for Random Sampling), despite achieving only a moderately higher data reduction (29% vs. 20%). A data curation method that performs worse than random selection is fundamentally flawed in its current validation. The claim of 'competitive performance' is therefore unsupported by the evidence. The lack of quantitative data for fairness improvements and ablation studies further weakens the empirical grounding of the paper's conclusions. The iterative loop's effectiveness is also unclear given the K=5 constraint and lack of detailed analysis."
+    },
+    "OverallAssessment": {
+        "score": 4,
+        "strengths": [
+            "Addresses the important and relevant problem of data curation for multi-modal foundation models.",
+            "Proposes a principled approach based on influence functions, moving beyond simple heuristics.",
+            "The hierarchical curation strategy (clustering followed by influence estimation) is a conceptually sound approach for scalability.",
+            "Considers multiple important aspects of data curation: efficiency, model performance, and fairness.",
+            "Commits to open-sourcing code and curated splits, which is good for reproducibility."
+        ],
+        "weaknesses": [
+            "Experimental results show that InfluenceSpace performs significantly worse than the full dataset and, critically, worse than a random sampling baseline on key retrieval metrics.",
+            "The paper makes misleading claims of 'competitive performance' in the abstract and conclusion, which are not supported by the reported data.",
+            "The choice of K=5 for the number of clusters is extremely low for the MS COCO dataset, lacks justification, and likely contributes to the poor performance.",
+            "Key components like 'Algorithm 1' are missing from the paper.",
+            "The experimental validation is incomplete compared to the research proposal (e.g., fewer datasets, tasks, no quantitative ablation studies, fairness metrics not in the main table).",
+            "The paper fails to meet the performance goals set out in its own research proposal (e.g., minimal performance degradation)."
+        ]
+    }
+}

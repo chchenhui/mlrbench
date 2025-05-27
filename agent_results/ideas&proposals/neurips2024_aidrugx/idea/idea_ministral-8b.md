@@ -1,0 +1,7 @@
+### Title: AI-Driven Design of Antisense Oligonucleotides for Enhanced Stability and Efficacy
+
+### Motivation:
+Antisense oligonucleotides (ASOs) have shown promise in treating various diseases by targeting specific RNA sequences. However, the stability and efficacy of ASOs can be improved through optimized design. This research aims to leverage AI to enhance the stability and efficacy of ASOs, thereby accelerating the development of new therapeutic modalities.
+
+### Main Idea:
+This research proposes an AI-driven approach to design antisense oligonucleotides with enhanced stability and efficacy. The methodology involves training a generative model on a large dataset of ASO sequences and their corresponding stability and efficacy data. The model will learn to generate new ASO sequences that are predicted to have improved properties. Additionally, reinforcement learning techniques will be employed to iteratively refine the designs based on feedback from molecular simulations and in vitro experiments. The expected outcomes include a library of optimized ASO sequences that are more stable and efficacious than existing ones. This could significantly reduce the time and cost associated with ASO drug development and potentially lead to more effective therapeutic treatments. The potential impact of this research is the acceleration of drug discovery for RNA-targeted therapies, which could revolutionize the treatment of various genetic and infectious diseases.

@@ -1,0 +1,7 @@
+Title: FlowCodec: Continuous-Flow Neural Compression with Information-Bottleneck Guarantees
+
+Motivation  
+Discrete quantization in learned compressors breaks end-to-end differentiability, complicates theoretical analysis, and yields suboptimal rate-distortion performance. By replacing quantization with continuous flows and enforcing an explicit information bottleneck, we can achieve sharper reconstructions, tractable rate control, and provable bounds.
+
+Main Idea  
+We propose FlowCodec, a fully differentiable encoder–decoder built on normalizing flows. The encoder maps input x to a continuous latent z with tractable density q(z|x). Instead of quantizing z, we inject small Gaussian “dequantization” noise and impose a KL-divergence penalty β·KL(q(z|x) ∥ p(z)), where p(z) is a flexible flow prior. Training minimizes the Lagrangian L = E_x[Dist(x, x̂)] + β·KL(·), yielding a smooth rate-distortion trade-off. We derive upper bounds on achievable rates via variational f-divergence estimates, linking β to theoretical RD limits. In experiments on images/videos, FlowCodec matches or outperforms VQ-based methods at comparable bitrates, with lower latency and sharper detail. This framework naturally extends to joint source–channel coding by composing channel-noise flows, paving the way for robust, theory-grounded neural compressors.

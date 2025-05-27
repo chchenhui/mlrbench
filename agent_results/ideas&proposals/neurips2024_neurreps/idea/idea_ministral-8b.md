@@ -1,0 +1,9 @@
+### Title: "Geometric Deep Learning for Neural Representation Learning in Motor Cortex"
+
+### Motivation:
+The convergence of neuroscience findings and geometric deep learning suggests that geometric priors can enhance the efficiency and robustness of neural network models. This research aims to bridge the gap between the geometric structure observed in motor cortex and the application of geometric deep learning principles to improve neural representation learning in motor tasks.
+
+### Main Idea:
+This research proposes the development of a geometric deep learning framework tailored for motor cortex neural representation learning. The framework will incorporate equivariant neural networks that preserve the low-dimensional manifold structure observed in motor cortex activities. The methodology involves designing a novel equivariant convolutional neural network (ECNN) architecture that respects the geometric symmetries of motor movements. The ECNN will be trained on datasets of motor tasks, such as reaching and grasping, to learn invariant representations that capture the geometric structure of motor actions.
+
+The expected outcomes include improved generalization performance and robustness of neural networks for motor tasks. Additionally, the research aims to provide insights into the computational principles underlying motor cortex representations and their potential applications in neural prosthetics and robotic control. The potential impact of this research is significant, as it could lead to more efficient and effective neural network models for motor learning and rehabilitation.

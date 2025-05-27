@@ -1,0 +1,9 @@
+```  
+1. Title: **Modular Upcycling of Pretrained Dense Models via Dynamic Expert Routing**  
+
+2. Motivation:  
+The rapid obsolescence of large deep learning models leads to massive resource waste, as pretrained models are discarded and replaced with new ones trained from scratch. This practice is unsustainable due to computational, environmental, and financial costs. While monolithic models struggle with adaptability and component reuse, modularity—inspired by software engineering and biology—enables efficient recycling of pretrained capabilities. Existing methods for converting dense models into modular frameworks (e.g., MoE) often retain rigid architectures. A more flexible approach is needed to repurpose diverse pretrained models as specialized, sparsely activated experts.  
+
+3. Main Idea:  
+We propose a framework to *dynamically upcycle* heterogeneous pretrained dense models (e.g., vision, language) into a unified modular system. First, we decompose frozen dense models into expert modules using task-agnostic parameter clustering and self-attention-based input routing. Second, we train lightweight trainable adapters to harmonize outputs across experts. Third, we introduce a high-level router network that learns sparse activation patterns for input-dependent expert combinations, minimizing interference and computational cost. The approach avoids retraining backbone models, preserving their knowledge while enabling composable, task-specific ensembles. We expect this method to reduce training costs by 70-90% compared to monolithic pipelines, with superior adaptability in continual learning and cross-modal tasks. Impact: Enable sustainable, collaborative model ecosystems where diverse pretrained models share reusable capabilities.  
+```

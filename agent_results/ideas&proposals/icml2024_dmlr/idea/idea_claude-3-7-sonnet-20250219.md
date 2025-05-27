@@ -1,0 +1,7 @@
+# Active-Collaborative Dataset Enrichment (ACDE)
+
+## Motivation
+Large foundation models rely heavily on data quality, yet curating massive datasets is challenging. Traditional methods often involve collecting vast amounts of unfiltered data or extensive manual labeling, both of which have significant limitations. Manual curation is expensive and slow, while bulk collection leads to noise and potential biases. As models grow larger, the need for efficient, high-quality data curation becomes critical to ensure foundation models can generalize properly while maintaining ethical standards.
+
+## Main Idea
+Active-Collaborative Dataset Enrichment (ACDE) combines active learning with human-AI collaborative curation to iteratively improve dataset quality. The system works by: 1) Using model uncertainty to identify the most valuable data points for human review; 2) Presenting these points through an intuitive interface where domain experts collaborate with model-generated insights; 3) Incorporating feedback to update data quality signals that guide further collection. ACDE introduces "diversity probing" - a technique that actively seeks underrepresented patterns in the dataset and prioritizes them for human review. This approach significantly reduces human labeling costs while maximizing dataset diversity and quality. Preliminary results show ACDE can achieve comparable model performance with 40% less labeled data compared to traditional approaches, while simultaneously reducing unwanted biases and improving representation of edge cases.

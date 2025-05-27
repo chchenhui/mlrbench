@@ -1,0 +1,7 @@
+Title: VeriMem – A Veracity-Driven Memory Architecture for LLM Agents
+
+Motivation:  
+LLM agents with persistent memory often hallucinate or propagate biases when recalling unverified past interactions. This undermines trust in agentic applications—especially in high-stakes domains like healthcare or finance. VeriMem aims to inject “veracity awareness” into long-term memory, reducing hallucinations and mitigating bias without sacrificing adaptability.
+
+Main Idea:  
+VeriMem augments standard memory modules with a veracity score assigned at write time and updated periodically via lightweight fact-checking against trusted external corpora (e.g., knowledge bases, news APIs). During retrieval, memories below a dynamic veracity threshold are either re-validated or replaced by on-the-fly external lookups. An uncertainty estimator flags low-confidence recalls, prompting agent subroutines to seek additional evidence or human oversight. We implement VeriMem within a ReAct-style reasoning loop, evaluate on tasks requiring multi-step memory (e.g., dialogue history, code debugging), and measure hallucination rates, bias amplification, and task performance. By filtering and prioritizing high-veracity memories, VeriMem enhances agent safety and trustworthiness, paving the way for more reliable long-term interactions.

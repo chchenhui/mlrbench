@@ -1,0 +1,7 @@
+Title: Federated In-Context Prompt Distillation for Foundation Models
+
+Motivation:  
+Large language models excel at in-context learning but rely on centralized prompt tuning on sensitive or siloed data. Directly sharing data or full model weights breaches privacy and strains bandwidth. We need a privacy-preserving way to collaboratively refine in-context prompts across distributed clients.
+
+Main Idea:  
+We propose FICPD, a federated in-context prompt distillation framework. Each client uses local examples to fine-tune a small set of soft prompt vectors without exposing raw data. Before upload, prompt updates are compressed and sanitized via differential privacy. The server clusters received prompt embeddings into prototype prompts that capture diverse domain contexts. Using meta-learning, the server distills these prototypes into a compact, universal prompt library and broadcasts it back. Clients integrate the updated library for richer in-context reasoning. We evaluate FICPD on multilingual and domain-specific benchmarks, measuring task accuracy, privacy leakage, and communication cost. FICPD aims to deliver collaborative, resource-efficient prompt adaptation that respects data sovereignty and scales to hundreds of clients.

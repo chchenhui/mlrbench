@@ -1,0 +1,7 @@
+**Title:** Differentiable Contact Dynamics Simulator for Robust Robotic Grasping  
+
+**Motivation:** Robotic manipulation in contact-rich environments (e.g., grasping deformable objects) requires precise modeling of physical interactions. Traditional simulators use non-differentiable physics engines, restricting gradient-based policy optimization and limiting adaptability to real-world variability.  
+
+**Main Idea:** We propose a differentiable simulator that models contact dynamics using continuous relaxations of collision and friction forces. By replacing non-differentiable collision detection with a smoothed contact field (e.g., using sigmoid kernels) and applying implicit differentiation through iterative quasi-static solvers, gradients can flow from task objectives (e.g., grasp success) to control parameters. This simulator integrates with reinforcement learning (RL), enabling end-to-end policy training via gradient descent. Experiments will validate sim-to-real transfer for robotic grasping of deformable objects, comparing with baseline RL methods.  
+
+**Expected Outcomes & Impact:** Policies trained with differentiable contact dynamics will exhibit improved sim-to-real transfer by capturing subtle force interactions. This approach reduces the need for costly real-world trial-and-error, advancing applications in logistics, healthcare, and domestic robotics.

@@ -1,0 +1,40 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description (workshop themes like practical FL, foundation models, heterogeneity, efficiency, privacy), the research idea (using PEFT in FL adaptively), and the literature review (addressing identified challenges like heterogeneity, resource constraints, communication). It directly tackles the problem of training foundation models in federated settings, a key topic mentioned in the workshop call. It builds upon the cited literature (SLoRA, FeDeRA) and aims to address their limitations regarding adaptive heterogeneity handling."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is mostly clear and well-articulated. The background, objectives, methodology, and expected outcomes are presented logically. The core concepts of using PEFT (LoRA), adaptive rank allocation based on device profiles, and SVD-weighted aggregation are explained. Minor ambiguities exist: the exact mechanism for reconstructing global matrices A_g, B_g via weighted SVD aggregation could be more detailed (Figure 1 is mentioned but not shown), and the method for determining the coefficients \\\\lambda_1, \\\\lambda_2, \\\\lambda_3 in the adaptive rank formula is not specified. Overall, however, the proposal is easy to understand."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal offers notable originality. While applying PEFT to FL is not entirely new (as evidenced by SLoRA, FeDeRA, and even a 2022 paper also named FedPEFT - Ref 10), this proposal introduces specific novel mechanisms: 1) Adaptive PEFT module allocation (rank r_i) based on a multi-factor device profile (memory, compute, data size), and 2) SVD-weighted aggregation designed to handle heterogeneous PEFT updates, potentially improving convergence in non-IID settings. These specific contributions differentiate it from prior work like SLoRA (data-driven init), FeDeRA (SVD init), and FedP^2EFT (Bayesian personalization). The reuse of the name 'FedPEFT' from Ref 10 slightly clouds the novelty claim, but the specific adaptive and aggregation techniques proposed appear distinct and innovative."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal is sound and mostly rigorous. It builds upon established techniques like FL, PEFT (LoRA), and SVD. The proposed methodology is well-justified: using PEFT for efficiency, adapting rank for heterogeneity, and using SVD properties for aggregation seem theoretically motivated. The adaptive rank formula is plausible, although the weighting coefficients \\\\lambda_i would require empirical tuning or further justification. The SVD-weighted aggregation is an interesting approach for non-IID data. The experimental design is comprehensive, including relevant datasets, models, heterogeneity simulation, baselines, and metrics. Technical formulations are mostly correct and clearly presented, though the SVD aggregation step lacks full detail."
+    },
+    "Feasibility": {
+        "score": 9,
+        "justification": "The proposal is highly practical and implementable. The core techniques (LoRA, federated averaging variants) are well-understood. Implementation can leverage existing frameworks like PyTorch and Flower. Simulating device heterogeneity and profiling is standard practice in FL research. The proposed adaptive rank calculation and SVD-weighted aggregation add complexity but seem computationally manageable, especially since SVD is performed on relatively small PEFT matrices on the server. The experimental plan is realistic, and the required resources appear standard for FL research."
+    },
+    "Significance": {
+        "score": 9,
+        "justification": "The proposal addresses a highly significant and timely problem: enabling the efficient and privacy-preserving fine-tuning of large foundation models in practical federated learning settings, particularly with heterogeneous devices. This is a major bottleneck for deploying FMs in real-world edge scenarios. Success would represent a substantial advancement, potentially enabling new applications in areas like personalized AI on mobile devices, healthcare, etc., while respecting data privacy. The potential impact on both the research community and practical applications is high."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Addresses a critical and timely problem at the intersection of FL, FMs, and PEFT.",
+            "Proposes specific, novel mechanisms (adaptive rank allocation, SVD-weighted aggregation) to handle device heterogeneity.",
+            "Methodology is generally sound and builds on established techniques.",
+            "High feasibility using standard tools and frameworks.",
+            "Strong potential for significant impact on practical FL deployments and research."
+        ],
+        "weaknesses": [
+            "Novelty needs careful distinction from the 2022 FedPEFT paper (Ref 10), despite proposing different specific mechanisms.",
+            "Minor lack of detail in the methodology, particularly the exact SVD aggregation reconstruction step and justification for adaptive rank formula coefficients."
+        ]
+    }
+}

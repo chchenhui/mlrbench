@@ -1,0 +1,5 @@
+**Title:** Tool-Augmented Reasoning Chains for Complex Mathematical Problem Solving
+
+**Motivation:** Foundation models often falter on mathematical problems requiring precise, multi-step symbolic reasoning, producing plausible but incorrect solutions. This limits their reliable use in scientific research and education where accuracy is paramount.
+
+**Main Idea:** We propose a framework where FMs learn to decompose complex mathematical problems into sub-steps and strategically invoke external symbolic solvers (e.g., SymPy, WolframAlpha) for precise computation or manipulation. The FM generates intermediate natural language reasoning steps and structured queries for these tools. We will develop a methodology to fine-tune FMs on datasets containing mathematical problems annotated with correct reasoning chains, including explicit tool calls and their outputs. The expected outcome is a hybrid system significantly improving mathematical reasoning accuracy and reliability over purely generative approaches, enabling verifiable step-by-step solutions. This enhances FM applicability in demanding STEM domains.

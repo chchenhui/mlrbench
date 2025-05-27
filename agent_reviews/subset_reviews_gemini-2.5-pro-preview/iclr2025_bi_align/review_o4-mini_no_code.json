@@ -1,0 +1,34 @@
+{
+    "Clarity": {
+        "score": 5,
+        "justification": "The paper is generally well-structured with a clear abstract, introduction, and contributions. However, there are significant clarity issues. Firstly, Algorithm 1, which is supposed to summarize the UDRA framework, is mentioned in Section 3.6 but is not provided in the paper, making it difficult to fully understand the proposed method's implementation. Secondly, several figures (e.g., Figure 3, Figure 7 showing Trust Calibration) are poorly presented with very sparse data points and unclear x-axis scaling relative to the experiment duration, making it hard to interpret the trends. The abstract also overgeneralizes some findings (e.g., 'maintains or improves task efficiency', 'requiring fewer human corrections') which are not universally true across both environments according to the paper's own tables."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper proposes the Uncertainty-Driven Reciprocal Alignment (UDRA) framework. While the concept of bidirectional human-AI alignment is acknowledged as existing (citing Pyae, 2025), UDRA's specific integration of Bayesian user modeling for dynamic preference updates, multi-objective reinforcement learning with an explicit alignment term, and an HCI interface for surfacing AI uncertainty to solicit targeted human feedback appears to be a novel combination. The related work section adequately positions UDRA by highlighting how it aims to fill gaps in existing dynamic, reciprocal processes. The novelty lies in this specific synthesis of components to address the problem."
+    },
+    "Soundness": {
+        "score": 2,
+        "justification": "The soundness of the paper is critically undermined by major inconsistencies between the experimental results reported in the tables/text and the provided figures, and the omission of Algorithm 1. \n1. Missing Algorithm: Algorithm 1 is referenced but not included, which is a major omission for methodological soundness and reproducibility.\n2. Figure vs. Table Discrepancies:\n   - Resource Env. Task Reward (Table 1 vs Fig 1): Table 1 claims UDRA 9.45 vs Baseline 9.43. Fig 1 shows UDRA ending slightly lower or similar to Baseline (around 9.35-9.4).\n   - Resource Env. Alignment Error (Table 1 vs Fig 2): Table 1 claims 0.05 for both. Fig 2 shows both ending at 0.1.\n   - Resource Env. Trust Calibration (Table 1 vs Fig 3): Table 1 claims Baseline 0.047, UDRA 0.12. Fig 3 shows negative values for Baseline at ep 40 (approx -0.18) and UDRA at ep 10 (approx -0.05), and is extremely sparse, not supporting the positive values or the claimed improvement.\n   - Safety Env. Task Reward (Table 2 vs Fig 5): Table 2 claims Baseline 2.76, UDRA 0.36. Fig 5 shows Baseline ending around 4.0 and UDRA around -1.0, a major discrepancy.\n   - Safety Env. Alignment Error (Table 2 vs Fig 6): Table 2 claims Baseline 0.55, UDRA 0.25. Fig 6 shows Baseline ending around 0.7 and UDRA around 0.4. While UDRA is still better, the absolute values and magnitude of improvement differ.\n   - Safety Env. Trust Calibration (Table 2 vs Fig 7): Table 2 claims Baseline -0.116, UDRA 0.023. Fig 7 is sparse and shows UDRA's last point at -1.0 and Baseline's last point also at -1.0, not supporting the table's claims or the narrative of UDRA being positive.\n   - Correction Rate Figures (Fig 4, Fig 8): The x-axes cover very few time windows (40 for Resource, 6 for Safety), which seems insufficient for experiments running 200 episodes, making it hard to verify total corrections.\n3. Simulated Users: While acknowledged as a limitation, the severe issues with results presentation make it hard to draw any conclusions, even from simulations.\nThese inconsistencies suggest that the figures may not be based on the same data as the tables, or there are significant errors in data reporting, rendering the experimental validation unreliable."
+    },
+    "Significance": {
+        "score": 3,
+        "justification": "The paper addresses the important and timely problem of dynamic human-AI alignment, which is highly relevant to the workshop's theme. The proposed UDRA framework, if validated, could offer a significant contribution by enabling more adaptive and trustworthy AI systems. However, the current significance is severely hampered by the critical soundness issues in the experimental validation. Without reliable evidence that the method performs as claimed, its demonstrated impact is minimal. The potential significance is high, but the paper, in its current state, fails to realize this potential due to the unreliable results."
+    },
+    "Overall": {
+        "score": 2,
+        "strengths": [
+            "Addresses a highly relevant and important problem in human-AI alignment.",
+            "Proposes an interesting and potentially valuable framework (UDRA) that integrates multiple relevant techniques (Bayesian user modeling, MORL, uncertainty communication).",
+            "The paper's goals are well-aligned with the workshop's call for exploring bidirectional human-AI alignment."
+        ],
+        "weaknesses": [
+            "Critical soundness issues due to major and numerous inconsistencies between numerical results reported in tables/text and the trends/values shown in the provided figures. This makes the experimental validation untrustworthy.",
+            "Algorithm 1, crucial for understanding the methodology, is referenced but missing from the paper.",
+            "Some figures are poorly presented (e.g., sparse data points in trust calibration plots, limited x-axis range in correction rate plots), hindering interpretation.",
+            "The abstract overgeneralizes some experimental findings which are not consistent across both tested environments.",
+            "Reliance on simulated users is a limitation, but this is secondary to the fundamental problems with results reporting."
+        ]
+    },
+    "Confidence": 5
+}

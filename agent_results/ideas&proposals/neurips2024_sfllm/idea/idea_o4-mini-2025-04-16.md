@@ -1,0 +1,7 @@
+Title: Semantic Conformal Prediction Sets for Black-Box LLM Uncertainty
+
+Motivation:
+LLMs often produce overconfident or hallucinated outputs, yet their internal scores cannot be directly trusted. We need distribution-free uncertainty guarantees for black-box models to safely deploy LLMs in high-stakes settings like healthcare or legal advice.
+
+Main Idea:
+We propose a semantic conformal prediction framework that wraps any LLM API and outputs a calibrated set of candidate responses with guaranteed coverage. First, we collect a calibration corpus of (prompt, reference output) pairs and embed both prompt+LLM-generated candidates and the true outputs into a shared sentence-embedding space. We define a nonconformity score as the cosine distance between each generated candidate and its reference embedding. By computing the α-quantile of these scores, we derive a threshold τ ensuring that with probability 1–α the true answer lies within the generated set whose nonconformity ≤τ. At test time, given a prompt, we sample top-k outputs, compute their scores relative to the calibration distribution, and return only those within τ. This method yields finite-sample guarantees on coverage, reduces hallucinations, and can be extended to chain-of-thought reasoning for richer safety audits.

@@ -1,0 +1,33 @@
+{
+    "Clarity": {
+        "score": 6,
+        "justification": "The paper is generally well-structured and the main ideas are articulated. However, there are significant clarity issues in the methodology section. Specifically, the formulation of the multi-objective reward function (Section 3.3) using the true human preference vector w (which the agent is supposed to learn) is confusing and seems theoretically unsound in a standard RL context where w is unknown. The paper states this w is the 'true human-preference vector'. Furthermore, the paper states UDRA uses policy gradients or actor-critic methods (Section 3.6), while the provided code implements an ensemble of Q-networks (a value-based method). These discrepancies make it difficult to understand the exact method being proposed and evaluated. The abstract also selectively highlights improvements, e.g., 'requiring fewer human corrections over time', which is true for one environment but not the other according to its own tables."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper proposes UDRA, a framework for bidirectional human-AI alignment. While bidirectional alignment and uncertainty-informed interaction are existing concepts (as cited from very recent or even future-dated works like Pyae, 2025 and Papantonis & Belle, 2023), UDRA's specific integration of Bayesian user preference modeling, ensemble-based uncertainty quantification to actively solicit human feedback, and multi-objective reinforcement learning for this dynamic alignment task appears to offer a novel combination. The focus on continuously updating both the AI's policy and its model of user preferences based on AI's uncertainty is a pertinent contribution to the field of bidirectional alignment."
+    },
+    "Soundness": {
+        "score": 3,
+        "justification": "The soundness of the paper is severely compromised by several critical issues:\n1. Methodological Mismatch (Reward Function): The paper's formulation of the multi-objective reward function r_t = r_{\\\\mathrm{task}}(s_t,a_t) - \\\\lambda\\\\|w-\\\\hat w_{t-1}\\\\|_2^2 (Section 3.3) is problematic as it implies the agent has access to the true preference vector w during training. The provided code (`models/udra.py`) implements a different reward: r_t = r_{\\\\mathrm{task}}(s_t,a_t) + \\\\lambda \\\\hat{w}_{t-1}^\\\\top \\\\phi(s_t, a_t), where \\\\hat{w}_{t-1} is the current estimate from the user model. This is a major discrepancy between the described method and the implemented one.\n2. Algorithm Mismatch: The paper states UDRA uses policy gradients or actor-critic methods (Section 3.6), but the code (`models/udra.py`) implements an ensemble of Q-networks (DQN-style updates), a value-based approach.\n3. Non-Reproducible/Inconsistent Results: Key experimental results reported in the paper are not consistent with the provided `results.json` data:\n    a. Resource Environment, UDRA Trust Calibration: Table 1 reports 0.12. The `results.json` file shows all NaN values for `results['resource']['udra']['trust_calibration']`. The `analyze_results.py` script would compute `np.nanmean` on these, resulting in NaN. This critical positive result for UDRA is not supported by the provided data, suggesting it might be fabricated or from an entirely different experimental setup.\n    b. Safety Environment, Final Alignment Error: Table 2 reports Baseline: 0.55, UDRA: 0.25. Calculations from `results.json` (using `analyze_results.py` logic) yield Baseline: approx 0.61, UDRA: approx 0.11. While the code's data shows a larger improvement for UDRA, the inconsistency with reported values is a serious flaw.\n    c. Safety Environment, UDRA Trust Calibration: Table 2 reports 0.023 (positive). Calculations from `results.json` yield approx -0.013. This contradicts the paper's claim that calibration 'flips from negative to positive'.\n4. Data File Inconsistencies: The `results.json` for the safety environment (180 episodes) contains 20 trust calibration entries, but should have 18 if calculated every 10 episodes as per `run_experiments.py`.\nThese issues suggest significant problems with the experimental reporting and potentially the reliability of the conclusions drawn."
+    },
+    "Significance": {
+        "score": 4,
+        "justification": "The paper addresses the important and timely problem of human-AI alignment, particularly focusing on dynamic, bidirectional interaction. The proposed UDRA framework, with its emphasis on AI uncertainty to guide human feedback and co-adaptation of AI policy and user model, has the potential for significant impact if proven effective and sound. However, the current empirical validation is severely undermined by the soundness issues identified. The inconsistencies between reported results and the provided experimental data, along with methodological discrepancies, make it difficult to assess the true impact of the contributions. If these critical flaws were resolved and the claimed benefits robustly demonstrated and accurately reported, the work could be significant. As it stands, the significance of the *demonstrated* contributions is limited."
+    },
+    "Overall": {
+        "score": 3,
+        "strengths": [
+            "Addresses an important and relevant problem in human-AI interaction: bidirectional alignment.",
+            "The conceptual framework of UDRA, particularly leveraging AI uncertainty to guide human feedback for co-adaptation, is promising.",
+            "The experimental design includes relevant metrics like trust calibration and considers different environment types."
+        ],
+        "weaknesses": [
+            "Critical discrepancies between the described methodology in the paper (reward function definition, RL algorithm type) and the provided code implementation.",
+            "Key experimental results reported in the paper are not reproducible from or are inconsistent with the provided `results.json` data. Most notably, the UDRA trust calibration for the resource environment is reported as 0.12 in the paper but is NaN in the `results.json` data, suggesting this result is unreliable or fabricated.",
+            "The paper's formulation of the alignment reward component (using true w) appears theoretically flawed for an agent learning w.",
+            "The abstract makes claims about performance (e.g., 'requiring fewer human corrections over time') that are not consistently supported across both experimental environments as per the paper's own tables."
+        ]
+    },
+    "Confidence": 5
+}

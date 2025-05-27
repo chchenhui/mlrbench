@@ -1,0 +1,33 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-written and structured in a logical manner. The authors clearly articulate the problem of data attribution in foundation models and present their proposed solution (GIF) with appropriate technical details. The methodology is explained in a step-by-step fashion with mathematical formulations that are easy to follow. Figures and tables effectively illustrate the results. However, there are some areas that could be improved: (1) The explanation of the LiSSA algorithm in Section 3.3 assumes familiarity with influence functions and could benefit from more intuitive explanation; (2) The paper doesn't clearly explain how the probe network is trained or how the pseudo-labels are generated via k-means; (3) Some technical terms (e.g., 'matrix-free HVP') are used without sufficient explanation."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper presents a novel approach to foundation model attribution by combining static embeddings with gradient-based signatures and using a two-stage pipeline with ANN indexing and influence-based refinement. The integration of these techniques for the specific purpose of attribution is innovative. The authors acknowledge building upon existing work (influence functions, TRAK, TRACE) but extend these approaches in meaningful ways. The fingerprinting approach that combines static embeddings with gradient signatures appears to be a new contribution, as is the specific application of LiSSA for refinement in this context. However, many of the individual components (ANN indexing, influence functions, gradient-based approaches) have been explored in prior work, and the paper represents an incremental rather than revolutionary advance."
+    },
+    "Soundness": {
+        "score": 4,
+        "justification": "There are several significant issues with the experimental methodology and evaluation that raise concerns about the soundness of the paper: (1) The experiments are conducted on a very small synthetic dataset (500 samples) rather than real-world data, which severely limits the generalizability of the results; (2) The code reveals that the experiments failed to run successfully, with errors in the implementation; (3) The paper claims scalability to 10^7-10^8 samples but only tests on 500 samples; (4) The baseline implementations appear to be simplified versions that may not represent the state-of-the-art performance of these methods; (5) The paper doesn't provide details on how the synthetic test data was generated or whether it realistically represents the challenges of attribution in real foundation models; (6) The figures in the paper appear to be placeholder visualizations rather than results from actual experiments (as evidenced by the generate_placeholder_figures.py script in the code). These issues significantly undermine the reliability of the reported results."
+    },
+    "Significance": {
+        "score": 5,
+        "justification": "The problem of data attribution in foundation models is important and relevant to the workshop's focus on data problems. If the method worked as claimed, it would provide valuable capabilities for IP protection, auditing, and model debugging. The reported performance metrics (83.3% Precision@1, 0.871 MRR, 45.3 ms latency) would represent a significant improvement over baselines. However, the significance is substantially diminished by the soundness issues. The lack of evaluation on real-world data at scale means that the practical impact of the method remains unproven. The paper discusses potential applications but doesn't demonstrate them with concrete examples. The method addresses an important problem, but without reliable experimental validation on realistic data, its actual significance to the field is limited."
+    },
+    "Overall": {
+        "score": 4,
+        "strengths": [
+            "The paper addresses an important problem (data attribution in foundation models) with clear applications in IP protection, auditing, and model debugging",
+            "The proposed two-stage approach combining fingerprinting with influence-based refinement is conceptually sound and well-motivated",
+            "The paper is generally well-written and structured, with clear explanations of the methodology"
+        ],
+        "weaknesses": [
+            "The experimental evaluation is conducted on a tiny synthetic dataset (500 samples) rather than real-world data at scale, severely limiting the validity of the claims",
+            "The code reveals that the experiments failed to run successfully, suggesting the results presented may be placeholders rather than actual experimental outcomes",
+            "The paper claims scalability to 10^7-10^8 samples but only tests on 500 samples, leaving the central claim unverified",
+            "The baseline implementations appear to be simplified versions that may not represent the true performance of these methods"
+        ]
+    },
+    "Confidence": 4
+}

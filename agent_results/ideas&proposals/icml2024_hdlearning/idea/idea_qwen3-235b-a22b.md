@@ -1,0 +1,9 @@
+1. **Title**: **Dynamic Kernel Alignment in Scaling Infinitely Wide Neural Networks: Bridging Feature Learning and Linearized Regimes**  
+   
+2. **Motivation**: Modern neural network scaling (width/depth) significantly alters learning dynamics: small models learn features flexibly, while infinitely wide ones reduce to fixed-kernel linear models (NTK). This disconnect hinders optimal scaling, as real-world success relies on balancing adaptive feature learning and stable optimization. Existing frameworks treat these regimes separately, leading to ambiguous design choices. Addressing this gap can improve training efficiency, generalization, and architectural design for large-scale models.  
+
+3. **Main Idea**: Propose a **meta-kernel framework** to analytically characterize the transition from feature learning to linearized regimes as width increases. By deriving a dynamical kernel that evolves during training, we bake in optimizer-induced inductive biases (e.g., SGD’s preference for low-rank solutions). The framework predicts width-depth trade-offs for downstream performance and identifies critical scaling thresholds where adaptive feature modulation emerges. We validate this by:  
+   - Linking spectral properties of the evolving kernel to generalization on real data.  
+   - Using kernel-based probes to adaptively regularize diverging dynamical modes during training.  
+   - Simulating phase transitions in learning behavior across architectures via finite-width corrections.  
+   This unifies scaling theory with optimization dynamics, offering principled guidance for resource allocation and adaptive scaling in large models, with implications for continual learning and compositional reasoning.

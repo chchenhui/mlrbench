@@ -1,0 +1,5 @@
+**Title:** Rapid and Verifiable Unlearning for LLMs via Targeted Model Editing
+
+**Motivation:** LLMs may memorize sensitive data or generate undesirable content (e.g., biased, harmful). Retraining is computationally prohibitive, while existing unlearning methods often lack speed or robust verification, making it hard to ensure compliance with privacy regulations or safety standards.
+
+**Main Idea:** We propose an efficient unlearning framework leveraging targeted model editing techniques (e.g., Rank-One Model Editing). Instead of full retraining, we identify and modify the minimal set of model parameters responsible for encoding the specific information to be forgotten (e.g., a specific fact, a toxic association). Crucially, the framework integrates a verification module using specifically designed adversarial probes and influence function analysis to quantitatively certify that the target information is inaccessible post-unlearning, without significantly degrading general model performance. Expected outcomes include a significantly faster unlearning process with strong evidence of successful removal, improving LLM trustworthiness and facilitating compliance.

@@ -1,0 +1,8 @@
+1. **Title**:  
+**Dynamic Cross-Modal Graph Networks for Video-Language Understanding**  
+
+2. **Motivation**:  
+Multimodal integration in video-language models (VLMs) remains a critical challenge, as current systems often concatenate features naively or use shallow fusion methods that neglect temporal and semantic interactions across modalities. This limits applications like robotics, where precise alignment of audio-visual cues with language is essential. Existing approaches struggle to model hierarchical relationships (e.g., how sounds correlate with moving objects or textual descriptions at varying time scales).  
+
+3. **Main Idea**:  
+We propose **Dynamic Cross-Modal Graph Networks (DCM-GN)**, a novel framework that constructs adaptive graphs to model interactions across audio, visual, and textual modalities at both frame-level and sequence-level. Each modality is first encoded by modality-specific transformers. Then, dynamic graph modules dynamically learn edges between modalities (e.g., linking a speech segment to relevant visual objects) and enforce temporal consistency via graph smoothing. A cross-modal contrastive loss aligns heterogeneous representations in a shared space, while a hierarchical graph pooling mechanism captures long-term dependencies. To address efficiency, sparse attention prunes redundant edges during graph construction. Experiments will focus on video question answering and retrieval benchmarks (e.g., ActivityNet, EgoHands) where multimodal reasoning is vital. Expected outcomes include improved accuracy and robustness on long-form videos, with applications in intelligent content creation and accessibility tools. This approach could redefine how VLMs handle complex, multimodal sequences at scale.

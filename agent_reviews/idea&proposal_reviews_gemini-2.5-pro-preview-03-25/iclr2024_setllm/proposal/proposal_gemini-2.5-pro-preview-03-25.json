@@ -1,0 +1,41 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description (Workshop on Secure and Trustworthy LLMs, focusing on reliability and fact verification/hallucination), the research idea (proactive detection via internal confidence calibration), and the literature review (citing relevant works on internal states, calibration, contrastive learning). It directly addresses the workshop's themes, elaborates the core idea into a detailed plan, and grounds its methodology firmly in the provided literature, referencing specific papers like Beigi et al. (2024) for internal state analysis and Gekhman et al. (2023) for data generation strategies. The objectives and significance explicitly connect to the goal of enhancing LLM trustworthiness."
+    },
+    "Clarity": {
+        "score": 9,
+        "justification": "The proposal is crystal clear and very well-defined. It follows a logical structure (Introduction, Objectives, Methodology, Expected Outcomes/Impact, References). The research objectives are specific, measurable, achievable, relevant, and time-bound (implicitly). The methodology section provides a detailed breakdown of data collection, feature extraction, the contrastive learning setup (including the loss function), the inference mechanism, and a comprehensive experimental design. The rationale and significance are articulated concisely and persuasively. While minor implementation details (e.g., specific pooling methods) are left for exploration, the overall approach is immediately understandable with minimal ambiguity."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal demonstrates notable originality by combining existing concepts in a new way. While using internal states for confidence/hallucination detection (Beigi et al., Su et al.) and applying contrastive learning (Beigi et al., Li et al. 2025) are present in the literature, this proposal focuses specifically on using supervised contrastive learning to train a *calibrated confidence score* derived from internal states for *proactive, real-time flagging* during generation. This specific combination and application – fine-tuning the LLM and a confidence head jointly via contrastive loss on factual/hallucinated pairs to enable proactive flagging – distinguishes it from purely unsupervised methods (Su et al.), post-hoc consistency checks (Lyu et al.), or prompt-guided approaches (Zhang et al. 2024). It's not entirely groundbreaking, as Beigi et al. also use contrastive learning on internal states, but the specific framing for proactive flagging and calibration adds a layer of novelty."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal is sound and mostly rigorous. It builds upon solid theoretical foundations discussed in the literature review regarding LLM internal states and contrastive learning. The proposed methodology is well-justified: data generation strategies are plausible, the choice of internal signals is informed by prior work, the contrastive loss function is appropriate for discriminating between factual and hallucinated states, and the joint optimization approach is standard. The experimental design is comprehensive, including relevant baselines and metrics for detection, calibration, quality, and efficiency. Technical formulations (loss function) are correct. The main assumption – that internal states reliably encode factuality distinguishable via contrastive learning – is plausible but remains an empirical question, representing a standard research risk rather than a fundamental flaw."
+    },
+    "Feasibility": {
+        "score": 8,
+        "justification": "The proposal is largely feasible with current resources and technology. It relies on publicly available LLMs (Llama, Mistral) and standard fine-tuning techniques. The required datasets (TruthfulQA, FEVER) are accessible, although generating high-quality contrastive pairs (factual vs. hallucinated) will require significant effort (computational generation and filtering, potentially some annotation). Extracting internal states and implementing contrastive learning are standard practices. The computational resources for fine-tuning are substantial but typical for LLM research. The primary risks involve the potential difficulty in generating diverse hallucinated data and the empirical effectiveness of the core method, but these are research challenges rather than insurmountable feasibility barriers."
+    },
+    "Significance": {
+        "score": 9,
+        "justification": "The proposal addresses a highly significant and critical problem in contemporary AI: the tendency of LLMs to hallucinate. Improving LLM factuality and trustworthiness is paramount for their safe and effective deployment. This research has the potential for substantial impact by offering a proactive, potentially more efficient mechanism for hallucination detection compared to post-hoc methods. Success would lead to more reliable LLMs, increased user trust through transparent confidence signaling, and reduced propagation of misinformation. The work directly contributes to the goals of the workshop and the broader field of trustworthy AI, advancing understanding of LLM internals and calibration."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Strong alignment with the task, idea, and literature.",
+            "High clarity in objectives, methodology, and evaluation plan.",
+            "Addresses a critical and highly significant problem (LLM hallucination).",
+            "Sound methodological approach combining relevant techniques.",
+            "Comprehensive evaluation strategy against strong baselines."
+        ],
+        "weaknesses": [
+            "Novelty is good but relies on combining existing components rather than introducing a fundamentally new technique.",
+            "Success hinges on the empirical effectiveness of using internal states contrastively for factuality, which carries inherent research risk.",
+            "Data generation for contrastive pairs might be challenging and resource-intensive."
+        ]
+    }
+}

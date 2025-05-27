@@ -1,0 +1,5 @@
+**Title:** Adversarially Trained Watermarks for Enhanced GenAI Robustness
+
+**Motivation:** Current GenAI watermarks often exhibit brittleness against simple transformations or dedicated removal attacks, compromising their reliability for tracing content provenance. Strengthening watermark resilience against such adversarial manipulations is crucial for effective AI governance and mitigating misuse.
+
+**Main Idea:** We propose an end-to-end adversarial training framework for generative model watermarking. This involves jointly optimizing the watermark embedding and detection networks alongside an adversary network. The adversary's goal is to remove the watermark from the generated output (e.g., image, text) with minimal perceptual distortion, simulating real-world attacks like compression, noise addition, or paraphrasing. The embedder/detector learns to embed watermarks that are inherently robust to the manipulations learned by the adversary. We expect this approach to significantly improve watermark survival rates against a diverse set of known and unknown attacks, leading to more trustworthy watermarking systems for practical deployment.

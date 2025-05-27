@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal aligns exceptionally well with the task description, research idea, and literature review. It directly addresses the 'Reconciling Optimization Theory with Deep Learning Practice' topic from the task description, focusing specifically on the Edge of Stability phenomenon mentioned as a key area of interest. The proposal builds upon the literature review's findings about EoS dynamics (Cohen et al., 2021; Arora et al., 2022) and incorporates continuous-time approximations of gradient dynamics (Wang & Sirignano, 2022; Lugosi & Nualart, 2024). The methodology section clearly outlines how the research will bridge theory and practice through a hybrid theoretical-empirical approach, exactly as suggested in the research idea. The only minor inconsistency is that while the task description mentions several other topics like generalization and foundation models, the proposal maintains a tight focus on optimization theory, which is appropriate but somewhat narrower than the full scope of the workshop."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is very well-structured and articulated with clear objectives, methodology, and expected outcomes. The introduction effectively establishes the problem context and significance. The methodology section provides detailed mathematical formulations for the proposed approach, including the SDE model, curvature estimation technique, and adaptive optimization algorithm. The experimental design is well-specified with appropriate baselines, datasets, models, and metrics. However, there are a few areas that could benefit from additional clarity: (1) The exact mechanism for how the proposed noise modulation will interact with the learning rate adaptation could be more precisely defined; (2) The relationship between the continuous-time SDE model and the discrete update rule could be more explicitly connected; and (3) Some technical terms (e.g., 'quasi-stationary distributions') are used without sufficient explanation for readers who may not be familiar with the specific terminology."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal demonstrates notable originality in several aspects. The integration of curvature-aware learning rate adaptation with noise modulation specifically designed for the EoS regime represents a fresh approach not fully explored in the cited literature. The proposed EoS-Ada optimizer with its dual adaptation mechanism (learning rate and noise scale) offers a novel perspective on how to leverage rather than avoid the EoS phenomenon. The continuous-time modeling of discrete gradient updates with explicit consideration of gradient noise and curvature also provides a valuable theoretical framework. However, the core components build upon existing work: adaptive learning rates based on curvature estimates have been explored in various forms, and the use of SDEs to model optimization dynamics has precedent in the literature. The proposal combines these elements in a new way rather than introducing fundamentally new concepts, which is why it scores well but not at the highest level of novelty."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal demonstrates strong technical foundations and rigor. The mathematical formulations are correct and well-presented, particularly the SDE model for gradient dynamics and the randomized Neumann series approximation for curvature estimation. The connection to existing literature is thorough, with appropriate citations to foundational work on EoS (Cohen et al., 2021; Arora et al., 2022) and continuous-time optimization (Wang & Sirignano, 2022; Lugosi & Nualart, 2024). The experimental design includes appropriate baselines, diverse datasets/models, and relevant metrics for comprehensive evaluation. The statistical validation plan with multiple trials and ablation studies reflects good scientific practice. The main limitation is that while the proposal outlines plans for theoretical analysis (phase-plane and Lyapunov analysis), it doesn't provide preliminary results or detailed proof sketches to establish the feasibility of obtaining the claimed theoretical contributions. Additionally, the assumption that EoS dynamics can be effectively controlled through the proposed adaptation mechanisms would benefit from stronger theoretical justification."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal presents a largely feasible research plan with some implementation challenges. The curvature estimation technique using randomized Neumann series approximation provides a computationally efficient approach, reducing complexity from O(d²) to O(kd), which is crucial for large-scale models. The experimental design with specific models and datasets is realistic and well-defined. However, several aspects present moderate feasibility concerns: (1) Computing even approximate Hessian eigenvalues for trillion-parameter models would still be computationally intensive, potentially offsetting some of the claimed efficiency gains; (2) The phase-plane and Lyapunov analyses of the coupled dynamics may prove mathematically challenging for complex non-convex landscapes; (3) The proposed 2-3x speedup is ambitious and may require significant hyperparameter tuning of α, β, and γ to achieve across different architectures; (4) The experimental validation on large models like GPT-3 would require substantial computational resources. While these challenges don't render the proposal infeasible, they do suggest that some scope adjustment or additional resource planning may be necessary."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a critical problem in modern machine learning: the disconnect between optimization theory and the empirical success of large learning rates in deep learning practice. This aligns perfectly with the workshop's focus on bridging theory and practice. The potential impact is substantial in several ways: (1) Theoretical contributions would advance our understanding of the EoS phenomenon, filling a significant gap in optimization theory; (2) The proposed EoS-Ada optimizer could significantly reduce computational costs for training large models, addressing environmental and economic challenges in AI development; (3) The framework could replace heuristic tuning with principled approaches, democratizing access to state-of-the-art model development. The claimed 2-3x speedup in training, if achieved, would have immediate practical value for researchers and industry practitioners working with large-scale models. While the proposal focuses primarily on optimization rather than addressing other important aspects of modern ML (like generalization or emergent capabilities), its potential impact within its scope is considerable."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Addresses a fundamental gap between optimization theory and deep learning practice that is highly relevant to the workshop's focus",
+            "Proposes a novel adaptive optimization approach that leverages rather than avoids the Edge of Stability phenomenon",
+            "Provides a mathematically rigorous framework using continuous-time approximations of gradient dynamics",
+            "Includes a comprehensive experimental design with appropriate baselines and evaluation metrics",
+            "Has potential for significant practical impact by reducing computational costs of training large models"
+        ],
+        "weaknesses": [
+            "The computational overhead of curvature estimation may partially offset efficiency gains in very large models",
+            "Lacks preliminary results or detailed proof sketches to establish feasibility of theoretical contributions",
+            "The claimed 2-3x speedup is ambitious and may require significant hyperparameter tuning to achieve consistently",
+            "Focuses narrowly on optimization aspects while not addressing other workshop topics like generalization or foundation model theory"
+        ]
+    }
+}

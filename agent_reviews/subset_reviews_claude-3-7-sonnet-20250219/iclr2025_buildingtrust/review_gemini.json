@@ -1,0 +1,36 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-structured and generally clear in its presentation. The authors provide a comprehensive explanation of their Concept-Graph methodology, including the three main phases: LLM internal state probing, concept identification and mapping, and Concept-Graph construction. The methodology section (Section 4) is particularly detailed, with clear explanations of each component. The paper includes helpful visualizations (Figures 1-5) that illustrate the approach and results. However, there are some areas where clarity could be improved, such as more detailed explanations of how the mapping between internal states and human-understandable concepts is validated, and clearer distinctions between the proposed method and existing concept-based explanation approaches."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper presents a novel approach to LLM explainability by focusing on concept-level reasoning chains rather than token-level attributions. The Concept-Graph method bridges a gap in existing explainability techniques by providing a higher-level, more interpretable view of an LLM's reasoning process. The authors position their work well within the existing literature, acknowledging related approaches like concept-based explanations while highlighting their unique contribution of structuring concepts as a graph to represent sequential reasoning chains. However, some components of the methodology build directly on existing techniques (e.g., using PCA and clustering for concept discovery, leveraging attention patterns for edge formation), which somewhat limits the novelty. The integration of LLM-aided concept labeling is interesting but not entirely new in the explainability literature."
+    },
+    "Soundness": {
+        "score": 5,
+        "justification": "There are several concerns regarding the soundness of the paper. First, while the code is provided, the run_log.txt shows that the experiment failed with an import error, suggesting implementation issues. Second, the experimental setup is limited to only 10 samples per dataset due to 'computational considerations,' which is a very small sample size for drawing meaningful conclusions. Third, the figures in the paper appear to be artificially created rather than generated from actual experimental results - the visualizations in the code repository (create_example_visualizations.py) generate sample visualizations that match those in the paper, suggesting they may be mock-ups rather than real results. Fourth, the paper lacks rigorous evaluation of whether the concept graphs truly represent the LLM's internal reasoning process - there's no validation that the identified concepts actually correspond to the model's internal representations. The metrics used (graph properties like number of nodes/edges) don't necessarily measure explanation quality. Finally, the paper references several works from 2025 (e.g., Arras et al., 2025; Chen et al., 2025), which raises questions about the authenticity of the citations."
+    },
+    "Significance": {
+        "score": 6,
+        "justification": "The paper addresses an important problem in LLM explainability - providing more interpretable explanations of reasoning chains. If the approach works as claimed, it could significantly improve our understanding of how LLMs reason through complex problems, which is valuable for building trust and enabling better debugging. The method is evaluated on three diverse reasoning datasets (GSM8K, HotpotQA, and StrategyQA), showing its potential applicability across different reasoning tasks. However, the significance is limited by several factors: the small sample size used in experiments, the lack of user studies to validate that the explanations are actually more helpful to humans, and the absence of clear evidence that the method can be used for practical applications like debugging or improving LLMs. The paper also doesn't demonstrate that the approach scales to larger models or more complex reasoning tasks."
+    },
+    "Overall": {
+        "score": 5,
+        "strengths": [
+            "The paper proposes a novel concept-level approach to LLM explainability that could provide more interpretable insights than token-level methods",
+            "The methodology is well-described with a clear three-phase approach to extract, map, and structure concepts from LLM internal states",
+            "The approach is evaluated on three different reasoning datasets, showing potential versatility",
+            "The paper includes detailed visualizations that effectively illustrate the concept graph approach"
+        ],
+        "weaknesses": [
+            "The experimental validation is limited to only 10 samples per dataset, which is insufficient for robust conclusions",
+            "There are strong indications that the visualizations and results may be artificially created rather than derived from actual experiments",
+            "The code implementation appears to have issues, as evidenced by the run_log.txt showing execution failures",
+            "The paper lacks validation that the extracted concepts and their relationships actually correspond to the LLM's internal reasoning process",
+            "Several citations reference papers from 2025, raising concerns about the authenticity of the literature review",
+            "There's no human evaluation to verify that the concept graphs are actually more interpretable or useful than baseline methods"
+        ]
+    },
+    "Confidence": 4
+}

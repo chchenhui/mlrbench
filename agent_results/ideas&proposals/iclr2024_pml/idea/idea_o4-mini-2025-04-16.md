@@ -1,0 +1,7 @@
+Title: Regulation-Sensitive Dynamic Differential Privacy for Federated Learning
+
+Motivation:  
+Standard differential privacy (DP) treats all data dimensions with a uniform privacy budget, leading to unnecessary utility loss on benign features or under-protection of sensitive attributes. Meanwhile, GDPR and other regulations classify data fields by risk level. Aligning noise injection with regulatory sensitivity can maximize model performance while ensuring compliance.
+
+Main Idea:  
+We propose a federated learning framework that (1) automatically tags features by legal/regulatory sensitivity using metadata and lightweight NLP classifiers; (2) dynamically allocates per-feature or per-group ε-budgets based on these sensitivity scores and a global privacy target; (3) injects noise via a secure aggregator enforcing the tailored budgets; and (4) produces an immutable audit log for each training round to enable third-party verification. We will evaluate on healthcare and financial datasets, demonstrating up to 30% utility gain versus uniform DP under equal total privacy cost, and show end-to-end compliance with GDPR’s data-minimization and accountability clauses. This approach drives practical adoption of privacy-preserving federated learning by balancing legal requirements, transparency, and model accuracy.

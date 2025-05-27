@@ -1,0 +1,192 @@
+2025-05-07 19:20:05,540 - __main__ - INFO - Starting UAD experiments with model=small, dataset=squad
+2025-05-07 19:20:05,542 - experiment - INFO - Using device: cuda
+2025-05-07 19:20:05,542 - experiment - INFO - Loading model distilgpt2
+2025-05-07 19:20:11,511 - experiment - INFO - Added 1 special tokens to the tokenizer
+2025-05-07 19:20:12,679 - huggingface_hub.file_download - WARNING - Xet Storage is enabled for this repo, but the 'hf_xet' package is not installed. Falling back to regular HTTP download. For better performance, install the package with: `pip install huggingface_hub[hf_xet]` or `pip install hf_xet`
+2025-05-07 19:20:44,608 - experiment - INFO - Loading dataset squad
+2025-05-07 19:20:55,623 - __main__ - ERROR - Error during experiment: Asking to pad but the tokenizer does not have a padding token. Please select a token to use as `pad_token` `(tokenizer.pad_token = tokenizer.eos_token e.g.)` or add a new pad token via `tokenizer.add_special_tokens({'pad_token': '[PAD]'})`.
+Traceback (most recent call last):
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_question/claude_code/main.py", line 89, in main
+    experiment = Experiment(
+                 ^^^^^^^^^^^
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_question/claude_code/experiment.py", line 114, in __init__
+    self.dataset = self.data_processor.preprocess_dataset(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_question/claude_code/data.py", line 167, in preprocess_dataset
+    return self.preprocess_squad(dataset, max_samples=max_samples)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_question/claude_code/data.py", line 74, in preprocess_squad
+    encoded_questions = self.tokenizer(
+                        ^^^^^^^^^^^^^^^
+  File "/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/site-packages/transformers/tokenization_utils_base.py", line 2940, in __call__
+    encodings = self._call_one(text=text, text_pair=text_pair, **all_kwargs)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/site-packages/transformers/tokenization_utils_base.py", line 3028, in _call_one
+    return self.batch_encode_plus(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/site-packages/transformers/tokenization_utils_base.py", line 3220, in batch_encode_plus
+    padding_strategy, truncation_strategy, max_length, kwargs = self._get_padding_truncation_strategies(
+                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/site-packages/transformers/tokenization_utils_base.py", line 2842, in _get_padding_truncation_strategies
+    raise ValueError(
+ValueError: Asking to pad but the tokenizer does not have a padding token. Please select a token to use as `pad_token` `(tokenizer.pad_token = tokenizer.eos_token e.g.)` or add a new pad token via `tokenizer.add_special_tokens({'pad_token': '[PAD]'})`.
+2025-05-07 19:21:50,355 - __main__ - INFO - Starting UAD experiments with model=small, dataset=squad
+2025-05-07 19:21:50,356 - experiment - INFO - Using device: cuda
+2025-05-07 19:21:50,357 - experiment - INFO - Loading model distilgpt2
+2025-05-07 19:21:51,496 - experiment - INFO - Set pad_token to eos_token
+2025-05-07 19:21:51,496 - experiment - INFO - Added 1 special tokens to the tokenizer
+2025-05-07 19:21:53,136 - experiment - INFO - Loading dataset squad
+2025-05-07 19:22:01,694 - absl - INFO - Using default tokenizer.
+2025-05-07 19:22:03,784 - __main__ - INFO - Running experiments
+2025-05-07 19:22:03,784 - experiment - INFO - Running experiment: baseline
+2025-05-07 19:22:03,784 - experiment - INFO - Generating text using baseline
+2025-05-07 19:22:03,805 - experiment - INFO - Evaluating results for baseline
+2025-05-07 19:22:04,687 - experiment - INFO - Experiment baseline completed in 0.90 seconds
+2025-05-07 19:22:04,688 - experiment - INFO - Results: {'bleu': 0.0, 'rouge1': np.float64(0.006666666666666667), 'rouge2': np.float64(0.0), 'rougeL': np.float64(0.006666666666666667), 'hallucination_rate': np.float64(1.0), 'perplexity': 45426.078125}
+2025-05-07 19:22:04,688 - experiment - INFO - Running experiment: uad_entropy
+2025-05-07 19:22:04,688 - __main__ - ERROR - Error during experiment: UncertaintyEstimator.__init__() got an unexpected keyword argument 'num_samples'
+Traceback (most recent call last):
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_question/claude_code/main.py", line 98, in main
+    results = experiment.run_all_experiments()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_question/claude_code/experiment.py", line 266, in run_all_experiments
+    results[experiment_name] = self.run_experiment(experiment_name, experiment_config)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_question/claude_code/experiment.py", line 172, in run_experiment
+    uncertainty_estimator = get_uncertainty_estimator(
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_question/claude_code/uncertainty.py", line 230, in get_uncertainty_estimator
+    return EntropyEstimator(model, tokenizer, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: UncertaintyEstimator.__init__() got an unexpected keyword argument 'num_samples'
+2025-05-07 19:22:27,053 - __main__ - INFO - Starting UAD experiments with model=small, dataset=squad
+2025-05-07 19:22:27,055 - experiment - INFO - Using device: cuda
+2025-05-07 19:22:27,055 - experiment - INFO - Loading model distilgpt2
+2025-05-07 19:22:28,238 - experiment - INFO - Set pad_token to eos_token
+2025-05-07 19:22:28,239 - experiment - INFO - Added 1 special tokens to the tokenizer
+2025-05-07 19:22:29,635 - experiment - INFO - Loading dataset squad
+2025-05-07 19:22:37,045 - absl - INFO - Using default tokenizer.
+2025-05-07 19:22:38,585 - __main__ - INFO - Running experiments
+2025-05-07 19:22:38,585 - experiment - INFO - Running experiment: baseline
+2025-05-07 19:22:38,585 - experiment - INFO - Generating text using baseline
+2025-05-07 19:22:38,604 - experiment - INFO - Evaluating results for baseline
+2025-05-07 19:22:39,467 - experiment - INFO - Experiment baseline completed in 0.88 seconds
+2025-05-07 19:22:39,467 - experiment - INFO - Results: {'bleu': 0.0, 'rouge1': np.float64(0.006666666666666667), 'rouge2': np.float64(0.0), 'rougeL': np.float64(0.006666666666666667), 'hallucination_rate': np.float64(1.0), 'perplexity': 45426.078125}
+2025-05-07 19:22:39,467 - experiment - INFO - Running experiment: uad_entropy
+2025-05-07 19:22:39,467 - experiment - INFO - Generating text using uad_entropy
+2025-05-07 19:22:39,472 - experiment - INFO - Evaluating results for uad_entropy
+2025-05-07 19:22:39,807 - experiment - INFO - Experiment uad_entropy completed in 0.34 seconds
+2025-05-07 19:22:39,807 - experiment - INFO - Results: {'bleu': 0.0, 'rouge1': np.float64(0.006666666666666667), 'rouge2': np.float64(0.0), 'rougeL': np.float64(0.006666666666666667), 'hallucination_rate': np.float64(1.0), 'perplexity': 45426.078125}
+2025-05-07 19:22:39,807 - __main__ - INFO - Visualizing results
+2025-05-07 19:22:39,807 - experiment - INFO - Visualizing results
+2025-05-07 19:22:40,499 - __main__ - ERROR - Error during experiment: need at least one array to concatenate
+Traceback (most recent call last):
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_question/claude_code/main.py", line 102, in main
+    visualizations = experiment.visualize_results(results)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_question/claude_code/experiment.py", line 313, in visualize_results
+    uncertainties[name] = np.concatenate([u.flatten() for u in result["uncertainties"]])
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: need at least one array to concatenate
+2025-05-07 19:23:20,528 - __main__ - INFO - Starting UAD experiments with model=small, dataset=squad
+2025-05-07 19:23:20,530 - experiment - INFO - Using device: cuda
+2025-05-07 19:23:20,530 - experiment - INFO - Loading model distilgpt2
+2025-05-07 19:23:21,895 - experiment - INFO - Set pad_token to eos_token
+2025-05-07 19:23:21,896 - experiment - INFO - Added 1 special tokens to the tokenizer
+2025-05-07 19:23:23,284 - experiment - INFO - Loading dataset squad
+2025-05-07 19:23:30,825 - absl - INFO - Using default tokenizer.
+2025-05-07 19:23:32,387 - __main__ - INFO - Running experiments
+2025-05-07 19:23:32,387 - experiment - INFO - Running experiment: baseline
+2025-05-07 19:23:32,387 - experiment - INFO - Generating text using baseline
+2025-05-07 19:23:32,406 - experiment - INFO - Evaluating results for baseline
+2025-05-07 19:23:33,385 - experiment - INFO - Experiment baseline completed in 1.00 seconds
+2025-05-07 19:23:33,385 - experiment - INFO - Results: {'bleu': 0.0, 'rouge1': np.float64(0.006666666666666667), 'rouge2': np.float64(0.0), 'rougeL': np.float64(0.006666666666666667), 'hallucination_rate': np.float64(1.0), 'perplexity': 45426.078125}
+2025-05-07 19:23:33,385 - experiment - INFO - Running experiment: uad_entropy
+2025-05-07 19:23:33,385 - experiment - INFO - Generating text using uad_entropy
+2025-05-07 19:23:33,675 - experiment - INFO - Evaluating results for uad_entropy
+2025-05-07 19:23:34,010 - experiment - INFO - Experiment uad_entropy completed in 0.63 seconds
+2025-05-07 19:23:34,010 - experiment - INFO - Results: {'bleu': 0.0, 'rouge1': np.float64(0.006666666666666667), 'rouge2': np.float64(0.0), 'rougeL': np.float64(0.006666666666666667), 'hallucination_rate': np.float64(1.0), 'perplexity': 45426.078125}
+2025-05-07 19:23:34,010 - __main__ - INFO - Visualizing results
+2025-05-07 19:23:34,010 - experiment - INFO - Visualizing results
+2025-05-07 19:23:35,153 - experiment - INFO - Generated 10 figures
+2025-05-07 19:23:35,153 - __main__ - INFO - Saving results
+2025-05-07 19:23:35,153 - __main__ - ERROR - Error during experiment: Object of type Tensor is not JSON serializable
+Traceback (most recent call last):
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_question/claude_code/main.py", line 106, in main
+    experiment.save_results(results)
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_question/claude_code/experiment.py", line 372, in save_results
+    return self.visualizer.save_results_to_json(results, file_name=file_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_question/claude_code/visualization.py", line 434, in save_results_to_json
+    json.dump(results_converted, f, indent=4)
+  File "/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/json/__init__.py", line 179, in dump
+    for chunk in iterable:
+                 ^^^^^^^^
+  File "/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/json/encoder.py", line 432, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/json/encoder.py", line 439, in _iterencode
+    o = _default(o)
+        ^^^^^^^^^^^
+  File "/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type Tensor is not JSON serializable
+2025-05-07 19:24:01,183 - __main__ - INFO - Starting UAD experiments with model=small, dataset=squad
+2025-05-07 19:24:01,184 - experiment - INFO - Using device: cuda
+2025-05-07 19:24:01,184 - experiment - INFO - Loading model distilgpt2
+2025-05-07 19:24:02,333 - experiment - INFO - Set pad_token to eos_token
+2025-05-07 19:24:02,333 - experiment - INFO - Added 1 special tokens to the tokenizer
+2025-05-07 19:24:03,717 - experiment - INFO - Loading dataset squad
+2025-05-07 19:24:11,650 - absl - INFO - Using default tokenizer.
+2025-05-07 19:24:13,215 - __main__ - INFO - Running experiments
+2025-05-07 19:24:13,215 - experiment - INFO - Running experiment: baseline
+2025-05-07 19:24:13,216 - experiment - INFO - Generating text using baseline
+2025-05-07 19:24:13,234 - experiment - INFO - Evaluating results for baseline
+2025-05-07 19:24:14,133 - experiment - INFO - Experiment baseline completed in 0.92 seconds
+2025-05-07 19:24:14,133 - experiment - INFO - Results: {'bleu': 0.0, 'rouge1': np.float64(0.006666666666666667), 'rouge2': np.float64(0.0), 'rougeL': np.float64(0.006666666666666667), 'hallucination_rate': np.float64(1.0), 'perplexity': 45426.078125}
+2025-05-07 19:24:14,133 - experiment - INFO - Running experiment: uad_entropy
+2025-05-07 19:24:14,133 - experiment - INFO - Generating text using uad_entropy
+2025-05-07 19:24:14,428 - experiment - INFO - Evaluating results for uad_entropy
+2025-05-07 19:24:14,763 - experiment - INFO - Experiment uad_entropy completed in 0.63 seconds
+2025-05-07 19:24:14,763 - experiment - INFO - Results: {'bleu': 0.0, 'rouge1': np.float64(0.006666666666666667), 'rouge2': np.float64(0.0), 'rougeL': np.float64(0.006666666666666667), 'hallucination_rate': np.float64(1.0), 'perplexity': 45426.078125}
+2025-05-07 19:24:14,763 - __main__ - INFO - Visualizing results
+2025-05-07 19:24:14,764 - experiment - INFO - Visualizing results
+2025-05-07 19:24:15,907 - experiment - INFO - Generated 10 figures
+2025-05-07 19:24:15,907 - __main__ - INFO - Saving results
+2025-05-07 19:24:15,907 - __main__ - INFO - Generating report
+2025-05-07 19:24:15,907 - experiment - INFO - Generating Markdown report
+2025-05-07 19:24:15,908 - experiment - INFO - Markdown report saved to results/results.md
+2025-05-07 19:24:15,908 - __main__ - INFO - Organizing results
+2025-05-07 19:24:15,909 - __main__ - INFO - Results organized in claude_exp2/iclr2025_question/results
+2025-05-07 19:24:15,909 - __main__ - INFO - Experiments completed in 14.73 seconds
+2025-05-07 19:25:01,667 - __main__ - INFO - Starting UAD experiments with model=small, dataset=squad
+2025-05-07 19:25:01,669 - experiment - INFO - Using device: cuda
+2025-05-07 19:25:01,669 - experiment - INFO - Loading model distilgpt2
+2025-05-07 19:25:02,838 - experiment - INFO - Set pad_token to eos_token
+2025-05-07 19:25:02,838 - experiment - INFO - Added 1 special tokens to the tokenizer
+2025-05-07 19:25:04,218 - experiment - INFO - Loading dataset squad
+2025-05-07 19:25:11,791 - absl - INFO - Using default tokenizer.
+2025-05-07 19:25:13,690 - __main__ - INFO - Running experiments
+2025-05-07 19:25:13,691 - experiment - INFO - Running experiment: baseline
+2025-05-07 19:25:13,691 - experiment - INFO - Generating text using baseline
+2025-05-07 19:25:13,710 - experiment - INFO - Evaluating results for baseline
+2025-05-07 19:25:14,685 - experiment - INFO - Experiment baseline completed in 0.99 seconds
+2025-05-07 19:25:14,685 - experiment - INFO - Results: {'bleu': 0.0, 'rouge1': np.float64(0.006666666666666667), 'rouge2': np.float64(0.0), 'rougeL': np.float64(0.006666666666666667), 'hallucination_rate': np.float64(1.0), 'perplexity': 45426.078125}
+2025-05-07 19:25:14,685 - experiment - INFO - Running experiment: uad_entropy
+2025-05-07 19:25:14,685 - experiment - INFO - Generating text using uad_entropy
+2025-05-07 19:25:14,975 - experiment - INFO - Evaluating results for uad_entropy
+2025-05-07 19:25:15,311 - experiment - INFO - Experiment uad_entropy completed in 0.63 seconds
+2025-05-07 19:25:15,311 - experiment - INFO - Results: {'bleu': 0.0, 'rouge1': np.float64(0.006666666666666667), 'rouge2': np.float64(0.0), 'rougeL': np.float64(0.006666666666666667), 'hallucination_rate': np.float64(1.0), 'perplexity': 45426.078125}
+2025-05-07 19:25:15,311 - __main__ - INFO - Visualizing results
+2025-05-07 19:25:15,311 - experiment - INFO - Visualizing results
+2025-05-07 19:25:16,463 - experiment - INFO - Generated 10 figures
+2025-05-07 19:25:16,463 - __main__ - INFO - Saving results
+2025-05-07 19:25:16,463 - __main__ - INFO - Generating report
+2025-05-07 19:25:16,463 - experiment - INFO - Generating Markdown report
+2025-05-07 19:25:16,464 - experiment - INFO - Markdown report saved to results/results.md
+2025-05-07 19:25:16,464 - __main__ - INFO - Organizing results
+2025-05-07 19:25:16,465 - __main__ - INFO - Results organized in claude_exp2/iclr2025_question/results
+2025-05-07 19:25:16,465 - __main__ - INFO - Experiments completed in 14.80 seconds

@@ -1,0 +1,43 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal aligns exceptionally well with the task description, research idea, and literature review. It directly addresses the workshop's focus on 'training, fine-tuning, and personalizing (foundation) models in federated settings' and 'scalable and robust federated machine learning systems.' The proposal builds upon the literature review, citing and extending works like SLoRA, FeDeRA, FedMCP, and FedPEAT. It addresses the key challenges identified in the literature review, particularly data heterogeneity, resource constraints, and efficient communication. The mathematical formulation is consistent with the PEFT approaches discussed in the literature. The only minor inconsistency is that while the proposal mentions privacy preservation through DP-SGD, it could have more explicitly connected to the 'differential privacy in federated settings' aspect of the workshop task."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is well-structured and clearly articulated. The introduction effectively establishes the problem context and motivation. The methodology section provides a detailed mathematical formulation of the approach, including model and PEFT modules, client updates, aggregation with heterogeneity, and adaptive module allocation. The experimental design is comprehensive, with well-defined benchmarks, baselines, and evaluation metrics. However, there are a few areas that could benefit from additional clarity: (1) The exact mechanism for how the server determines the optimal PEFT configuration for each client could be more detailed, (2) The convergence analysis is mentioned but the details are deferred to an appendix that isn't provided, and (3) The privacy preservation section could elaborate more on how the DP-SGD approach specifically interacts with the heterogeneous PEFT modules."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal demonstrates notable originality by introducing several novel components: (1) Adaptive allocation of PEFT module structures based on client resource profiles and data characteristics, (2) Novel aggregation algorithms for federated low-rank/sparse updates that handle heterogeneity of PEFT structures, and (3) Theoretical convergence analysis under realistic assumptions. While the core idea of applying PEFT to federated learning isn't entirely new (as evidenced by SLoRA, FeDeRA, FedMCP, and other works in the literature review), FedPEFT extends these approaches by focusing on device heterogeneity and adaptive module allocation. The zero-padding approach for aggregating heterogeneous PEFT structures is innovative, though not revolutionary. The proposal could have strengthened its novelty by more clearly differentiating its technical approach from existing works like FedPEAT and the 2022 paper with the same name (FedPEFT)."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal is technically sound and well-founded. The mathematical formulation is rigorous, with clear definitions of the model parameters, client updates, and aggregation mechanisms. The convergence analysis, though details are deferred to an appendix, provides a theoretical foundation for the approach. The experimental design is comprehensive, with appropriate benchmarks, baselines, and evaluation metrics. The proposal acknowledges and addresses key challenges in federated learning, such as data heterogeneity, device heterogeneity, and privacy preservation. The adaptive module allocation is formulated as a constrained optimization problem, which is mathematically sound. The integration of DP-SGD for privacy preservation is well-justified. The only minor weakness is that some of the claims about performance improvements (e.g., '5-20× lower communication and 10× lower on-device compute') would benefit from more detailed justification or preliminary results."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal is largely feasible with existing technology and methods. The use of established PEFT techniques (LoRA, adapters) and federated learning frameworks (Flower, FedML) provides a solid foundation for implementation. The experimental design is realistic, using standard benchmarks and metrics. The adaptive module allocation, while complex, can be implemented using existing optimization techniques. However, there are some implementation challenges: (1) The optimization problem for adaptive module allocation may be computationally intensive, especially for large numbers of clients, (2) The convergence guarantees may not hold in practice due to the simplifying assumptions, and (3) The privacy-utility trade-off with DP-SGD may be more severe than anticipated. Additionally, the proposal doesn't fully address how the system would handle client dropouts or new clients joining mid-training, which is a common challenge in real-world federated learning deployments."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a significant problem in the field of federated learning: enabling efficient fine-tuning of large foundation models on resource-constrained devices. This has important implications for privacy-preserving AI, as it allows sensitive data to remain on local devices while still benefiting from state-of-the-art models. The expected outcomes—5-20× lower communication costs and 10× lower on-device compute—would represent a substantial improvement over current approaches. The broader impact section effectively articulates how FedPEFT advances privacy-preserving AI, supports regulatory compliance, and democratizes access to advanced AI on edge devices. The proposal aligns well with the workshop's focus on bridging the gap between theoretical research and practical applications of federated learning. The significance is somewhat limited by the fact that similar approaches (SLoRA, FeDeRA, FedMCP) already exist, though FedPEFT's focus on device heterogeneity and adaptive module allocation does address important practical challenges not fully solved by existing methods."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Addresses a significant practical challenge in federated learning with foundation models",
+            "Provides a comprehensive mathematical formulation with theoretical convergence guarantees",
+            "Introduces novel adaptive PEFT module allocation based on client resources and data characteristics",
+            "Proposes innovative aggregation methods for heterogeneous PEFT structures",
+            "Well-designed experimental evaluation with appropriate benchmarks and baselines"
+        ],
+        "weaknesses": [
+            "Some overlap with existing approaches like SLoRA, FeDeRA, and the 2022 FedPEFT paper",
+            "Details of the adaptive module allocation algorithm could be more specific",
+            "Convergence analysis relies on assumptions that may not hold in practice",
+            "Limited discussion of how to handle dynamic client participation",
+            "Performance claims would benefit from preliminary results or more detailed justification"
+        ]
+    }
+}

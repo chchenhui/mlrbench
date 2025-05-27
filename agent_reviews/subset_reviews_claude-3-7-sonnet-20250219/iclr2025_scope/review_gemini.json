@@ -1,0 +1,37 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-structured and clearly written, with a logical flow from introduction to conclusion. The authors effectively articulate the problem of efficient continual adaptation of foundation models and present their MeLPA framework in a comprehensible manner. The methodology section (Section 4) provides a detailed explanation of the framework's components and how they interact. The experimental setup and results are generally well-presented with supporting figures and tables. However, there are some inconsistencies between the reported metrics in the text and those shown in figures/tables (e.g., MeLPA's average accuracy is reported as 70.23% in Table 1 but appears higher in Figure 2), which slightly reduces clarity. Additionally, the paper would benefit from more detailed explanations of certain technical aspects, such as how the meta-learned update mechanism specifically helps mitigate catastrophic forgetting."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "MeLPA introduces a novel approach by combining meta-learning with parameter-efficient adapters for continual learning. The key innovation lies in meta-learning both the initialization strategy and update dynamics for adapter modules, which distinguishes it from prior work that typically focuses on only one of these aspects. The authors position their work well within the existing literature, acknowledging related approaches like MAML, Reptile, OMLA, and MPT while highlighting MeLPA's unique contributions. However, the core technical components (adapters, meta-learning for initialization, gradient-based meta-learning) are largely built upon existing techniques rather than introducing fundamentally new algorithms. The paper's novelty is in the specific combination and application of these techniques to the problem of continual adaptation of foundation models, rather than in developing entirely new methods."
+    },
+    "Soundness": {
+        "score": 6,
+        "justification": "The paper presents a theoretically sound approach with a well-defined methodology. However, there are several issues that affect the overall soundness. First, there are inconsistencies in the reported results - Table 1 shows MeLPA with the lowest average accuracy (70.23%) but best backward transfer (-1.98%), while Figure 2 and the ablation study in Figure 7 show different values. Second, the experimental evaluation uses DistilBERT on text classification tasks, which is a reasonable but limited test of the method's capabilities. Third, the code implementation reveals potential issues - the run_log.txt shows multiple failed execution attempts with errors like 'module name can't contain \".\", got: adapter_controllers.fallback_adapter.adapters.__temp_adapter__.down.weight' and 'TypeError: TransformerWithAdapters.forward() got an unexpected keyword argument 'input_ids'', suggesting implementation challenges that aren't addressed in the paper. Finally, the paper doesn't include statistical significance tests or error bars for the reported metrics, making it difficult to assess the reliability of the performance differences between methods."
+    },
+    "Significance": {
+        "score": 7,
+        "justification": "The paper addresses an important problem in the field of foundation models: how to efficiently adapt these models to new tasks or user data streams without catastrophic forgetting. This is particularly relevant given the growing deployment of foundation models in real-world applications. MeLPA's approach of meta-learning both initialization and update rules for adapters offers a promising direction for efficient continual learning. The experimental results demonstrate improvements in backward transfer (reduced forgetting) and adaptation speed compared to baseline methods. The parameter efficiency of the approach (using only adapter modules) makes it practical for resource-constrained settings. However, the significance is somewhat limited by the scope of experiments (text classification only, using DistilBERT rather than larger state-of-the-art models) and the inconsistencies in reported results. The paper acknowledges these limitations and suggests appropriate future work directions, which adds to its credibility."
+    },
+    "Overall": {
+        "score": 7,
+        "justification": "This is a good paper that introduces a novel approach to an important problem in the field. The MeLPA framework is well-motivated and clearly explained, with experimental results that generally support its effectiveness for continual learning. The combination of meta-learning with parameter-efficient adapters is a valuable contribution that could influence future work in this area. However, the inconsistencies in reported results, limited experimental scope, and implementation issues revealed in the code reduce confidence in the paper's conclusions. The overall score reflects the paper's strong conceptual contribution and promising results, balanced against these limitations.",
+        "strengths": [
+            "Novel combination of meta-learning for both initialization and update mechanisms in adapter-based continual learning",
+            "Clear problem formulation and well-structured presentation of the MeLPA framework",
+            "Demonstrated improvements in backward transfer (reduced forgetting) compared to baseline methods",
+            "Significant speed advantage in adaptation to new tasks, as shown in the adaptation speed comparison",
+            "Parameter-efficient approach that maintains the benefits of adapter-based methods"
+        ],
+        "weaknesses": [
+            "Inconsistencies between reported metrics in the text, tables, and figures, creating confusion about the actual performance",
+            "Limited experimental evaluation using only text classification tasks and DistilBERT, rather than more diverse tasks or larger models",
+            "Implementation issues revealed in the code that aren't addressed in the paper",
+            "Lack of statistical significance testing or error bars for the reported metrics",
+            "Insufficient explanation of how the meta-learned update mechanism specifically contributes to mitigating catastrophic forgetting"
+        ]
+    },
+    "Confidence": 4
+}

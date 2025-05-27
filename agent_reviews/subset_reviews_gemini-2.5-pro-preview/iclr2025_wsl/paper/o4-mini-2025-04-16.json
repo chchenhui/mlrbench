@@ -1,0 +1,33 @@
+{
+    "Consistency": {
+        "score": 6,
+        "justification": "The paper generally aligns with the research idea, proposal's core methodology, and the task description of exploring neural network weights as a new data modality with symmetries. The experimental results presented in the paper are consistent with the separate experimental results document. However, there are notable inconsistencies: 1) The dataset size (94 models) is drastically smaller than what was outlined in the research proposal (55,000 models), impacting the scope. 2) The abstract claims '+50% few-shot finetuning improvement', while the results in Section 5.2 and analysis in Section 6 suggest a ~2x (or ~100%) improvement, making the abstract's claim an underselling inconsistency. 3) Contribution 1 claims 'exact channel-permutation and scaling equivariance', but Section 3.2 details permutation equivariance while only stating edge features 'aid scale invariance', which is not 'exact scaling equivariance' by the GNN architecture itself. This contradicts a core claim. 4) A minor inconsistency exists in the number of scientific INR models (8 in abstract/Sec 4.1 vs. 10 in experimental results doc dataset stats)."
+    },
+    "Clarity": {
+        "score": 7,
+        "justification": "The paper is mostly well-written, with a logical structure (Abstract, Introduction, Related Work, Methodology, Experiments, Analysis, Conclusion) that is generally easy to follow. Arguments for the method are presented coherently. The methodology for weight-to-graph conversion and the contrastive learning objective are clear. The GNN encoder description is understandable for those familiar with GNNs. However, clarity could be improved in a few areas: 1) The mechanism for achieving 'exact scaling equivariance' as claimed in Contribution 1 is not clearly explained or justified in Section 3; it only mentions edge features 'aiding' it. 2) The proposed Appendix A from the research proposal, which was intended to provide theoretical justification for equivariance claims, is missing from the paper, reducing clarity on the theoretical underpinnings. 3) The use of reference [1] for 'task-agnostic accuracy abstraction' when the cited paper's title is 'Geometric Flow Models over Neural Network Weights' could be confusing without further explanation."
+    },
+    "Completeness": {
+        "score": 5,
+        "justification": "The paper addresses the core research idea of using permutation-equivariant GNNs with contrastive learning for model retrieval. It covers many aspects of the research proposal, including the general methodology and evaluation metrics. However, it suffers from significant incompleteness: 1) The experimental validation is performed on a dataset of 94 models, which is a drastic reduction from the 55,000 models proposed, severely limiting the scope and generalizability. 2) The theoretical justification for equivariance, specifically the 'Appendix A' and 'novel bounds' mentioned as key technical contributions in the research proposal, are entirely missing from the paper. 3) One of the baselines proposed ('Task-Driven Embeddings / Supervised hypernetwork approaches') is not included in the experimental comparison. 4) The paper's conclusion is very brief and lacks a dedicated discussion of limitations, although the separate experimental results document includes one. 5) Details on handling heterogeneous architectures (e.g., 'meta-wrapper generation' from proposal) are not provided."
+    },
+    "Soundness": {
+        "score": 5,
+        "justification": "The fundamental idea of leveraging symmetries in weight space for model retrieval is sound, and the proposed GNN-based contrastive learning approach is plausible. The experimental results, on the limited dataset, show consistent outperformance of the proposed method. However, there are significant soundness concerns: 1) The most critical issue is the claim of 'exact ... scaling equivariance' (Contribution 1). Section 3 does not provide a convincing mechanism for this within the GNN architecture itself, stating only that edge features 'aid scale invariance'. Without the proposed theoretical appendix, this core claim is unsubstantiated. 2) The experimental validation on only 94 models is insufficient to draw robust conclusions about the method's effectiveness and generalization to large-scale, real-world model zoos. The statistical power of such a small dataset is low. 3) The reliance on a 'task-agnostic accuracy abstraction' cited from a future-dated paper ([1] Erdogan, 2025) for a part of the loss function could be a weakness if this abstraction is not yet well-established or validated. The title of reference [1] also seems mismatched with its use for 'accuracy abstraction'."
+    },
+    "OverallAssessment": {
+        "score": 6,
+        "strengths": [
+            "Addresses an important and relevant problem of model retrieval from large repositories by treating weights as a data modality.",
+            "Proposes a novel approach using permutation-equivariant GNNs and contrastive learning, specifically tailored to weight space symmetries.",
+            "Demonstrates strong empirical performance compared to baselines across multiple metrics (retrieval, transfer, robustness, clustering) on the conducted experiments.",
+            "The paper is generally well-structured and clearly written, making the core ideas accessible."
+        ],
+        "weaknesses": [
+            "The experimental evaluation is conducted on a very small dataset (94 models), which significantly limits the generalizability and reliability of the findings, especially compared to the scale envisioned in the research proposal.",
+            "A key claim of achieving 'exact ... scaling equivariance' is not adequately substantiated in the methodology section of the paper, and the crucial theoretical appendix promised in the proposal is missing.",
+            "The dataset size is a major scale-down from the research proposal, affecting the perceived ambition and impact of the presented work.",
+            "The abstract contains a numerical inconsistency regarding few-shot finetuning improvement that undersells the reported results."
+        ]
+    }
+}

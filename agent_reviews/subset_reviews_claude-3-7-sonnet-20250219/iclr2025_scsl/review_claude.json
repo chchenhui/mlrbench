@@ -1,0 +1,34 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is generally well-written with a clear structure and logical flow. The introduction effectively establishes the problem of shortcut learning in multi-modal models and motivates the proposed solution. The methodology section provides a detailed explanation of the three key components of CIMRL: contrastive invariance mechanism, modality disentanglement, and intervention-based fine-tuning. The experimental setup is clearly described, including the synthetic dataset creation with controlled spurious correlations. However, there are some areas that could be improved: (1) the mathematical formulations in Section 3.2-3.4 could benefit from more intuitive explanations of why these approaches help identify causal vs. spurious features, and (2) the discussion of results in Section 5 could more clearly explain the unexpected finding that the baseline slightly outperformed CIMRL on out-of-distribution data."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper presents a novel framework (CIMRL) that combines three techniques to address shortcut learning in multi-modal models without requiring explicit annotation of spurious features. While each individual component (contrastive learning, feature disentanglement, and intervention-based fine-tuning) builds upon existing methods, their integration into a unified framework specifically designed for multi-modal shortcut learning is novel. The paper extends causal representation learning approaches to multi-modal settings, which is a valuable contribution. However, the novelty is somewhat limited by the fact that the core techniques are adaptations of existing methods rather than fundamentally new approaches, and the experimental validation is primarily on synthetic data rather than demonstrating effectiveness on challenging real-world datasets."
+    },
+    "Soundness": {
+        "score": 5,
+        "justification": "There are significant concerns about the soundness of the paper. The experimental results do not convincingly demonstrate the effectiveness of the proposed CIMRL framework. According to Table 1 and the accompanying figures, the baseline model actually outperformed CIMRL on out-of-distribution accuracy (0.992 vs. 0.988) and worst-group accuracy (0.991 vs. 0.983), which contradicts the paper's claims about CIMRL's superior robustness. The authors acknowledge this unexpected result in Section 5.1 but don't provide a convincing explanation. Additionally, the experimental evaluation is limited to synthetic data with simplified spurious correlations, which may not capture the complexity of real-world scenarios. The code implementation appears consistent with the paper's description, but the experimental results don't support the paper's claims about CIMRL's effectiveness in mitigating shortcut learning compared to baseline approaches."
+    },
+    "Significance": {
+        "score": 6,
+        "justification": "The problem of shortcut learning in multi-modal models is important and addressing it without requiring explicit annotation of spurious features would be significant. The paper proposes a framework that could potentially impact various applications including medical diagnosis, autonomous systems, and content moderation. However, the actual significance is limited by the experimental results, which fail to demonstrate that CIMRL outperforms baseline approaches. The paper only evaluates on synthetic data rather than established real-world benchmarks known to contain spurious correlations (like Waterbirds or MultiModal CelebA). The authors acknowledge these limitations in Section 6.2, noting that future work should evaluate CIMRL on real-world datasets. Without evidence of effectiveness on real-world problems, the current significance of the contribution is moderate."
+    },
+    "Overall": {
+        "score": 6,
+        "strengths": [
+            "The paper addresses an important problem (shortcut learning in multi-modal models) and proposes a solution that doesn't require explicit annotation of spurious features",
+            "The proposed CIMRL framework integrates three complementary approaches (contrastive invariance, modality disentanglement, and intervention-based fine-tuning) in a principled way",
+            "The paper provides a clear explanation of the methodology and implementation details",
+            "The synthetic dataset with controlled spurious correlations allows for systematic evaluation of the approach"
+        ],
+        "weaknesses": [
+            "The experimental results contradict the paper's claims, with the baseline model outperforming CIMRL on out-of-distribution data",
+            "The evaluation is limited to synthetic data rather than real-world benchmarks, limiting the evidence for practical effectiveness",
+            "The paper doesn't provide a convincing explanation for why CIMRL underperformed compared to the baseline",
+            "The implementation of the intervention-based fine-tuning component is not clearly demonstrated in the experiments"
+        ]
+    },
+    "Confidence": 4
+}

@@ -1,0 +1,7 @@
+Title: Adaptive Code Assistant via Implicit Developer Feedback
+
+Motivation: 
+Developers often wrestle with generic code suggestions that fail to match personal coding style or project conventions, leading to wasted time on edits and context-switching. An adaptive assistant that learns from implicit feedback could streamline workflows, boost productivity, and improve human–AI collaboration in software development.
+
+Main Idea:
+We propose embedding a lightweight IDE plugin that continuously captures implicit signals—edit distance from suggestions, acceptance/rejection rates, cursor dwell time, and inline comment modifications—to construct a personalized user profile in real time. Using these signals as rewards in a reinforcement-learning framework, the underlying code-generation model undergoes post-training alignment, optimizing for each developer’s unique style and task context. Methodology steps include (1) defining an MDP where states encode local code context plus user profile embeddings, (2) designing a reward function based on the collected implicit signals, and (3) iteratively fine-tuning a pre-trained transformer via proximal policy optimization. Expected outcomes are reduced editing overhead, higher suggestion acceptance rates, and measurable productivity gains. This approach fosters seamless human–AI interaction and paves the way for personalized, context-aware programming assistants.

@@ -1,0 +1,7 @@
+### Title: "Enhancing Embodied AI Perception with Multi-modal Foundation Models"
+
+### Motivation:
+Embodied AI agents, which interact with the physical world through sensors and actuators, require robust perception and decision-making capabilities. Multi-modal Foundation Models (MFM) offer a promising avenue to enhance these capabilities by integrating diverse sensory inputs and complex reasoning. However, the current integration of MFMs into embodied AI systems is limited, and there is a need for a more comprehensive understanding of how to effectively leverage these models to improve the performance of embodied agents.
+
+### Main Idea:
+This research aims to develop a framework that integrates Multi-modal Foundation Models (MFM) with Embodied AI agents to enhance their perception and decision-making capabilities. The proposed methodology involves training MFMs on multi-modal datasets that simulate real-world scenarios, designing a robust system architecture for MFM-powered embodied agents, and implementing a balance between high-level decision-making and low-level control. The expected outcome is a more perceptive and efficient embodied AI agent that can adapt to open-ended environments and complex tasks. Potential impacts include improved performance in robotics, autonomous vehicles, and other applications where Embodied AI is crucial.

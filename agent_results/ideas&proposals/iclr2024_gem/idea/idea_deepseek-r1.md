@@ -1,0 +1,9 @@
+**Title:** Adaptive Generative-Discriminative Synergy for Efficient Biomolecular Design  
+
+**Motivation:** Traditional biomolecular design relies on iterative trial-and-error experimentation, which is costly and slow. While generative ML models can propose novel designs, they often lack feedback from real-world experiments, limiting practical utility. Closing the loop between computational predictions and wet lab validation is critical to prioritize high-potential candidates and reduce experimental overhead.  
+
+**Main Idea:** This research proposes a co-training framework where a *generative model* (e.g., diffusion model or VAE) proposes candidate biomolecules, and a *discriminative model* predicts their functional properties. Key novelty lies in incorporating active learning to prioritize candidates for synthesis and testing based on uncertainty, diversity, and predicted performance. Experimental results then iteratively refine both models: the generative model learns from successful candidates, while the discriminative model improves property prediction. The workflow integrates high-throughput screening data to update model parameters adaptively.  
+
+**Expected Outcomes:** The framework will reduce experimental cycles by >50% compared to brute-force approaches, validated via case studies (e.g., enzyme optimization or antibody design). Benchmarks will quantify gains in success rate and resource efficiency.  
+
+**Potential Impact:** This approach bridges the ML-experimental gap, enabling faster translation of generative designs into real-world solutions for therapeutics, biomanufacturing, or environmental bioremediation. It also establishes a replicable paradigm for adaptive bio-design with open-sourced models and protocols.

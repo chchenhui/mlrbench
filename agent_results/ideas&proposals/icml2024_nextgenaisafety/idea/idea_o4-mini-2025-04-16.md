@@ -1,0 +1,7 @@
+Title: Dynamic Risk-Adaptive Filtering for Dangerous-Capability Queries
+
+Motivation  
+As AI systems grow more knowledgeable, they risk inadvertently disclosing instructions for harmful applications (e.g., bioweapon design, cyber-attack methods). Rigid blocking strategies can over-restrict benign research, while permissive policies may allow dangerous disclosures. A flexible, context-aware defense is needed to balance safety with legitimate utility.
+
+Main Idea  
+We propose a two-stage “Risk-Adaptive Filter” that intercepts user queries before generation. Stage 1 applies a learned risk classifier—trained on a curated threat taxonomy and augmented with adversarial examples—to assign a continuous risk score to each query. Stage 2 enforces a dynamic policy: low-risk queries proceed normally; medium-risk queries trigger safe-completion templates that omit sensitive steps but offer high-level guidance; high-risk queries elicit a refusal with an optional redirection to verified expert resources. Policies are fine-tuned via reinforcement learning from human feedback and regularly updated against emerging threat patterns. We will evaluate on a benchmark of simulated dangerous requests, measuring false-negative rates, user satisfaction, and overall utility. This approach aims to minimize misuse potential while preserving constructive research access.

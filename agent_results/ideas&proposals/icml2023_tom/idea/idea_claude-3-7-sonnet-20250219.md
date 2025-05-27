@@ -1,0 +1,7 @@
+# Recursive Theory of Mind Modeling for Improved Human-AI Collaboration
+
+## Motivation
+While current AI systems can engage in conversations, they often lack true understanding of human intentions, beliefs, and knowledge gaps—fundamental aspects of Theory of Mind (ToM). This limitation creates friction in human-AI collaboration, where systems frequently misinterpret user needs or fail to adapt communication based on the human's mental state. Developing AI systems with recursive ToM modeling capabilities would allow them to reason about what humans know, what humans think the AI knows, and how to bridge these understanding gaps efficiently.
+
+## Main Idea
+We propose a framework that equips AI systems with multi-level ToM reasoning abilities through a recursive mental state tracking architecture. The system would maintain and update belief models about the human collaborator's knowledge, goals, and expectations while simultaneously modeling what the human likely believes about the AI's capabilities and knowledge. This recursive modeling would enable the AI to adjust its explanations, identify potential misunderstandings before they occur, and provide information at appropriate levels of detail. The methodology combines Bayesian belief updating with transformer-based language models that are explicitly trained to predict and reason about mental state discrepancies. Expected outcomes include measurably improved task completion rates, reduced frustration in human-AI interactions, and more efficient knowledge transfer between humans and AI systems.

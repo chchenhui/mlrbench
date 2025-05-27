@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the workshop's focus on 'model behavior attribution' by developing a framework (ConceptMapper) that ties model behavior to controllable factors. The proposal incorporates the literature's key challenges, particularly addressing dataset dependence (Ramaswamy et al., 2022), concept learnability (Marconato et al., 2023), and scalability issues with existing frameworks like ConceptDistil and ConLUX. The methodology clearly builds upon and extends prior work in concept-based interpretability while maintaining focus on the core idea of mapping latent concepts to human-interpretable ones. The proposal comprehensively covers all aspects of the task, from data attribution to subcomponent analysis and algorithmic auditing."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is well-structured and articulated with clear objectives, methodology, and expected outcomes. The technical approach is presented with appropriate mathematical formulations that define the clustering, concept correlation, and intervention processes. The experimental design includes specific baselines, evaluation metrics, and ablation studies. The visualization framework and deliverables are also well-defined. However, there are a few areas that could benefit from additional clarity: (1) the exact mechanism for tracking concept transformations across models (widthwise) is mentioned but not fully elaborated, (2) the details of how the curated concept dataset will be constructed could be more specific, and (3) the relationship between the concept transition matrices and the path mining algorithm could be more explicitly connected."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal offers notable originality by combining activation clustering with concept attribution in a unified framework. While individual components like clustering activations or concept correlation have been explored in prior work (e.g., ConceptDistil, ConLUX), the integration of these approaches with concept transformation modeling and intervention identification represents a fresh perspective. The proposal's emphasis on tracking concept pathways through neural network layers and its scalability to large models (100B+ parameters) extends beyond existing approaches. However, the core techniques (GMMs for clustering, mutual information for concept correlation) are established methods rather than entirely new innovations. The proposal builds incrementally on existing concept-based interpretability frameworks rather than introducing a fundamentally new paradigm."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal demonstrates strong technical foundations and methodological rigor. The mathematical formulations for activation clustering, concept-cluster correlation, and intervention identification are well-defined and theoretically sound. The use of Gaussian Mixture Models with BIC for cluster selection and mutual information for concept correlation are appropriate statistical approaches. The experimental design includes comprehensive evaluation metrics and ablation studies to validate the framework's effectiveness. The comparison with established baselines (ConceptDistil, ConLUX, TCAV) strengthens the evaluation approach. However, there are some potential theoretical concerns: (1) the assumption that clusters will align with human-interpretable concepts may not always hold, (2) the scalability claims (O(1) complexity) would benefit from more detailed justification, and (3) the intervention approach assumes a direct causal relationship between concepts and biases that may be more complex in practice."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal presents a largely feasible approach with existing technology and methods, though it will require significant computational resources and careful implementation. The framework's model-agnostic design increases its practical applicability across different architectures. The methodology builds on established techniques (clustering, mutual information) that have proven effective in similar contexts. However, several implementation challenges exist: (1) scaling to 100B+ parameter models will require substantial computational resources and optimization, (2) creating comprehensive concept datasets that cover the breadth of concepts needed for effective mapping is labor-intensive, (3) the proposed human comprehension evaluation with 50+ participants requires significant coordination, and (4) the claim to reduce biases by ≥30% with ≤1% accuracy drop through cluster ablation is ambitious and may be difficult to achieve consistently across different models and biases."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a critical problem in AI interpretability with potentially high impact. By bridging mechanistic and concept-based interpretability, it could significantly advance our understanding of how neural networks process information and make decisions. The ability to attribute model behaviors to specific concepts and subnetworks would enable more targeted interventions for bias mitigation and model improvement. The framework's applications for auditing AI systems, improving data curation, and advancing theoretical understanding of emergent capabilities align well with pressing needs in the field. The open-source toolkit deliverable increases the potential for broad adoption and impact. However, the significance is somewhat limited by the focus on post-hoc interpretability rather than designing inherently interpretable models, and the practical impact will depend on how effectively the concept mappings translate to actionable insights for model developers and users."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Comprehensive framework that bridges mechanistic and concept-based interpretability approaches",
+            "Well-defined mathematical formulations with appropriate statistical techniques",
+            "Addresses key challenges identified in the literature review",
+            "Scalable approach designed to work with large models (100B+ parameters)",
+            "Clear practical applications for bias detection, model improvement, and AI auditing"
+        ],
+        "weaknesses": [
+            "Some ambitious claims about scalability and bias reduction that may be difficult to fully achieve",
+            "Relies on the assumption that activation clusters will align with human-interpretable concepts",
+            "Implementation will require substantial computational resources",
+            "Some methodological details need further elaboration, particularly for cross-model concept mapping"
+        ]
+    }
+}

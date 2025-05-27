@@ -1,0 +1,41 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses key workshop themes like fine-tuning foundation models in federated settings, scalability, handling heterogeneity (device and data), privacy preservation, and bridging theory with practice (theoretical analysis + empirical validation). The proposal accurately reflects the core concepts outlined in the research idea and positions itself clearly within the context of the provided literature, acknowledging prior work while identifying specific gaps (adaptive allocation based on device resources, aggregation of heterogeneous structures) it aims to fill."
+    },
+    "Clarity": {
+        "score": 9,
+        "justification": "The proposal is crystal clear and well-defined. The background, motivation, and research objectives are explicitly stated and easy to understand. The methodology section is logically structured, detailing the system overview, mathematical formulation, adaptive allocation strategy, convergence analysis approach, privacy considerations, and a comprehensive experimental design. The expected outcomes and impact are also clearly articulated. Minor ambiguities exist, such as the exact form of functions f, g, delta in the adaptive allocation, but this level of detail is acceptable for a proposal. Overall, the proposal is highly readable and unambiguous."
+    },
+    "Novelty": {
+        "score": 6,
+        "justification": "The proposal has satisfactory novelty. The core concept of combining Parameter-Efficient Fine-Tuning (PEFT) with Federated Learning (FL) is not new, as evidenced by the literature review (SLoRA, FeDeRA, FedMCP, FedPEAT, Sun et al. 2022, etc.). Sun et al. (2022) even used the name 'FedPEFT'. However, the proposal introduces specific novel elements: 1) An adaptive PEFT allocation mechanism explicitly considering client *device resource profiles* (compute, memory) alongside data characteristics. While personalization exists (e.g., FedP^2EFT), the focus on hardware constraints for allocation is a relevant distinction. 2) Development of aggregation algorithms specifically designed to handle the *heterogeneity of PEFT structures* resulting from this adaptive allocation (mentioning zero-padding and alternatives). While not groundbreaking, these contributions address important practical challenges in the field and offer refinements over existing approaches."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal is sound and mostly rigorous. It builds upon well-established foundations in FL (FedAvg principles), PEFT (LoRA), and differential privacy (DP-SGD). The proposed methodology, including client profiling, adaptive allocation, local optimization with proximal term, and aggregation, is logical. The mathematical formulation for LoRA and the client update is correct. The proposed aggregation method (zero-padding) is simple but acknowledged to have limitations (projection error mentioned in convergence analysis sketch), and alternatives are considered (cluster-based). The convergence analysis plan under standard assumptions is appropriate, although the full proof is not provided. The integration of DP-SGD is standard and correctly reasoned regarding PEFT's low dimensionality."
+    },
+    "Feasibility": {
+        "score": 8,
+        "justification": "The proposal is largely feasible. It leverages existing pre-trained models (BERT, ViT), PEFT techniques (LoRA), and open-source FL frameworks (Flower/FedML). The required computational resources for simulation are standard for FL research. The experimental plan is comprehensive but achievable. Potential challenges include: 1) Designing effective and practical functions for the adaptive allocation optimization problem. 2) The potential inadequacy of simple zero-padding aggregation, possibly requiring the development of more complex methods. 3) The complexity of the convergence analysis with multiple sources of heterogeneity. However, these challenges seem surmountable within a research project context."
+    },
+    "Significance": {
+        "score": 9,
+        "justification": "The proposal is highly significant and impactful. It addresses the critical challenge of efficiently fine-tuning large foundation models in federated settings, particularly on resource-constrained and heterogeneous edge devices. This is a major bottleneck for deploying advanced AI capabilities in a privacy-preserving manner. Success would lead to substantial reductions in communication and computation costs, enabling practical applications in mobile/IoT domains. The focus on heterogeneity, privacy, and providing theoretical guarantees alongside empirical validation makes the potential contribution substantial for both academic research and real-world FL deployments. It strongly aligns with the workshop's goal of fostering research with practical impact."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Addresses a highly significant and practical problem at the intersection of FL, FMs, and PEFT.",
+            "Clear objectives, well-structured methodology, and comprehensive experimental plan.",
+            "Strong alignment with the workshop's themes, particularly bridging theory and practice.",
+            "Explicit focus on handling device heterogeneity via adaptive PEFT allocation and aggregation.",
+            "Includes considerations for privacy (DP) and theoretical analysis (convergence)."
+        ],
+        "weaknesses": [
+            "Novelty is somewhat incremental, as the general idea of PEFT in FL is established in recent literature.",
+            "The proposed zero-padding aggregation method might be too simplistic and could limit performance; more advanced methods may be needed.",
+            "The specific mechanisms for adaptive allocation (optimization functions) require further definition and validation."
+        ]
+    }
+}

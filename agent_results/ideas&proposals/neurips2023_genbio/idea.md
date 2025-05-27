@@ -1,0 +1,8 @@
+**Title:**  
+Graph-Based Generative Modeling for Context-Aware Therapeutic Design Using Protein Interaction Networks  
+
+**Motivation:**  
+Current generative models for drug design often focus on optimizing molecular properties (e.g., binding affinity) in isolation, neglecting the broader biological context of protein interaction networks. This leads to candidates with promising in vitro performance but high failure rates in vivo due to off-target effects or unintended pathway disruptions. Integrating network-level biological knowledge into generative AI could address this gap, enabling context-aware therapeutic design with higher clinical success rates.  
+
+**Main Idea:**  
+Develop a dual-graph generative model that combines molecular graphs (small molecules) and protein-protein interaction (PPI) networks. The model will use a graph variational autoencoder (VGAE) architecture with two encoders: one for molecular structure and another for PPI subgraphs representing biological pathways. A cross-attention mechanism will align learned embeddings to condition molecule generation on pathway-specific constraints. Training data includes paired examples of drugs, their target proteins, and associated PPI subnetworks. Generated molecules will optimize both target binding and minimal off-pathway interference. Expected outcomes include novel therapeutics with improved efficacy and specificity, validated via in silico docking and pathway enrichment analysis. Impact: Accelerated, cost-effective drug discovery with reduced trial-and-error experimentation.

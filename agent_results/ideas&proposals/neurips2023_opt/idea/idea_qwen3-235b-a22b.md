@@ -1,0 +1,12 @@
+1. **Title**: Meta-Optimization for Scalable Machine Learning: Learning Hyperparameter Scaling Laws from Small Models  
+
+2. **Motivation**:  
+Training large-scale models (e.g., LLMs) with optimal hyperparameters is computationally expensive and time-consuming. Current hyperparameter tuning methods (e.g., grid search, Bayesian optimization) independently optimize for each model size, leading to redundant computations and inefficient resource allocation. This work addresses the critical problem of reducing tuning costs while maintaining performance under fixed compute budgets by leveraging **scaling laws**—i.e., identifying generalizable patterns in how optimal hyperparameters (e.g., learning rate, batch size) evolve with model and data size. If solved, this would enable efficient extrapolation from small-scale experiments to large models, drastically saving time, money, and energy.  
+
+3. **Main Idea**:  
+Propose a meta-optimization framework that learns hyperparameter scaling laws from small-scale models to predict optimal settings for large-scale ones. The method involves:  
+- **Meta-Training Phase**: Train multiple smaller proxy models (e.g., 10M-100M parameters) with diverse hyperparameter configurations, logging their optimization dynamics (e.g., gradient noise, convergence speed) and final performance.  
+- **Scaling Law Discovery**: Use regression or neural networks to model the relationship between hyperparameters and model size scaling. Jointly optimize for minimizing loss *and* adhering to budget constraints (e.g., token or energy limits) by learning hyperparameter schedules parameterized by compute availability.  
+- **Extrapolation Across Scales**: Transfer the meta-model to initialize hyperparameters for large models (>100B parameters), fine-tuning them via light online optimization. Validate theoretically by proving that certain hyperparameter scaling rules (e.g., learning rate ∝ model depth) align with non-asymptotic convergence guarantees in nonconvex optimization.  
+
+**Expected Outcomes**: A library of empirically validated scaling laws for hyperparameters actionable across datasets and architectures, plus a lightweight meta-learning pipeline. **Impact**: Enabling efficient, cost-aware training of large models by reusing small-scale experiments, reducing compute/environmental costs by 2–5× while preserving model quality. This bridges meta-learning and optimization scaling, offering a paradigm shift in resource allocation for scalable AI.

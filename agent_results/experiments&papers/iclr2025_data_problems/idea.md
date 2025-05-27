@@ -1,0 +1,7 @@
+Title: InfluenceSpace: Hierarchical Influence–Driven Curation for Multi-Modal Foundation Models
+
+Motivation:  
+The rapid scaling of multi-modal foundation models (FMs) demands massive, heterogeneous datasets, often rife with redundancy, noise, and bias. Traditional curation heuristics fail to quantify each datum’s true effect on downstream performance. Effective pruning and balancing of multi-modal training sets can lower resource costs, accelerate convergence, and improve model robustness.
+
+Main Idea:  
+We propose a two-stage pipeline in which cross-modal embeddings cluster raw data into semantically coherent groups, then compute amortized influence scores per cluster using low-rank Hessian approximations and mini-batch gradient samples. Clusters with negligible or harmful influence are pruned, while underrepresented but high-influence clusters are up-weighted to improve fairness and performance. Iterating this process yields a compact, high-utility training corpus. We will evaluate on vision-language benchmarks, measuring trade-offs between data volume reduction, model accuracy, bias mitigation, and training efficiency. This method offers a scalable, principled framework for data-centric FM development.

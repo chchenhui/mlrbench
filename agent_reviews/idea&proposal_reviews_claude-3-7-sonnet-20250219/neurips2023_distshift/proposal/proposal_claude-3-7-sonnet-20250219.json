@@ -1,0 +1,43 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the workshop's focus on distribution shifts in foundation models, particularly the question of how to adapt models without sacrificing robustness. The dual-teacher knowledge distillation approach with the original foundation model as a 'robustness teacher' perfectly implements the core idea from the research proposal. The methodology incorporates relevant techniques from the literature review, including knowledge distillation (Zhou et al., 2023), parameter-efficient fine-tuning via LoRA (Hu et al., 2021), and builds upon insights from Kumar et al. (2022) regarding feature distortion during fine-tuning. The proposal also acknowledges and extends previous work like WiSE-FT (Wortsman et al., 2021) and Self-Distillation Fine-Tuning (Yang et al., 2024). The comprehensive evaluation protocol addresses the workshop's interest in empirical trends, adaptation challenges, and applications across various domains."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is well-structured and clearly articulated, with a logical flow from problem statement to methodology to expected outcomes. The technical approach is explained in detail with appropriate mathematical formulations for the loss functions, distillation mechanisms, and regularization techniques. The dual-teacher architecture, distribution shift simulation, and robust activation regularization are all well-defined. The training procedure is outlined step-by-step, making implementation feasible. The evaluation protocol is comprehensive and clearly specified. However, there are a few areas that could benefit from additional clarity: (1) the exact mechanism for generating domain-specific transformations could be more precisely defined, (2) the selection criteria for the 'critical layers' in the Robust Activation Regularization could be more explicit, and (3) some hyperparameters (α, λ1, λ2, etc.) would benefit from suggested ranges or initialization strategies."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal offers notable originality through its dual-teacher knowledge distillation framework specifically designed for preserving distributional robustness. While knowledge distillation itself is not new, the specific application to robustness preservation during fine-tuning and the combination of techniques represents a fresh approach. The Robust Activation Regularization (RAR) technique appears to be a novel contribution that explicitly preserves activation patterns from the pre-trained model. The distribution shift simulation strategy that combines multiple approaches (domain-specific transformations, adversarial perturbations, synthetic shifts, and retrieval-based examples) is also innovative. However, several individual components build directly on existing methods: the LoRA architecture follows Hu et al. (2021), the knowledge distillation approach has similarities to Zhou et al. (2023) and Yang et al. (2024), and the model merging technique resembles WiSE-FT (Wortsman et al., 2021). While the integration is novel, many of the building blocks are adapted from prior work."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal demonstrates strong technical soundness with well-justified methodological choices. The mathematical formulations for the loss functions, knowledge distillation approach, and regularization techniques are technically correct and clearly presented. The use of LoRA for parameter-efficient fine-tuning is well-founded in the literature. The dual-teacher architecture is theoretically sound, addressing both task performance and robustness preservation. The distribution shift simulation strategies are comprehensive and well-motivated. The evaluation protocol is rigorous, with appropriate metrics for assessing both in-distribution performance and robustness. The ablation studies are well-designed to isolate the contribution of each component. However, there are some areas that could benefit from stronger theoretical justification: (1) the interaction between the different loss components could be analyzed more deeply, (2) the theoretical guarantees for robustness preservation could be more explicitly stated, and (3) the potential trade-offs between task performance and robustness could be more thoroughly examined."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal is largely feasible with current technology and methods, though it presents some implementation challenges. The use of parameter-efficient fine-tuning via LoRA significantly reduces computational requirements compared to full fine-tuning, making the approach more practical. The knowledge distillation framework builds on established techniques with proven effectiveness. The evaluation protocol uses existing benchmarks and metrics. However, several aspects may present challenges: (1) generating realistic distribution shifts during training requires domain expertise and may be difficult to automate across diverse domains, (2) the dual-teacher approach increases computational requirements during training compared to standard fine-tuning, (3) finding the optimal balance of hyperparameters (α, λ1, λ2, etc.) may require extensive tuning, and (4) the approach requires access to a fully fine-tuned task teacher model, which may be computationally expensive to obtain for very large foundation models. Despite these challenges, the overall approach appears implementable with moderate refinement and optimization."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a critical problem in the deployment of foundation models - the preservation of distributional robustness during fine-tuning. This issue is particularly important for high-stakes applications in healthcare, legal systems, and environmental monitoring where distribution shifts are inevitable and consequential failures unacceptable. The expected outcomes include a significant reduction in the robustness gap (30-50%) while maintaining competitive in-distribution performance, which would represent a substantial advancement. The modality-agnostic nature of the framework increases its potential impact across diverse applications. The parameter-efficient approach makes it accessible to organizations with limited computational resources, potentially democratizing access to robust AI systems. The proposal also contributes to addressing AI fairness by reducing performance disparities across demographic groups. The open-source release of implementations and models would foster further research in this important area. While the impact is potentially substantial, it depends on the actual performance improvements achieved and successful adoption by the research and industry communities."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Addresses a critical challenge in foundation model deployment with significant real-world implications",
+            "Comprehensive technical approach combining multiple effective techniques (knowledge distillation, parameter-efficient fine-tuning, robust regularization)",
+            "Well-designed evaluation protocol that thoroughly assesses both task performance and robustness",
+            "Computationally efficient due to parameter-efficient fine-tuning, making it practical for wider adoption",
+            "Potential broad impact across multiple high-stakes domains (healthcare, legal, environmental monitoring)"
+        ],
+        "weaknesses": [
+            "Some components of the approach build heavily on existing methods with incremental innovations",
+            "Generating realistic distribution shifts during training may be challenging and domain-dependent",
+            "The dual-teacher approach increases computational requirements during training",
+            "Finding optimal hyperparameter balance may require extensive tuning",
+            "Theoretical guarantees for robustness preservation could be more explicitly developed"
+        ]
+    }
+}

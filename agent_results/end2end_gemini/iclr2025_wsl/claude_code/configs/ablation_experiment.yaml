@@ -1,0 +1,77 @@
+# Configuration for ablation experiments
+
+# Extend base configuration
+extends: "base_config.yaml"
+
+# Experiment metadata
+experiment:
+  name: "weightnet_ablations"
+  description: "Ablation studies for WeightNet model"
+
+# Data configuration
+data:
+  canonicalization_method: "weight_sort"  # Test different canonicalization methods
+  tokenization_strategy: "neuron_centric"
+  batch_size: 16
+  synthetic:
+    num_models_per_architecture: 25
+
+# Ablation studies
+ablation:
+  run: true
+  experiments:
+    # Ablation 1: No permutation invariance
+    - name: "no_perm_inv"
+      description: "WeightNet without permutation invariance"
+      model:
+        type: "weightnet"
+        use_permutation_invariance: false
+        num_intra_layer_blocks: 0
+        num_cross_layer_blocks: 4
+      
+    # Ablation 2: Different canonicalization methods
+    - name: "activation_sort"
+      description: "WeightNet with activation-based canonicalization"
+      data:
+        canonicalization_method: "activation_sort"
+      
+    # Ablation 3: No canonicalization
+    - name: "no_canon"
+      description: "WeightNet without canonicalization"
+      data:
+        canonicalization_method: null
+      
+    # Ablation 4: Different tokenization strategies
+    - name: "global_tokenization"
+      description: "WeightNet with global tokenization"
+      data:
+        tokenization_strategy: "global"
+        
+    - name: "layer_tokenization"
+      description: "WeightNet with layer-centric tokenization"
+      data:
+        tokenization_strategy: "layer_centric"
+    
+    # Ablation 5: Model size
+    - name: "small_model"
+      description: "Smaller WeightNet"
+      model:
+        d_model: 128
+        num_intra_layer_heads: 2
+        num_cross_layer_heads: 4
+        num_intra_layer_blocks: 1
+        num_cross_layer_blocks: 1
+        d_ff: 512
+    
+    # Ablation 6: Cross-architecture generalization
+    - name: "cross_arch"
+      description: "Testing cross-architecture generalization"
+      data:
+        split_by_architecture: true
+    
+    # Ablation 7: More attention heads
+    - name: "more_heads"
+      description: "WeightNet with more attention heads"
+      model:
+        num_intra_layer_heads: 8
+        num_cross_layer_heads: 16

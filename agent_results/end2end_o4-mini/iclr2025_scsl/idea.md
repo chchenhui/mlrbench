@@ -1,0 +1,7 @@
+Title: SpurGen – A Synthetic Multimodal Benchmark for Spurious Correlation Detection
+
+Motivation:  
+Current evaluations of vision-language and multimodal models rely on human-annotated group labels or naturally occurring biases, which miss unknown or subtle shortcuts. A synthetic, controllable benchmark can systematically induce spurious signals, enabling rigorous stress-testing and accelerating the development of models that truly learn causal relationships.
+
+Main Idea:  
+We introduce SpurGen, a modular dataset generator that synthesizes paired images and captions with multiple orthogonal spurious channels (e.g., background textures, object colors, sentence templates). For each class, SpurGen assigns one or more spurious attributes at configurable strengths. We then evaluate pretrained and fine-tuned models by (i) measuring performance degradation under spurious-feature shuffling, (ii) computing a “Spurious Sensitivity Score” for each channel, and (iii) quantifying an “Invariance Gap” between controlled and uncontrolled settings. SpurGen also ships evaluation scripts to benchmark robustification strategies such as Invariant Risk Minimization, contrastive augmentation, and adversarial feature debiasing. By extending easily to audio, time series, or graph data, SpurGen establishes a unified, extensible platform for diagnosing and mitigating shortcut learning across modalities.

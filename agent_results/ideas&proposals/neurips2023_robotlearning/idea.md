@@ -1,0 +1,8 @@
+Title: Safe Adapter-Based Fine-Tuning for Vision–Language Robotics
+
+Motivation:  
+Large pre-trained vision–language models unlock rich semantic understanding for high-level planning in robotics but are costly to fine-tune and risky to deploy directly on hardware. We need parameter-efficient adaptation schemes that ensure safe, sample-efficient customization on new tasks and embodiments under limited compute and data constraints.
+
+Main Idea:  
+Introduce lightweight “safety adapters”—small, modular layers inserted into a frozen vision–language backbone. Pre-training: align adapter embeddings to robot state-action pairs via contrastive learning on offline multi-modal logs (RGB–depth images paired with control trajectories). Fine-tuning: update only adapters with a safety-constrained reinforcement learning loop (shielded policy updates, conservative Q-learning) on target hardware, keeping the backbone static. The safety constraints are enforced by a learned critic that vetoes high-risk actions, ensuring safe exploration. This approach requires <5% of total model parameters, drastically cutting compute and data needs.  
+Expected outcomes include rapid adaptation (<1 hour on a single GPU), robust generalization across object categories, and provable safety guarantees during learning. By decoupling semantic reasoning from control adaptation, this method democratizes deployment of large pre-trained models in real-world robotics.

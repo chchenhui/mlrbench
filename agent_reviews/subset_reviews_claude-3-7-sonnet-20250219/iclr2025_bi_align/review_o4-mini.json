@@ -1,0 +1,35 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is generally well-written with a clear structure that follows standard scientific paper organization. The authors effectively articulate the concept of bidirectional human-AI alignment and explain the UDRA framework's components in Section 3 with appropriate mathematical formalism. The methodology is presented systematically with subsections covering problem setting, Bayesian user modeling, multi-objective reinforcement learning, uncertainty estimation, and the HCI interface. However, some aspects could be clearer - for instance, the explanation of the algorithm in Section 3.6 mentions 'Algorithm 1' but doesn't actually present it in the paper. Additionally, while the experimental setup is described, more details on the simulated users would strengthen the clarity."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper introduces a novel framework (UDRA) that combines several existing techniques (Bayesian user modeling, ensemble-based uncertainty estimation, and multi-objective reinforcement learning) in a new way to address bidirectional human-AI alignment. The integration of uncertainty quantification with preference learning and the focus on bidirectional feedback loops represents an incremental but meaningful advance over existing approaches like standard RLHF. The authors position their work well relative to existing literature, citing relevant work by Pyae, Papantonis & Belle, and others. However, while the combination is novel, the individual components largely build on established methods rather than introducing fundamentally new algorithms or theoretical insights."
+    },
+    "Soundness": {
+        "score": 6,
+        "justification": "The paper's theoretical foundation appears sound, with appropriate mathematical formulations for the Bayesian user model and multi-objective reinforcement learning. The experimental methodology includes comparison against a baseline (RLHF) and evaluation across multiple metrics. However, examining the code reveals several issues that affect soundness. The trust calibration plots show very sparse data points (only 4-6 measurements across 200 episodes), making the claimed 155% improvement in trust calibration questionable. The alignment error plots for both environments show high variability without clear convergence patterns. Most concerning is the discrepancy between the paper's reported results and what the code would actually produce - for example, the paper claims UDRA reduces alignment error by 54.5% in the safety environment, but the corresponding plot shows UDRA having higher alignment error than the baseline for many episodes. The code implementation also uses simplified simulated humans rather than real user studies, limiting the ecological validity of the findings."
+    },
+    "Significance": {
+        "score": 7,
+        "justification": "The paper addresses an important problem in AI alignment - how to create dynamic, bidirectional feedback loops between humans and AI systems. This is a significant area given the increasing deployment of AI in complex decision-making contexts. The UDRA framework offers a practical approach to improving human-AI collaboration through uncertainty-driven feedback, which could be valuable for applications in resource allocation and safety-critical domains. The empirical results, if valid, would demonstrate meaningful improvements in alignment and trust calibration. However, the significance is somewhat limited by the use of simplified simulation environments rather than real-world tasks or human studies. The authors acknowledge this limitation and propose future work with human participants, which would strengthen the significance of their findings."
+    },
+    "Overall": {
+        "score": 6,
+        "justification": "The paper presents a novel framework for bidirectional human-AI alignment with some promising results, but has notable limitations in experimental validation and result consistency. The theoretical foundation is sound, but the empirical evidence doesn't fully support all claims made in the paper.",
+        "strengths": [
+            "Well-structured presentation of a novel framework combining Bayesian user modeling, uncertainty estimation, and multi-objective reinforcement learning",
+            "Clear positioning relative to existing literature on human-AI alignment",
+            "Comprehensive evaluation across multiple metrics (alignment error, task efficiency, trust calibration)",
+            "Addresses an important problem with potential real-world applications"
+        ],
+        "weaknesses": [
+            "Discrepancies between reported results and what the code would actually produce (particularly for alignment error reduction)",
+            "Limited experimental validation using only simulated users rather than real human participants",
+            "Sparse data for trust calibration metrics makes the claimed improvements questionable",
+            "High variability in results without clear convergence patterns, especially in the safety environment"
+        ]
+    },
+    "Confidence": 4
+}

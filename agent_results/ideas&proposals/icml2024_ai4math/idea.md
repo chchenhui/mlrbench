@@ -1,0 +1,8 @@
+**Title:** Neural-Symbolic Theorem Generation with Reinforcement Learning for Enhanced Mathematical Discovery  
+
+**Motivation:** Automated theorem generation remains a critical challenge in AI-driven mathematics, as neural models often struggle to synthesize logically valid and novel theorems. Current approaches lack robustness in ensuring correctness while fostering creativity, hindering human-AI collaboration in mathematical research. Developing methods to generate reliable, nontrivial theorems could accelerate hypothesis generation and bridge gaps between computational reasoning and theoretical advancements.  
+
+**Main Idea:**  
+This research proposes a hybrid neural-symbolic framework enhanced by reinforcement learning (RL) to generate formally valid theorems. A self-supervised neural architecture (e.g., transformer-based model) is trained on formal mathematics corpora (e.g., Lean, Coq) to learn syntactic-semantic patterns. The model generates theorem candidates, which are validated using an automated theorem prover (ATP) acting as a reward signal in RL. Symbolic logic constraints refine outputs, ensuring compositional consistency, while a knowledge graph of mathematical concepts steers novelty. To evaluate, we introduce metrics for logical validity, originality, and applicability, benchmarked against human expert assessments.  
+
+**Outcome:** A system capable of producing high-quality, never-before-seen theorems, validated for correctness and utility. This work advances AI’s role in collaborative mathematics by enabling scalable, automated hypothesis creation and offering novel insights into the interplay between machine creativity and formal rigor.

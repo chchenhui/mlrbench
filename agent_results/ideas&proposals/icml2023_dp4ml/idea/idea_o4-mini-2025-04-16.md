@@ -1,0 +1,7 @@
+1. Title: Lagrange Dual Explainers: Sensitivity-Driven Interpretability for Deep Networks
+
+2. Motivation:  
+Deep neural networks lack transparent mechanisms to quantify how input features drive predictions. Current gradient‐based or perturbation methods often provide noisy or computationally expensive explanations. By exploiting Lagrange duality, we can derive certificates of sensitivity that are both theoretically sound and efficiently computable, enabling more faithful and robust model interpretation.
+
+3. Main Idea:  
+We frame feature importance for a target class output as a constrained optimization: find the minimal perturbation δ to alter the network’s decision, subject to norm or semantic constraints. Introducing Lagrange multipliers yields a dual problem whose optimal dual variables directly quantify each feature’s influence on the decision boundary. We solve this dual via back‐propagation in augmented network architectures, enabling batch‐efficient computation of sensitivity scores. Expected outcomes include: (i) provably tight importance bounds per feature; (ii) faster explanation pipelines using dual‐space optimization; (iii) improved robustness against adversarial and distributional shifts. This method bridges deep learning with classical convex duality, offering scalable, certifiable interpretability for real‐world applications.

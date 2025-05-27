@@ -1,0 +1,8 @@
+### Title:  
+**End-to-End Adversarial Learning for Inverse Problems under Model Uncertainty**
+
+### Motivation  
+Many real-world inverse problems (e.g., medical imaging, seismic reconstruction) require high-fidelity solutions when the forward operator (which maps latent variables to observed data) is only partially known or corrupted by noise. Existing deep learning methods assume exact knowledge of this operator, limiting their applicability in noisy, dynamic, or ill-characterized systems. Developing frameworks that learn both system dynamics and inverse mappings simultaneously would enable robust solutions in uncertain environments, bridging the gap between theory and practical deployment.
+
+### Main Idea  
+We propose an adversarial framework that jointly learns the forward operator and inverse solution without requiring explicit forward model definitions. A generator network co-designs a differentiable forward model approximation and a reconstruction network, while a discriminator enforces data fidelity by contrasting real data with reconstructions. The forward model component is regularized via physical constraints (e.g., sparsity, smoothness) obtained from domain-specific priors or limited calibration data. This end-to-end training ensures the learned forward model aligns with both observed data and realistic inverse solutions. Empirical validation will test robustness on MRI reconstruction and sparse-view computed tomography benchmarks under varying forward model uncertainties. Expected outcomes include improved accuracy in partially observable systems and reduced reliance on precise calibration data. The approach could generalize to robotics, environmental monitoring, and other domains with incomplete system models.

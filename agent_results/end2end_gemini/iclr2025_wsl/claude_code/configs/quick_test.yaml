@@ -1,0 +1,49 @@
+# Configuration for a quick test run
+
+# Extend base configuration
+extends: "base_config.yaml"
+
+# Experiment metadata
+experiment:
+  name: "quick_test"
+  description: "Quick test of WeightNet model with reduced data and epochs"
+  device: "cpu"
+  use_gpu: false
+
+# Model configuration - WeightNet with reduced size
+model:
+  type: "weightnet"
+  d_model: 128
+  num_intra_layer_heads: 2
+  num_cross_layer_heads: 4
+  num_intra_layer_blocks: 1
+  num_cross_layer_blocks: 1
+  d_ff: 512
+  dropout: 0.1
+
+# Data configuration with reduced dataset
+data:
+  canonicalization_method: "weight_sort"
+  tokenization_strategy: "neuron_centric"
+  batch_size: 4
+  synthetic:
+    num_models_per_architecture: 5
+    architectures: ["resnet18", "mobilenet_v2"]
+
+# Training configuration with fewer epochs
+training:
+  num_epochs: 5
+  early_stopping_patience: 3
+  optimizer:
+    lr: 0.001
+  scheduler:
+    type: "cosine"
+
+# Baselines configuration with reduced complexity
+baselines:
+  run: true
+  models:
+    - name: "mlp_baseline"
+      type: "mlp"
+      hidden_dims: [256, 128]
+      dropout: 0.2

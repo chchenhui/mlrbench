@@ -1,0 +1,7 @@
+Title: Symmetry-Driven Foundation Model Scaling for Molecular Dynamics
+
+Motivation:  
+Large AI models have shown promise in scientific discovery, but naively scaling them for molecular simulations is computationally prohibitive and often overlooks fundamental symmetries. By embedding physical priors, we can achieve higher accuracy per compute unit, accelerate hypothesis generation, and push the methodology–interpretability–discovery Pareto frontier.
+
+Main Idea:  
+We propose a three‐stage pipeline. (1) Pretrain a transformer‐style foundation model on massive simulated conformations, augmented with group‐equivariant attention layers that enforce translational, rotational, and permutation symmetries. (2) Employ physics‐informed scaling laws to adaptively grow model capacity and data volume: monitor validation error vs. compute and trigger dataset expansion or model widening when returns diminish. (3) Active sampling and fine‐tuning: identify underrepresented chemical motifs via uncertainty quantification, generate targeted high‐fidelity simulations, and iteratively refine the model. We will benchmark against standard MD tasks (e.g., free‐energy estimation, long‐timescale conformational sampling). Expected outcomes include a 2× improvement in accuracy‐per‐FLOP and enhanced interpretability of learned features, paving the way for cost‐efficient, high‐throughput materials and drug discovery.

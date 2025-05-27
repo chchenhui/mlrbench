@@ -1,0 +1,9 @@
+# Geometric Message Passing for Dynamic Graph Learning
+
+## Motivation
+Learning from dynamic graphs (e.g., traffic networks, social interactions) presents significant challenges as both node attributes and graph topology evolve over time. Current approaches often struggle to capture the underlying geometric structures that govern these dynamics, leading to poor generalization and inability to model complex temporal dependencies. This limitation hinders applications in crucial domains like traffic forecasting, epidemic modeling, and recommendation systems.
+
+## Main Idea
+We propose a novel framework that leverages differential geometry and Riemannian manifold theory to enhance dynamic graph learning. Our approach represents dynamic graphs as trajectories on manifolds, where each time step corresponds to a point on a geometric space. We develop specialized message passing neural networks that operate on the tangent spaces of these manifolds, enabling communication between time steps while respecting the underlying geometric constraints. 
+
+The framework introduces: (1) Parallel transport operators that maintain geometric consistency when propagating information across time; (2) Geodesic attention mechanisms that capture long-range dependencies by measuring distances along manifold curves rather than in Euclidean space; and (3) Curvature-aware aggregation functions that adapt to the local geometry of the graph. Preliminary experiments on traffic forecasting and physical simulation tasks show our method significantly outperforms existing approaches while providing interpretable insights into the geometric nature of temporal graph evolution.

@@ -1,0 +1,9 @@
+### Title: Enhancing Formal Verification with Generative AI
+
+### Motivation
+Formal verification methods are crucial for ensuring the correctness of software and mathematical models. However, these methods often struggle with scalability and complexity, particularly when dealing with large and intricate systems. Generative AI, such as large language models (LLMs), offers a scalable and adaptable solution to these challenges. By integrating generative AI with formal methods, we can enhance the efficiency and effectiveness of verification processes. This research aims to bridge the gap between formal analysis and artificial intelligence, creating more robust and scalable verification tools.
+
+### Main Idea
+The proposed research explores the integration of generative AI with formal verification methods to enhance their scalability and effectiveness. The main idea involves using LLMs to generate test cases and specifications, which are then used by traditional formal verification tools to ensure the correctness of the system. The methodology involves training LLMs on datasets of verified code and specifications to learn patterns and generate relevant test cases. These generated test cases are then fed into formal verification tools to check for correctness.
+
+The expected outcome of this research is the development of a hybrid verification system that leverages the strengths of both generative AI and formal methods. This system will be able to handle larger and more complex systems more efficiently than traditional formal verification methods. The potential impact of this research is significant, as it can lead to more reliable and secure software and mathematical models, which are crucial in fields such as aerospace, finance, and healthcare. Additionally, this research can contribute to the development of new benchmarks and datasets for the intersection of generative AI and formal methods, further advancing the field.

@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the gap between optimization theory and practice in deep learning, specifically focusing on the Edge of Stability phenomenon and curvature-aware optimization, which are explicitly mentioned in the task description. The proposal elaborates comprehensively on the core idea of DCAO presented in the research idea, maintaining fidelity to the original concept while providing detailed mathematical formulations and implementation strategies. The literature review is thoroughly integrated, with explicit references to key papers like Cohen et al. (2021, 2022), Song and Yun (2023), and Damian et al. (2022). The proposal addresses the challenges identified in the literature review, particularly computational overhead of Hessian approximations and stability in high-curvature regions, by proposing specific solutions like stochastic Lanczos iteration and dynamic hyperparameter adjustment."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is well-structured and clearly articulated, with a logical flow from introduction to methodology to expected outcomes. The technical details are presented with mathematical precision, including explicit formulations for learning rate, momentum, and weight decay adjustments. The algorithm is formally presented with clear inputs, outputs, and step-by-step procedures. The theoretical analysis provides clear statements of convergence properties. However, there are a few areas that could benefit from additional clarity: (1) the relationship between the spectral gap and acceleration could be more explicitly justified, (2) the exact mechanism by which the negative eigenvalue ratio informs weight decay adjustments could be elaborated further, and (3) some of the hyperparameters in the adjustment formulas (like γ, α, κ, φ) could benefit from more guidance on their selection. Despite these minor issues, the overall clarity is strong, making the proposal readily understandable to researchers familiar with optimization theory."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal demonstrates notable originality by combining several existing concepts in a novel way. The core innovation lies in the dynamic adjustment of multiple hyperparameters (learning rate, momentum, and weight decay) based on different aspects of the curvature spectrum (spectral radius, spectral gap, and negative eigenvalue ratio). This approach differs from existing methods that either ignore curvature entirely or apply it in a more limited fashion. The use of stochastic Lanczos iteration for efficient Hessian approximation is not new, but its application in this specific context is innovative. The proposal builds upon existing work on the Edge of Stability (Cohen et al., 2021, 2022) and self-stabilization (Damian et al., 2022), extending these concepts rather than introducing entirely new theoretical frameworks. While the individual components have precedents in the literature, their integration into a cohesive optimizer with theoretical guarantees represents a fresh contribution to the field."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal demonstrates strong technical soundness with well-founded theoretical underpinnings. The mathematical formulations for Hessian approximation via stochastic Lanczos iteration are correct and well-established in numerical linear algebra. The dynamic hyperparameter adjustment formulas are grounded in optimization theory, with the learning rate adjustment directly addressing the stability threshold identified in EoS literature. The theoretical analysis provides convergence guarantees under both smooth and non-smooth settings, connecting to existing theory on self-stabilization. The experimental design is comprehensive, covering diverse architectures and tasks, with appropriate baselines and evaluation metrics. However, there are a few areas that could benefit from stronger justification: (1) the specific functional forms chosen for momentum and weight decay adjustments could be more rigorously derived, (2) the interaction effects between the different hyperparameter adjustments could be analyzed more thoroughly, and (3) the theoretical analysis could more explicitly address the stochasticity introduced by mini-batch training. Despite these minor limitations, the overall technical foundation is robust."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal presents a largely feasible approach with some implementation challenges. The stochastic Lanczos iteration for Hessian approximation is a well-established technique with existing implementations, making this aspect practically viable. The frequency of curvature estimation (every K iterations) provides a reasonable compromise between computational cost and adaptation benefits. The experimental design is ambitious but realistic, covering a range of tasks and architectures that are standard in the field. However, there are several feasibility concerns: (1) the computational overhead of eigenvalue estimation, even with stochastic Lanczos, may be significant for very large models like GPT-2, (2) the sensitivity of the method to the quality of eigenvalue estimates in noisy stochastic settings could affect stability, (3) the additional hyperparameters introduced (γ, α, κ, φ) add complexity to the tuning process, and (4) the extensive evaluation across multiple tasks and architectures will require substantial computational resources. The proposal acknowledges some of these challenges in section 3.3 and offers mitigation strategies, which strengthens its feasibility assessment."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses an important problem in deep learning optimization with potentially broad impact. Successfully bridging the gap between optimization theory and practice, particularly regarding the Edge of Stability phenomenon, would advance our fundamental understanding of deep learning dynamics. The practical benefits could be substantial: improved training stability, faster convergence, better generalization, and reduced sensitivity to initial hyperparameters would benefit researchers and practitioners across various domains. The approach directly operationalizes theoretical insights about curvature and stability into a practical algorithm, which aligns perfectly with the workshop's goal of bridging theory and practice. If successful, this work could influence the design of future optimizers and potentially reduce the computational resources required for model training. The educational impact of clarifying optimization dynamics would also be valuable for the field. While the significance is high, it falls short of transformative as the core optimization paradigm remains gradient-based, and the improvements, while potentially substantial, would be incremental rather than revolutionary."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Excellent alignment with the task of bridging theory and practice in deep learning optimization",
+            "Strong technical foundation with clear mathematical formulations and theoretical analysis",
+            "Comprehensive experimental design covering diverse architectures and tasks",
+            "Novel integration of curvature information into multiple aspects of optimization",
+            "Direct operationalization of Edge of Stability insights into a practical algorithm"
+        ],
+        "weaknesses": [
+            "Potential computational overhead for very large models despite efficiency measures",
+            "Introduction of additional hyperparameters that may require tuning",
+            "Some aspects of the hyperparameter adjustment formulas could benefit from stronger theoretical justification",
+            "Practical challenges in obtaining reliable eigenvalue estimates in noisy stochastic settings"
+        ]
+    }
+}

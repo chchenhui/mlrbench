@@ -1,0 +1,7 @@
+# Privacy-Preserving Evaluation of LLM Biases Using Conformal Prediction
+
+## Motivation
+As large language models (LLMs) become increasingly integrated into critical systems, understanding their biases is essential for safe deployment. However, traditional bias evaluation methods often compromise privacy by requiring direct access to model internals or training data. Moreover, they typically provide point estimates without quantifying uncertainty, leading to potentially unreliable conclusions about model fairness. We need robust statistical frameworks that can reliably measure bias while maintaining privacy guarantees.
+
+## Main Idea
+We propose a novel framework combining differential privacy and conformal prediction to evaluate and mitigate biases in black-box LLMs. The approach works by constructing prediction sets with guaranteed coverage for different demographic groups, allowing detection of disparities without accessing model internals. By incorporating privacy-preserving noise mechanisms into the conformal procedure, we ensure that evaluation data remains protected. The framework generates calibrated uncertainty intervals for bias metrics, providing stakeholders with statistical guarantees about the reliability of identified biases. This enables more informed decision-making about model deployment risks across different contexts while maintaining strong privacy guarantees. The method can be deployed as an auditing tool for third-party LLMs where direct access to model weights or training procedures is impossible.

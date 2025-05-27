@@ -1,0 +1,7 @@
+Title: Adaptive Attention-Guided KV Cache Compression for Long‐Context Sub‐Quadratic Inference
+
+Motivation:  
+Foundation models struggle with long-context inference due to growing key–value (KV) caches, leading to quadratic memory and compute costs. Efficiently compressing and retaining only the most informative context tokens can enable sub‐quadratic inference while preserving reasoning over extended histories.
+
+Main Idea:  
+We propose an on‐the‐fly KV cache compression module that leverages the model’s own attention weights to score and prune past context. During inference, we periodically compute token‐level attention importance scores from recent layers. Entries with low cumulative importance are removed, and remaining KV pairs are clustered into low‐rank summaries via an online k­means in feature space. The compressed representations replace the original cache, bounding memory growth and reducing per‐token compute to near linear. We further fine‐tune the model with a distillation loss that aligns outputs between full and compressed caches, ensuring minimal degradation. Expected outcomes include 2–5× speedups on long‐sequence benchmarks with <1% perplexity increase. This approach enables scalable, adaptive long‐context understanding in resource‐constrained inference settings.

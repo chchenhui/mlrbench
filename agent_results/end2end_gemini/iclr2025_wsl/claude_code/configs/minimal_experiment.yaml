@@ -1,0 +1,84 @@
+# Configuration for a minimal experiment
+
+# Experiment metadata
+experiment:
+  name: "minimal_experiment"
+  description: "Minimal experiment with WeightNet and baseline models"
+  seed: 42
+  device: "cpu"
+  use_gpu: false
+  log_dir: "logs"
+  save_dir: "experiments"
+  figures_dir: "figures"
+  tensorboard_dir: "tensorboard"
+
+# Data configuration
+data:
+  data_dir: "data/raw"
+  processed_dir: "data/processed"
+  model_properties: ["accuracy", "robustness", "generalization_gap"]
+  train_ratio: 0.7
+  val_ratio: 0.15
+  test_ratio: 0.15
+  canonicalization_method: "weight_sort"
+  tokenization_strategy: "neuron_centric"
+  max_token_length: 1024
+  split_by_architecture: false
+  batch_size: 2
+  num_workers: 1
+  synthetic:
+    create: true
+    num_models_per_architecture: 3
+    architectures: ["resnet18", "vgg11"]
+    generate_variations: true
+
+# Model configuration - WeightNet
+model:
+  type: "weightnet"
+  d_model: 64
+  num_intra_layer_heads: 2
+  num_cross_layer_heads: 2
+  num_intra_layer_blocks: 1
+  num_cross_layer_blocks: 1
+  d_ff: 128
+  dropout: 0.1
+  max_seq_length: 1024
+  num_segments: 10
+
+# Training configuration
+training:
+  num_epochs: 5
+  early_stopping_patience: 3
+  optimizer:
+    type: "adam"
+    lr: 0.001
+    weight_decay: 0.0001
+  scheduler:
+    type: "cosine"
+    min_lr: 0.0001
+  criterion: "mse"
+
+# Evaluation configuration
+evaluation:
+  metrics: ["mae", "rmse", "r2"]
+  save_predictions: true
+  evaluate_on_train: true
+  evaluate_on_val: true
+  evaluate_on_test: true
+
+# Baseline configurations
+baselines:
+  run: true
+  models:
+    - name: "mlp_baseline"
+      type: "mlp"
+      hidden_dims: [128, 64, 32]
+      dropout: 0.2
+
+# Visualization configuration
+visualization:
+  create_history_plots: true
+  create_prediction_plots: true
+  create_error_plots: true
+  create_model_comparison: true
+  create_interactive_plots: false

@@ -1,0 +1,5 @@
+**Title:** Context-Aware Multimodal Evaluation Framework for Generative Audio (CAM-Eval)  
+
+**Motivation:** Current audio generation evaluation relies on simplistic metrics (e.g., SNR, PESQ) that fail to capture perceptual quality, creativity, or alignment with user intent—especially in multimodal contexts like VR/AR. This limits progress in generative AI for audio, as models optimized for traditional metrics may not meet real-world application needs.  
+
+**Main Idea:** Develop CAM-Eval, a framework combining (1) **contrastive audio-text-video embeddings** to measure cross-modal coherence, (2) **human perceptual metrics** (e.g., crowd-sourced scoring of realism/emotional impact), and (3) **task-specific objectives** (e.g., VR immersion metrics). The method trains evaluator models on diverse generated audio datasets annotated with multimodal context and human feedback. Expected outcomes include standardized benchmarks for text-to-audio and VR audio generation, enabling nuanced comparison of models. This would accelerate responsible development of generative audio systems tailored to creative and immersive use cases.

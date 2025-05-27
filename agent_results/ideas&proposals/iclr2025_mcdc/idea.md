@@ -1,0 +1,9 @@
+# Decentralized Modular Knowledge Distillation for Continual Learning
+
+## Motivation
+Current deep learning paradigms suffer from a fundamental flaw: models are treated as monolithic entities that are discarded once deprecated. This approach wastes computational resources and accumulated knowledge. Moreover, the "bigger is better" philosophy creates sustainability challenges as model sizes grow exponentially. A modular approach that preserves and reuses knowledge across model generations would significantly reduce training costs while enabling continual improvement through collaborative development.
+
+## Main Idea
+This research proposes a decentralized framework where specialized knowledge from large models is distilled into a network of smaller, modular experts. Each expert module specializes in a specific domain or capability and can be independently updated without requiring retraining of the entire system. The framework employs a dynamic routing mechanism that selectively activates relevant expert modules based on input characteristics. 
+
+Central to our approach is a novel "knowledge preservation protocol" that identifies valuable parameters from deprecated models and transfers them to corresponding modules in the new architecture. We introduce an entropy-based metric to quantify module specialization, guiding the routing algorithm to efficiently compose expert modules for different tasks. This creates an evolving ecosystem of reusable components that enables collaborative model development, reduces computational waste, and facilitates continuous learning without catastrophic forgetting.

@@ -1,0 +1,31 @@
+{
+    "Consistency": {
+        "score": 5,
+        "justification": "The paper generally aligns well with the task description, research idea, and research proposal, with the methodology largely reflecting the proposed components. However, there are significant internal inconsistencies. Firstly, the abstract and analysis claim 70-85% peak memory reduction, but calculations from Table 5.2 (DSRSQ 1297.6MB vs standard 2970.9MB) show approximately 56.3% reduction for the reported 'Memory (MB)'; the conditions for 'peak' memory achieving 70-85% are not clarified. Secondly, and more critically, the 'full_model' in the ablation study (Table 5.4) shows substantially better F1 score, memory usage, and throughput (0.8572 F1, 1167.7MB, 610.8 tokens/s) than the 'DSRSQ' model reported in the main results tables (e.g., Table 5.1 F1 0.8478, Table 5.2 Memory 1297.6MB, Throughput 527.4 tokens/s). This discrepancy raises questions about which results accurately represent the proposed DSRSQ model. The claim of 50-70% FLOPs reduction is also not directly substantiated with FLOP counts in the results."
+    },
+    "Clarity": {
+        "score": 6,
+        "justification": "The paper is mostly well-written with a logical structure. Arguments are generally presented coherently. However, clarity is significantly hampered by the absence of actual figures; only filenames are provided in Section 5.5 (Visualizations), making it impossible to assess visual evidence. Furthermore, the inconsistency between the ablation study's 'full_model' results and the main 'DSRSQ' results creates confusion. Some technical details could be elaborated: for instance, the method for estimating 'complexity(q)' for the DSR budget is not specified, and the derivation or specific mechanism leading to O(n log n) complexity for SQA is brief. The definition and dataset context for 'Adaptation Metrics' in Table 5.3 could also be clearer."
+    },
+    "Completeness": {
+        "score": 5,
+        "justification": "The paper addresses the core aspects of the research idea and proposal, and aligns with the workshop's task description. However, it suffers from several points of incompleteness. Most notably, actual figures are missing (only filenames listed). While Natural Questions results are detailed, task performance results for other datasets mentioned in the setup (Streaming News, Code Understanding, Scientific Reasoning) are not presented in the main performance tables (e.g., Table 5.1 format), making it difficult to assess the model's generalizability or specific performance on tasks like streaming data adaptation. The paper claims FLOPs reduction but does not provide direct FLOP measurements or methodology for their estimation. Details on the 'complexity(q)' measure for the DSR's dynamic budget are also omitted from the paper, though mentioned in the proposal."
+    },
+    "Soundness": {
+        "score": 5,
+        "justification": "The proposed methodology, combining dynamic sparse retrieval, sparse attention, and compressive KV caching, is conceptually sound and addresses a relevant problem. However, the soundness of the experimental validation is questionable due to significant inconsistencies. The 'full_model' in the ablation study (Table 5.4) outperforming the main reported 'DSRSQ' model (Tables 5.1, 5.2) without explanation undermines the reliability of the primary results. The discrepancy between the claimed memory savings (70-85%) and the data in Table 5.2 (~56%) is another concern. The 50-70% FLOPs reduction claim is not directly supported by FLOP measurements. While baselines are included, the substantial performance gap for some advanced baselines (GCA, Razor, Pyramid) in task metrics (Table 5.1) would benefit from discussion on fair comparison or tuning. The lack of results from all listed datasets weakens the broader claims, particularly regarding streaming data adaptation if Table 5.3 metrics are not clearly linked and defined. No statistical significance testing is mentioned."
+    },
+    "OverallAssessment": {
+        "score": 5,
+        "strengths": [
+            "Novel unified framework (DSRSQ) addressing the critical challenge of efficient long-context adaptation by integrating dynamic retrieval, sparse attention, and KV compression.",
+            "Strong reported performance on Natural Questions, outperforming standard models and several baselines in both task accuracy and efficiency metrics (memory, throughput), if the best reported numbers are taken.",
+            "Methodology is well-detailed in parts and components are technically plausible, with a clear motivation aligned with current research trends and workshop themes."
+        ],
+        "weaknesses": [
+            "Critical inconsistencies in reported experimental results: the 'full_model' in ablation studies shows better performance than the main 'DSRSQ' model, and claimed memory/FLOPs savings are not fully substantiated by or aligned with presented table data.",
+            "Significant incompleteness: actual figures are missing (only filenames provided), detailed task performance results are not provided for all datasets listed in the experimental setup (e.g., Streaming News), and some methodological details (e.g., query complexity measure, FLOPs calculation) are absent.",
+            "The reliability of comparisons to some baselines could be questioned without more detail on their tuning, given their relatively low task performance in Table 5.1."
+        ]
+    }
+}

@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the workshop's goal of bridging the gap between theory and practice in deep learning, specifically focusing on optimization theory and the Edge of Stability phenomenon. The proposal comprehensively incorporates the core elements from the research idea, developing a Dynamic Curvature-Aware Optimizer that uses Hessian eigenspectrum estimation to dynamically adjust hyperparameters. The literature review is thoroughly integrated, with explicit references to key papers like Cohen et al. (2021, 2022), Arora et al. (2022), and Damian et al. (2022). The proposal acknowledges challenges identified in the literature review, such as computational overhead of Hessian approximations, and offers specific strategies to address them. The only minor inconsistency is that some papers mentioned in the literature review (like Hi-DLR by Xu et al., 2025) could have been more explicitly compared to the proposed approach."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is very well-structured and clearly articulated. The research objectives, methodology, and expected outcomes are all explicitly defined. The DCAO algorithm is explained in detail, including the mathematical formulations for curvature estimation and hyperparameter adjustment. The experimental design is comprehensive, specifying datasets, models, baselines, and evaluation metrics. The proposal uses appropriate technical language while remaining accessible. However, there are a few areas that could benefit from additional clarity: (1) The exact formulation of the update rules for momentum and weight decay could be more precisely defined, with clearer justification for the specific forms chosen; (2) The interaction between the base optimizer (AdamW) and the DCAO modifications could be elaborated further; (3) Some of the hyperparameters introduced for the adaptation rules (e.g., C_target, γ_down, γ_up) would benefit from more detailed explanation of their selection criteria."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal presents a novel approach to optimization by dynamically adapting multiple hyperparameters (learning rate, momentum, weight decay) based on efficiently computed Hessian eigenspectrum information. This goes beyond existing methods mentioned in the literature review, which typically focus on adapting only the learning rate (e.g., ADLER, Hi-DLR). The integration of Edge of Stability insights into a practical optimizer is innovative. However, the core techniques used (Lanczos algorithm for eigenvalue estimation, Hessian-vector products) are well-established, and the concept of using curvature information to adapt learning rates has precedents in the literature. The proposal's novelty lies primarily in the comprehensive integration of these elements and the specific adaptation rules for multiple hyperparameters, rather than in introducing fundamentally new algorithmic components. The proposal acknowledges its relationship to prior work while clearly articulating its novel contributions."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal demonstrates strong technical soundness in its approach. The mathematical formulations for Hessian-vector products and the Lanczos algorithm are correct and well-established. The connection between the Edge of Stability phenomenon (η·λ_max ≈ 2) and the proposed adaptation rules is theoretically grounded. The research plan includes both theoretical analysis (convergence guarantees, stability analysis) and empirical validation, providing a well-rounded approach to establishing soundness. The experimental design is comprehensive and includes appropriate baselines and metrics. The proposal acknowledges potential challenges, such as non-smoothness in neural network landscapes, and outlines approaches to address them. However, there are some aspects that could be strengthened: (1) The theoretical analysis section could provide more specific details on the techniques that will be used to derive convergence bounds; (2) The adaptation rules for momentum and weight decay, while intuitively reasonable, could benefit from stronger theoretical justification; (3) The proposal could more explicitly address how the stochastic nature of mini-batch training affects the reliability of the eigenvalue estimates."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal presents a feasible research plan with careful consideration of computational overhead and implementation challenges. The use of stochastic Lanczos for efficient eigenvalue estimation is a practical approach, and the proposal explicitly addresses overhead management by computing eigenvalues only periodically (every T steps) and limiting the number of eigenvalues computed (k). The experimental design is realistic, using standard datasets and models. However, there are several feasibility concerns: (1) The computational overhead of Hessian-vector products, even if computed periodically, may still be significant for large models, potentially limiting applicability to very large networks; (2) The proposal requires tuning several new hyperparameters (C_target, γ_down, γ_up, α_β, α_wd), which adds complexity; (3) The theoretical analysis of convergence in non-smooth settings is ambitious and may be challenging to complete comprehensively; (4) The implementation of efficient Hessian-vector products in standard deep learning frameworks, while possible, requires careful engineering. Overall, the research is implementable with current technology and knowledge, but will require significant effort and expertise in both theoretical analysis and practical implementation."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a significant gap between theoretical understanding of loss landscape geometry (particularly the Edge of Stability phenomenon) and practical optimization algorithms. If successful, DCAO could provide both practical benefits (improved training stability, faster convergence, better generalization) and theoretical insights (empirical validation of EoS theory in adaptive settings). The research directly contributes to the workshop's goal of bridging theory and practice in deep learning optimization. The potential impact extends to both researchers (deeper understanding of optimization dynamics) and practitioners (a more robust optimizer requiring less hyperparameter tuning). The proposal could influence future work on curvature-aware optimization and adaptive methods. However, the significance is somewhat limited by: (1) The focus on a specific aspect of optimization (curvature-awareness) rather than addressing broader gaps between theory and practice; (2) The potential that the computational overhead might limit adoption in very large-scale applications; (3) The possibility that the improvements over existing methods might be incremental rather than transformative in some settings."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Directly addresses the workshop's goal of bridging theory and practice in deep learning optimization",
+            "Comprehensive integration of theoretical insights about loss landscape curvature and the Edge of Stability into a practical optimizer",
+            "Well-designed algorithm with clear mathematical formulations and implementation details",
+            "Thorough experimental design with appropriate datasets, models, baselines, and evaluation metrics",
+            "Balanced approach combining theoretical analysis and empirical validation"
+        ],
+        "weaknesses": [
+            "Computational overhead of Hessian-vector products may limit applicability to very large models",
+            "Introduces several new hyperparameters that require tuning, potentially adding complexity",
+            "Theoretical analysis of convergence in non-smooth settings is ambitious and challenging",
+            "Some adaptation rules (particularly for momentum and weight decay) could benefit from stronger theoretical justification"
+        ]
+    }
+}

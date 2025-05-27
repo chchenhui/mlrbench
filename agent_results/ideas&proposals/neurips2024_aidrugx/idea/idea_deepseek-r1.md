@@ -1,0 +1,8 @@
+**Title:** Multi-Modal Foundation Models for Predicting Therapeutic Outcomes in Cell and Gene Therapies  
+
+**Motivation:** Cell and gene therapies involve complex interactions between genetic perturbations, cellular responses, and molecular readouts. Current single-modal AI models often fail to capture these dynamics, limiting their ability to predict therapeutic efficacy, safety, or delivery efficiency. A unified model integrating multi-modal biological data is critical for accelerating the development of targeted therapies.  
+
+**Main Idea:** Develop a foundation model that integrates genetic/molecular perturbation data (e.g., CRISPR screens) with multi-modal readouts (transcriptomic, proteomic, and phenotypic data) to predict therapeutic outcomes. The model will use a hybrid architecture combining transformer-based encoders for sequence data (DNA/RNA) and graph neural networks for molecular interactions. Cross-modal attention mechanisms will align perturbations to downstream biological effects. Pre-training on large public datasets (e.g., DepMap, GTEx) will be followed by fine-tuning via active learning with lab-generated perturbation-response pairs.  
+
+**Expected Outcomes:** The model will predict optimal gene editing targets, CRISPR guide designs, and cell-type-specific delivery systems by linking perturbations to functional outcomes. It could reduce experimental validation cycles by prioritizing high-efficacy candidates.  
+**Impact:** This approach addresses key bottlenecks in cell/gene therapy development, such as off-target effects and delivery inefficiency, enabling faster translation of novel modalities to clinical trials.

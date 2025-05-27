@@ -1,0 +1,5 @@
+**Title:** Meta-Learned Symbolic Subgoal Policies for Few-Shot Generalization
+
+**Motivation:** While deep RL excels at complex control, it struggles with long-horizon planning and generalizing to new tasks from limited data. Symbolic planning offers generalizability but lacks robust low-level execution. We need methods that bridge this gap for efficient transfer in sequential decision-making (SDM).
+
+**Main Idea:** We propose learning a hierarchy where a high-level symbolic planner generates abstract subgoals, and a low-level policy executes them. The core idea is to train the low-level policy using meta-reinforcement learning, specifically conditioned on symbolic subgoal representations (e.g., predicates like `On(BlockA, BlockB)`). This meta-training across diverse tasks enables the low-level policy to rapidly adapt to achieve *new* symbolically-specified subgoals with only a few gradient steps or demonstrations. This allows the agent to solve novel long-horizon tasks, defined by sequences of reusable symbolic subgoals, in a sample-efficient, few-shot manner, combining symbolic planning's generalizability with RL's adaptive control.

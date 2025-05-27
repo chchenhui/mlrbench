@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal aligns exceptionally well with the task description, research idea, and literature review. It directly addresses the 'Data Collection and Curation for Foundation Models' topic from the workshop call, focusing on practical strategies for curating data specifically for multi-modal foundation models. The proposal builds upon the literature review, particularly leveraging concepts from DataInf for influence estimation and FLAVA for cross-modal embeddings. The hierarchical clustering approach addresses the scalability challenges identified in the literature review. The fairness considerations through reweighting underrepresented clusters align with Chameleon's focus on fairness-aware data augmentation. The evaluation framework incorporates elements from HEMM's holistic evaluation approach. The only minor inconsistency is that while the idea mentioned a focus on 'pruning and balancing,' the proposal could have more explicitly addressed the balancing aspect beyond just reweighting."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is well-structured and articulated with clear sections covering introduction, methodology, and expected outcomes. The research objectives are explicitly stated and logically organized. The technical approach is presented with appropriate mathematical formulations that enhance understanding. The experimental design is comprehensive, with well-defined datasets, baselines, and evaluation metrics. However, there are a few areas that could benefit from additional clarity: (1) The exact mechanism for fusion of text and image embeddings (denoted by ⊕) could be more precisely defined; (2) The thresholds τ_low and τ_high for pruning and reweighting are mentioned but their determination process is not specified; (3) The proposal could more clearly explain how the validation samples z_val are selected for influence computation. Despite these minor issues, the overall proposal is highly comprehensible and follows a logical flow."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal demonstrates notable originality by combining several existing concepts in a novel way. The hierarchical influence-driven approach to multi-modal data curation is innovative, particularly in how it addresses scalability through cluster-level approximations rather than per-sample influence analysis. The two-stage pipeline that first clusters data and then computes influence scores at the cluster level is a fresh approach to the data curation problem. The integration of fairness considerations through reweighting underrepresented but influential clusters is also innovative. However, many of the individual components (influence functions, hierarchical clustering, low-rank Hessian approximation) are adaptations of existing techniques rather than completely new methods. The proposal builds incrementally on prior work like DataInf and FLAVA rather than introducing fundamentally new concepts. While the combination and application to multi-modal foundation models is novel, the technical innovations are evolutionary rather than revolutionary."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal demonstrates strong technical rigor and is built on solid theoretical foundations. The influence estimation approach is grounded in established statistical methods, and the low-rank Hessian approximation is mathematically sound for reducing computational complexity. The hierarchical clustering approach is well-justified for semantic coherence, and the use of the Davies-Bouldin index for determining cluster termination is appropriate. The evaluation metrics are comprehensive and well-aligned with the research objectives. However, there are a few areas that could benefit from additional justification: (1) The proposal does not fully address potential limitations of the Nyström decomposition for very large models; (2) The mini-batch gradient sampling approach could introduce variance in influence estimates, but this is not thoroughly discussed; (3) While the proposal mentions iterative pruning and reweighting, it doesn't provide a convergence guarantee for this process. Despite these minor concerns, the overall approach is technically sound and well-reasoned."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal presents a largely feasible approach with realistic implementation plans. The use of pre-trained models like FLAVA reduces the initial computational burden, and the hierarchical clustering approach makes the influence computation more tractable for large datasets. The experimental design is practical, using established datasets and metrics. The implementation plan specifies concrete tools (PyTorch, FAISS) that are appropriate for the tasks. However, there are several feasibility challenges: (1) Computing even approximated Hessians for foundation models with billions of parameters remains computationally intensive; (2) The iterative nature of the approach may require multiple passes through large datasets, which could be time-consuming; (3) The proposal doesn't fully address the computational resources required for the full pipeline; (4) The expected 20-40% data reduction seems optimistic without preliminary results to support this claim. While these challenges don't render the proposal infeasible, they do present significant implementation hurdles that would require careful optimization and potentially substantial computational resources."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a critical challenge in foundation model development: efficient and principled data curation for multi-modal models. If successful, this work could significantly impact how large-scale datasets are prepared for foundation model training, potentially reducing computational costs, improving model fairness, and accelerating training. The expected outcomes of 20-40% data reduction without performance degradation and 15-30% improvement in fairness metrics would represent substantial advances in the field. The approach bridges theoretical work on influence functions with practical multi-modal model development, addressing the gap identified in the workshop call. The open-source implementation would enable community adoption and extension. The work also contributes to addressing societal concerns around AI fairness and resource efficiency. However, the significance is somewhat limited by the focus on data curation alone, without addressing other critical challenges like copyright issues or synthetic data generation that were mentioned in the workshop call. Nevertheless, the potential impact on data efficiency and fairness in foundation models makes this a highly significant proposal."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Novel integration of influence functions with hierarchical clustering for scalable multi-modal data curation",
+            "Strong theoretical foundation with appropriate mathematical formulations",
+            "Comprehensive evaluation framework with well-defined metrics across efficiency, performance, and fairness",
+            "Clear alignment with workshop themes and literature on data-centric AI",
+            "Explicit consideration of fairness through reweighting of underrepresented but influential data clusters"
+        ],
+        "weaknesses": [
+            "Computational feasibility concerns for very large foundation models despite the approximation techniques",
+            "Some technical details lack sufficient explanation, such as the determination of pruning thresholds",
+            "Limited discussion of potential limitations or failure modes of the approach",
+            "Ambitious expected outcomes (20-40% data reduction, 15-30% fairness improvement) without preliminary results to support these claims"
+        ]
+    }
+}

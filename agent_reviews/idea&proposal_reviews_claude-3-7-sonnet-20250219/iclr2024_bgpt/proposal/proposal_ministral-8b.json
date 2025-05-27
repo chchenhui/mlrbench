@@ -1,0 +1,43 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal aligns exceptionally well with the task description, research idea, and literature review. It directly addresses the workshop's goal of bridging the gap between theory and practice in deep learning, specifically focusing on the optimization theory topic mentioned in the task description. The proposal incorporates the Edge of Stability phenomenon, curvature-based analyses, and adaptive optimization techniques that are central to the research idea. The methodology section thoroughly operationalizes the core concepts from the idea, including the periodic probing of curvature spectra, computation of eigenpairs, and dynamic adjustment of hyperparameters. The proposal also effectively integrates insights from the literature review, particularly drawing on works like 'Adaptive Gradient Methods at the Edge of Stability' and 'Gradient Descent on Neural Networks Typically Occurs at the Edge of Stability'. The mathematical formulation is consistent with the theoretical frameworks discussed in the literature review."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is well-structured and generally clear in its presentation. The introduction effectively establishes the context and motivation for the research. The methodology section is comprehensive, with clear delineation of the research design, data collection, algorithmic steps, and mathematical formulation. The mathematical notation is precise and well-defined, making the technical aspects accessible. The experimental design and expected outcomes are also clearly articulated. However, there are a few areas that could benefit from additional clarity: (1) the specific implementation details of the stochastic Lanczos iterations could be more thoroughly explained, (2) the relationship between the curvature metrics and the hyperparameter adjustments could be more explicitly justified, and (3) the evaluation metrics for comparing DCAO with other optimizers could be more precisely defined. Despite these minor issues, the overall proposal is well-articulated and easy to follow."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal demonstrates notable originality by introducing a dynamic optimizer that explicitly incorporates curvature information through periodic Hessian approximations. While adaptive optimizers and Hessian-based methods exist in the literature (as noted in the review with papers like Hi-DLR and ADLER), DCAO's approach of periodically probing curvature spectra and using spectral radius and gap to dynamically adjust multiple hyperparameters (learning rate, momentum, and weight decay) represents a fresh combination of existing concepts. The proposal distinguishes itself from prior work by focusing specifically on the Edge of Stability phenomenon and operationalizing theoretical insights into practical optimization strategies. However, it builds upon rather than fundamentally reimagining existing approaches to curvature-aware optimization. The novelty lies more in the integration and application of known techniques to address the theory-practice gap than in introducing entirely new algorithmic components."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal demonstrates strong technical foundations and rigor. The mathematical formulation is well-developed, with clear equations for the low-rank Hessian approximation, spectral radius, spectral gap, and hyperparameter adjustments. The research design follows a logical progression from theoretical analysis to algorithm development to empirical validation. The proposal is grounded in established theoretical frameworks from the literature, particularly regarding the Edge of Stability phenomenon and adaptive optimization. The algorithmic steps are well-defined and technically sound. The experimental design includes appropriate datasets and comparison baselines. However, there are some aspects that could be strengthened: (1) the theoretical convergence bounds under non-smooth assumptions are mentioned but not fully developed, (2) the specific choice of exponential decay functions for hyperparameter adjustments could benefit from more theoretical justification, and (3) potential limitations of the low-rank Hessian approximation are not thoroughly discussed. Despite these minor issues, the proposal demonstrates a high level of technical soundness."
+    },
+    "Feasibility": {
+        "score": 6,
+        "justification": "The proposal presents a somewhat feasible approach but faces significant implementation challenges. The main concern is the computational overhead of computing Hessian approximations and eigenpairs during training, which could substantially slow down the optimization process despite the claim of 'minimal overhead.' While the proposal suggests using stochastic Lanczos iterations for efficiency, the frequency of curvature probing (every 1000 iterations) may still impose a considerable computational burden, especially for large models. The proposal does not adequately address how this overhead will be managed in practice. Additionally, the experimental validation requires training on diverse architectures and datasets, including large-scale ones like ImageNet and language models, which demands substantial computational resources. The proposal also does not fully address potential numerical stability issues that might arise when computing eigenvalues in high-dimensional spaces. While the core algorithm is implementable with current technology, these practical challenges raise concerns about its efficiency and scalability in real-world deep learning applications."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a significant problem in deep learning: bridging the gap between theoretical understanding of loss landscapes and practical optimization methods. If successful, DCAO could have substantial impact on improving training stability, convergence speed, and generalization performance of neural networks. The research directly contributes to the workshop's goal of narrowing the theory-practice divide in deep learning. The significance is enhanced by the proposal's focus on the Edge of Stability phenomenon, which is a fundamental aspect of neural network training dynamics that remains incompletely understood. The potential applications span both vision and language models, indicating broad relevance across deep learning domains. The proposal could influence future optimizer design by demonstrating the practical value of incorporating curvature information. While not necessarily transformative of the entire field, the research addresses an important problem with clear practical implications and could lead to meaningful improvements in how neural networks are trained, particularly in challenging optimization scenarios."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Strong alignment with the workshop's goal of bridging theory and practice in deep learning",
+            "Well-developed mathematical formulation with clear technical foundations",
+            "Novel integration of curvature information into a dynamic optimization framework",
+            "Addresses the important Edge of Stability phenomenon with practical solutions",
+            "Comprehensive research plan spanning theoretical analysis to empirical validation"
+        ],
+        "weaknesses": [
+            "Significant computational overhead concerns that may limit practical applicability",
+            "Incomplete development of theoretical convergence guarantees under non-smooth conditions",
+            "Limited justification for specific hyperparameter adjustment functions",
+            "Potential scalability issues with large models and datasets",
+            "Some implementation details need further elaboration"
+        ]
+    }
+}

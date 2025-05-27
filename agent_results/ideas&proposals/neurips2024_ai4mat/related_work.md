@@ -1,0 +1,31 @@
+1. **Title**: Accelerated Inorganic Materials Design with Generative AI Agents (arXiv:2504.00741)
+   - **Authors**: Izumi Takahara, Teruyasu Mizoguchi, Bang Liu
+   - **Summary**: This paper introduces MatAgent, a generative AI approach for inorganic materials discovery that leverages large language models (LLMs). By integrating a diffusion-based generative model for crystal structure estimation with a predictive model for property evaluation, MatAgent employs iterative, feedback-driven guidance to steer material exploration toward user-defined targets. The framework incorporates external cognitive tools, such as short-term and long-term memory, the periodic table, and a comprehensive materials knowledge base, to emulate human expert reasoning. The results demonstrate that MatAgent effectively directs exploration toward desired properties while achieving high compositional validity, uniqueness, and material novelty, offering an interpretable and versatile AI-driven solution to accelerate the discovery and design of next-generation inorganic materials.
+   - **Year**: 2025
+
+2. **Title**: Accelerating Computational Materials Discovery with Artificial Intelligence and Cloud High-Performance Computing: From Large-Scale Screening to Experimental Validation (arXiv:2401.04070)
+   - **Authors**: Chi Chen, Dan Thien Nguyen, Shannon J. Lee, Nathan A. Baker, Ajay S. Karakoti, Linda Lauw, Craig Owen, Karl T. Mueller, Brian A. Bilodeau, Vijayakumar Murugesan, Matthias Troyer
+   - **Summary**: This study demonstrates the integration of artificial intelligence (AI) models and cloud high-performance computing (HPC) resources to accelerate computational materials discovery. By combining state-of-the-art AI models with traditional physics-based models, the authors screened over 32 million candidates, predicting around half a million potentially stable materials. Focusing on solid-state electrolytes for battery applications, the pipeline identified 18 promising candidates with new compositions and rediscovered a decade's worth of collective knowledge in the field. The process, utilizing approximately one thousand virtual machines in the cloud, took less than 80 hours. Experimental validation of top candidates, such as the Na$_x$Li$_{3-x}$YCl$_6$ series, demonstrated their potential as solid electrolytes, showcasing the effectiveness of AI-guided experimentation in achieving transformative scientific breakthroughs with real-world applications.
+   - **Year**: 2024
+
+3. **Title**: AI-Accelerated Discovery of Altermagnetic Materials (arXiv:2311.04418)
+   - **Authors**: Ze-Feng Gao, Shuai Qu, Bocheng Zeng, Yang Liu, Ji-Rong Wen, Hao Sun, Peng-Jie Guo, Zhong-Yi Lu
+   - **Summary**: This paper presents an AI-driven approach for discovering altermagnetic materials, a new magnetic phase distinct from ferromagnetism and antiferromagnetism. The authors propose an automated discovery method using a pre-trained graph neural network to learn intrinsic features of material crystal structures, followed by fine-tuning a classifier with limited positive samples to predict the altermagnetism probability of given material candidates. The approach successfully identified 50 new altermagnetic materials, including metals, semiconductors, and insulators, confirmed by first-principles electronic structure calculations. The discovered materials exhibit various novel physical properties, such as anomalous Hall effect, anomalous Kerr effect, and topological properties, highlighting the potential of AI search engines in accelerating the discovery of materials with targeted properties.
+   - **Year**: 2023
+
+4. **Title**: Meta-Transformer: A Unified Framework for Multimodal Learning (arXiv:2307.10802)
+   - **Authors**: Yiyuan Zhang, Kaixiong Gong, Kaipeng Zhang, Hongsheng Li, Yu Qiao, Wanli Ouyang, Xiangyu Yue
+   - **Summary**: This work introduces Meta-Transformer, a framework that utilizes a frozen encoder to perform multimodal perception without any paired multimodal training data. In Meta-Transformer, raw input data from various modalities are mapped into a shared token space, allowing a subsequent encoder with frozen parameters to extract high-level semantic features. Comprising a unified data tokenizer, a modality-shared encoder, and task-specific heads for downstream tasks, Meta-Transformer is the first framework to perform unified learning across 12 modalities with unpaired data. Experiments on different benchmarks reveal that Meta-Transformer can handle a wide range of tasks, including fundamental perception (text, image, point cloud, audio, video), practical applications (X-Ray, infrared, hyperspectral, and IMU), and data mining (graph, tabular, and time-series), indicating a promising future for developing unified multimodal intelligence with transformers.
+   - **Year**: 2023
+
+**Key Challenges:**
+
+1. **Data Sparsity and Incompleteness**: Materials science datasets often suffer from sparsity and missing information, making it difficult for machine learning models to learn accurate representations and make reliable predictions.
+
+2. **Multimodal Data Integration**: Effectively fusing heterogeneous data types, such as synthesis parameters, microscopy images, and diffraction patterns, remains a significant challenge due to the diverse nature and varying quality of the data.
+
+3. **Incorporating Physical Constraints**: Integrating known physical laws and domain constraints into machine learning models is complex but essential for ensuring physically plausible predictions and enhancing model interpretability.
+
+4. **Handling Missing Modalities**: Developing models that can gracefully handle missing modalities during data fusion is crucial for robust performance, especially when certain data types are unavailable or incomplete.
+
+5. **Generalization and Interpretability**: Ensuring that models generalize well to unseen data and provide interpretable results is vital for accelerating materials discovery and generating reliable hypotheses from fragmented datasets. 

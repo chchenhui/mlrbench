@@ -1,0 +1,9 @@
+**Title:** Physics-Informed Bayesian Optimization for Accelerated Materials Design  
+
+**Motivation:** Current experimental design in materials science often neglects rich domain knowledge, leading to inefficient exploration of high-dimensional design spaces. Integrating physics-based models can enhance data efficiency and safety, crucial for reducing costly and time-consuming laboratory experiments.  
+
+**Main Idea:** Develop a Bayesian optimization (BO) framework that systematically incorporates physics-based surrogate models as priors or constraints. The methodology involves hybrid Gaussian processes (GPs) where the kernel encodes known physical laws (e.g., thermodynamics, symmetry principles) alongside data-driven components. For high-dimensional spaces, neural networks pretrained on physics simulations guide the acquisition function to prioritize regions aligning with theoretical predictions. This hybrid approach balances exploration with domain-informed exploitation, enabling safer experimentation by avoiding non-physical or hazardous conditions.  
+
+**Expected Outcomes:** The framework will reduce the number of experiments needed to identify optimal materials (e.g., catalysts, photovoltaics) by leveraging domain knowledge to constrain search spaces. Benchmarks on materials datasets will demonstrate improved convergence rates compared to conventional BO.  
+
+**Potential Impact:** Accelerates discovery of novel materials for energy storage, electronics, and sustainability, while providing a blueprint for integrating domain expertise into active learning across physics, chemistry, and biology.

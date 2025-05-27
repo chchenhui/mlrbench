@@ -1,0 +1,7 @@
+# Federated Cross-Modal Knowledge Distillation for Privacy-Preserving Foundation Models
+
+## Motivation
+Foundation models excel in centralized environments but struggle with privacy-sensitive distributed data. Organizations with domain-specific data (healthcare, finance) face regulatory restrictions on data sharing, limiting the benefits of advanced AI. Current approaches either compromise privacy or model performance. A method is needed to leverage distributed multi-modal data to train specialized foundation models without centralizing sensitive information.
+
+## Main Idea
+We propose a cross-modal federated knowledge distillation framework where organizations maintain local foundation models specialized in different modalities (text, images, or tabular data). Our approach creates a federated distillation protocol where each participant periodically shares not raw data or model weights, but carefully designed synthetic knowledge representations derived from their local model's predictions on privacy-preserving prompts. These knowledge representations enable cross-pollination between modalities while maintaining regulatory compliance. The process iteratively distills knowledge across modalities, enabling organizations to enhance their local models with insights from complementary data sources without directly accessing them. Key innovations include modality-agnostic knowledge representation formats, differential privacy guarantees on the shared knowledge, and heterogeneous model support to accommodate varied computational resources across participants.

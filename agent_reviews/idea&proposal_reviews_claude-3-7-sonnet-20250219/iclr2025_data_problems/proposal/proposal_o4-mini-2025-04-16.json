@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal aligns exceptionally well with the task description, research idea, and literature review. It directly addresses the DATA-FM workshop's focus on data curation for foundation models, particularly in multi-modal settings. The proposal builds upon the DataInf approach mentioned in the literature review, extending it to cluster-level influence estimation for multi-modal data. It also addresses fairness concerns highlighted in the Chameleon paper by up-weighting under-represented but high-influence clusters. The methodology section thoroughly details how the approach works, consistent with the initial research idea of a two-stage pipeline using cross-modal embeddings and influence scores. The proposal explicitly connects to multiple workshop themes including data curation, attribution, fairness, and benchmarks."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is very well-structured and articulated with clear sections covering background, objectives, methodology, and expected outcomes. The technical approach is explained in detail with appropriate mathematical formulations and algorithms. The three-stage pipeline (embedding/clustering, influence estimation, and pruning/reweighting) is logically presented with sufficient detail on each component. The experimental design is comprehensive, specifying datasets, baselines, metrics, and ablation studies. However, there are a few areas that could benefit from additional clarification: (1) the exact formulation of the fairness metrics could be more precisely defined, (2) the relationship between the validation gradient and specific fairness objectives could be elaborated, and (3) some implementation details of the iterative curation loop could be further specified."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal demonstrates notable originality by combining several existing techniques in a novel way. The hierarchical approach to influence estimation (clustering followed by cluster-level influence computation) is innovative and addresses the computational challenges of applying influence functions to large-scale multi-modal data. The extension of DataInf to the multi-modal, cluster-level setting represents a meaningful advancement. The iterative curation loop that dynamically adapts data selection as model parameters evolve is also a fresh perspective. However, many of the core components (influence functions, low-rank Hessian approximation, k-means clustering) are established techniques, and the proposal primarily innovates in how these are combined and scaled to the multi-modal FM setting rather than introducing fundamentally new algorithms."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal is technically sound and well-grounded in established methods. The influence function formulation builds on solid theoretical foundations from the literature, and the low-rank Hessian approximation is mathematically justified. The clustering approach using cross-modal embeddings is reasonable, and the optimization formulation for reweighting is well-defined as a convex quadratic program. The experimental design is comprehensive, with appropriate datasets, baselines, and evaluation metrics. The ablation studies are well-designed to assess the impact of various hyperparameters. There are some minor concerns: (1) the assumption that cluster-level influence is a good proxy for individual sample influence could be further justified, (2) the stability of influence estimates across training iterations could be addressed, and (3) the potential impact of approximation errors in the low-rank Hessian could be discussed more thoroughly."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal is largely feasible with existing technology and methods, though it presents some implementation challenges. The computational requirements are substantial but realistic with the specified hardware (8 NVIDIA A100 GPUs). The use of pre-trained cross-modal encoders (CLIP, FLAVA) for embedding generation is practical. The low-rank Hessian approximation makes the influence computation tractable, and the mini-batch gradient statistics further reduce computational costs. However, there are feasibility concerns: (1) computing even low-rank approximations of the Hessian for very large models remains challenging, (2) the iterative curation loop may require significant computational resources for multiple rounds of fine-tuning, (3) the scalability to truly massive datasets (billions of image-text pairs) is not fully addressed, and (4) the approach for inferring demographic attributes for fairness evaluation may face practical limitations."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a critical problem in foundation model development: efficient and principled data curation for multi-modal training. The potential impact is substantial across several dimensions. First, the expected 20-50% reduction in training corpus size would significantly reduce computational costs and carbon footprint, addressing an important sustainability concern in AI development. Second, the improvement in fairness metrics through up-weighting under-represented clusters could help mitigate harmful biases in foundation models. Third, the cluster-level influence scores provide valuable insights for data attribution and marketplace development. The approach is also generalizable to other modalities and compatible with RAG systems. The significance is somewhat limited by the focus on specific vision-language tasks rather than a broader range of multi-modal applications, but overall, the potential contributions to both practical FM development and theoretical understanding of data influence are considerable."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Addresses a critical need for principled data curation in multi-modal foundation models",
+            "Proposes a computationally tractable approach to influence estimation through hierarchical clustering",
+            "Explicitly incorporates fairness considerations through up-weighting of under-represented clusters",
+            "Comprehensive experimental design with appropriate datasets, baselines, and evaluation metrics",
+            "Strong alignment with workshop themes and literature in the field"
+        ],
+        "weaknesses": [
+            "Computational challenges in scaling to very large models and datasets may limit practical application",
+            "Some technical components rely on established methods rather than introducing fundamentally new algorithms",
+            "Implementation details for fairness evaluation and demographic attribute inference need further specification",
+            "The stability and reliability of influence estimates across training iterations could be better addressed"
+        ]
+    }
+}

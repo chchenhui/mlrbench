@@ -1,0 +1,40 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description (DATA-FM workshop call), the research idea, and the literature review. It directly addresses key workshop themes like 'Data Collection and Curation for Foundation Models' (practical strategies, multimodal settings), 'Data and Society' (fairness), and 'Benchmarks and Evaluations'. The methodology clearly elaborates on the research idea's two-stage pipeline. It effectively integrates and builds upon the cited literature (DataInf, HEMM, FLAVA) and explicitly aims to tackle the identified challenges (efficiency, bias, scalability, modality integration). The proposal consistently focuses on data problems in multi-modal FMs, fitting perfectly within the workshop's scope."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is mostly clear and well-articulated. It follows a logical structure with distinct sections for introduction, methodology, and expected outcomes. The research objectives are explicitly stated. The two-stage methodology (clustering and influence estimation) is described with relevant technical details and equations. The experimental design, including datasets, baselines, and metrics, is well-defined. Minor areas could benefit from slight refinement, such as a more detailed justification for the centroid-based influence proxy or the specifics of the low-rank Hessian approximation updates, but overall the proposal is easily understandable."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal demonstrates notable originality. While influence functions (DataInf) and clustering are existing techniques, the core novelty lies in their specific combination and application: a *hierarchical, cluster-based* influence estimation framework tailored for *multi-modal* foundation models. Approximating influence at the cluster level using centroid gradients, combined with cross-modal semantic clustering (spherical k-means on fused embeddings), presents a fresh approach distinct from per-sample influence estimation or generic clustering methods. It extends prior work like DataInf to a more complex, multi-modal, and potentially more scalable setting."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal is sound and mostly rigorous. It builds upon solid theoretical foundations (influence functions, contrastive learning, multi-modal embeddings) and established methods (k-means, low-rank Hessian approximations). The use of frozen encoders and spherical k-means for clustering multi-modal data is appropriate. The influence function approximation strategy, borrowing from DataInf and adapting it for clusters using centroid proxies and low-rank Hessians, is a reasonable approach to tackle computational complexity, although the accuracy of the centroid proxy requires empirical validation (which is planned). The experimental design includes relevant baselines and metrics for validation. Technical formulations appear correct."
+    },
+    "Feasibility": {
+        "score": 8,
+        "justification": "The proposal is largely feasible. It leverages existing pre-trained encoders (CLIP/FLAVA) and standard clustering algorithms. The core challenge, influence estimation, is addressed using approximation techniques specifically designed to enhance scalability (low-rank Hessian, cluster-level computation). The experimental plan uses standard, accessible benchmarks (COCO, HowTo100M). While computing influence functions, even approximated ones, for large datasets remains computationally intensive, the proposed hierarchical, cluster-based approach is a credible strategy to make it manageable compared to per-sample methods. The plan to release an open-source toolkit further supports feasibility."
+    },
+    "Significance": {
+        "score": 9,
+        "justification": "The proposal is highly significant and impactful. It addresses critical and timely challenges in the development of large-scale multi-modal foundation models: the need for efficient and effective data curation, reducing computational costs and environmental impact, mitigating bias, and improving model robustness. By providing a principled method to identify and prioritize valuable data clusters, it moves beyond heuristics. Success would offer substantial contributions to data-centric AI, potentially leading to more efficient training pipelines and fairer models. The alignment with multiple DATA-FM workshop themes underscores its relevance and potential impact on the field."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Strong alignment with the DATA-FM workshop's focus on data challenges in FMs, particularly curation and fairness in multi-modal settings.",
+            "Clear articulation of a novel approach combining hierarchical clustering and approximated influence functions for multi-modal data curation.",
+            "Sound methodology building on established techniques while introducing reasonable approximations for scalability.",
+            "High potential significance in improving FM training efficiency, reducing costs, and mitigating bias.",
+            "Well-defined experimental plan with appropriate benchmarks, baselines, and metrics."
+        ],
+        "weaknesses": [
+            "The effectiveness and accuracy of the centroid-based influence proxy approximation need strong empirical validation.",
+            "Achieving the claimed scalability (<5% compute of per-sample methods) might be challenging in practice and depends heavily on implementation details and dataset characteristics."
+        ]
+    }
+}

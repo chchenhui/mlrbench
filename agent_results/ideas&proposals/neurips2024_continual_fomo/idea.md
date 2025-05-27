@@ -1,0 +1,7 @@
+Title: Dynamic Knowledge-Graph-Infused Adapters for Scalable Continual Learning
+
+Motivation:  
+Foundation models suffer from catastrophic forgetting, high retraining costs, and domain shifts when updated on new, smaller datasets. Leveraging structured knowledge sources promises to preserve prior information, guide adaptation, and reduce compute and data requirements in lifelong learning scenarios.
+
+Main Idea:  
+We introduce lightweight adapter modules augmented with dynamic knowledge graph (KG) embeddings to enable efficient continual learning. For each incoming data distribution, a subgraph capturing new entities and relations is incrementally added to the KG. During model adaptation, cross-attention layers selectively retrieve relevant KG facts into the adapter, steering parameter updates and minimizing interference with existing knowledge. A sparse retrieval mechanism ensures compute efficiency by loading only pertinent subgraphs, while periodic graph consolidation merges redundant nodes to control KG growth. We validate our approach on language and multimodal benchmarks exhibiting domain shifts and long-tailed distributions, demonstrating superior knowledge retention, reduced forgetting, and significantly lower compute compared to full fine-tuning. This framework harnesses structured knowledge to achieve scalable, lifelong adaptation of foundation models.

@@ -1,0 +1,7 @@
+**Title:** Multi-Modal World Models for Zero-Shot Generalization in Household Robotics  
+
+**Motivation:** Current robotic systems struggle to adapt to unseen tasks like cooking or tidying due to rigid task-specific training and limited environmental understanding. Achieving human-level versatility requires models that generalize across dynamic, unstructured settings without exhaustive retraining.  
+
+**Main Idea:** Develop a multi-modal world model that integrates vision, language, and physical interaction data to enable zero-shot task inference. The model would leverage pre-trained vision-language architectures (e.g., VLMs) for semantic understanding and pair them with a physics-informed latent space for action prediction. Training would involve contrastive learning on diverse simulated household tasks (e.g., stacking dishes, heating food) to align language prompts, visual observations, and feasible actions. At deployment, the model generates step-by-step plans from natural language instructions (e.g., "clean spilled milk") by decomposing tasks into primitives (grasp sponge, wipe surface) while dynamically adapting to real-world perturbations via online latent space optimization.  
+
+**Expected Outcomes:** Robots that follow high-level instructions in novel scenarios without task-specific fine-tuning, reducing reliance on curated datasets. Potential impact includes scalable domestic assistance and safer human-robot collaboration in dynamic environments.

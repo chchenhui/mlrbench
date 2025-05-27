@@ -1,0 +1,36 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-written and structured in a logical manner. The authors clearly articulate the problem of KV cache memory bottlenecks in long-context processing and present their solution methodically. The methodology section (Section 3) provides detailed explanations of the three main components: token relevance prediction, adaptive sparsity management, and external memory integration. The mathematical formulations are presented clearly with proper notation. The experimental setup and results are also well-documented. However, there are a few areas that could be improved: (1) The paper doesn't fully explain how the relevance predictor is integrated with the main model during inference, and (2) Some implementation details about how the token relevance prediction mechanism works in practice during autoregressive generation could be clearer."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper presents a novel approach to KV cache management through token-level relevance prediction. While prior work like DynamicKV, MEDA, and RocketKV have explored various approaches to KV cache optimization, ATSKV introduces several innovative components: (1) A learnable token-level relevance prediction mechanism that continuously refines predictions during inference, (2) An adaptive sparsity management system with dynamic thresholding, and (3) A hierarchical external memory integration approach. The combination of these elements represents a meaningful advancement over existing methods. However, some individual components build upon existing techniques in attention-based token importance estimation, and the external memory integration shares similarities with other hierarchical memory approaches in the literature."
+    },
+    "Soundness": {
+        "score": 6,
+        "justification": "The paper's methodology is generally sound, but there are several concerns about the experimental validation and implementation. The code provided shows incomplete implementation with errors (as seen in test_log.txt where several tests fail with errors like 'HandcraftedFeatureExtractor' object has no attribute 'to'). The run_experiment.py script appears to generate mock results rather than running actual experiments when using API-based models. The paper claims impressive results (80% memory reduction with <1% accuracy drop), but the experimental validation is questionable given the code issues. The ablation studies in Section 5.5 provide some insights into component contributions, but the lack of properly functioning code raises questions about whether these experiments were actually conducted as described. Additionally, the paper doesn't adequately address potential limitations of the approach, such as the computational overhead of the relevance predictor during inference."
+    },
+    "Significance": {
+        "score": 7,
+        "justification": "The problem addressed by this paper is significant and timely. KV cache memory requirements are a major bottleneck for processing long contexts in LLMs, and efficient solutions could enable broader deployment of these models in resource-constrained environments. The claimed results (80% memory reduction, 23% higher throughput, 20% lower latency) would represent meaningful improvements if validated. The approach is also generalizable across different model architectures and potentially applicable to multimodal contexts. The paper demonstrates the method's effectiveness across multiple benchmarks (LongBench, ZeroSCROLLS, and a synthetic benchmark). However, the significance is somewhat diminished by the questionable experimental validation and implementation issues identified in the code. Additionally, the paper doesn't provide sufficient comparison with some recent relevant work in this area."
+    },
+    "Overall": {
+        "score": 6,
+        "strengths": [
+            "The paper addresses an important problem in LLM deployment: memory bottlenecks in KV cache for long context processing",
+            "The proposed ATSKV approach combines multiple novel components (token relevance prediction, adaptive sparsity management, external memory integration) in a coherent framework",
+            "The methodology is well-explained with clear mathematical formulations",
+            "The paper includes comprehensive experiments across multiple benchmarks and context lengths",
+            "The analysis of token relevance patterns provides interesting insights into what the model learns to prioritize"
+        ],
+        "weaknesses": [
+            "The code implementation has significant issues, with failing tests and mock results generation, raising questions about the validity of the experimental results",
+            "The paper doesn't adequately address the computational overhead of the token relevance prediction mechanism during inference",
+            "Some implementation details about how the system works during autoregressive generation are unclear",
+            "The external memory integration component is described but not fully evaluated in the experiments",
+            "The paper claims impressive results but the experimental validation is questionable given the code issues"
+        ]
+    },
+    "Confidence": 4
+}

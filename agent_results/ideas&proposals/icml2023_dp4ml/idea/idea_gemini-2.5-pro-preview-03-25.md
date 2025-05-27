@@ -1,0 +1,5 @@
+**Title:** Dual Variable Sensitivity for Explaining Deep Learning Predictions
+
+**Motivation:** Explaining deep learning remains challenging. While Lagrange duality provides principled sensitivity analysis via dual variables in optimization, its potential for explaining non-convex deep models is largely untapped. This research aims to bridge this gap, providing robust, theoretically-grounded explanations.
+
+**Main Idea:** We propose using Lagrange duality concepts to quantify the sensitivity of a deep network's output to input feature perturbations. For a given input, we formulate a local optimization problem (potentially a convex relaxation) aiming to minimally perturb the input features (or internal activations) subject to constraints that alter the model's prediction. The Lagrange multipliers (dual variables) associated with these perturbation constraints directly measure the prediction's sensitivity to changes in corresponding features. We will develop computationally efficient methods to estimate these dual variables for deep networks, yielding novel feature importance scores and rigorous counterfactual explanations grounded in duality theory.

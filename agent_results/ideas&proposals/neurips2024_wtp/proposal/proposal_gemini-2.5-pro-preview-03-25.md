@@ -1,0 +1,104 @@
+Okay, here is a detailed research proposal based on the provided task description, research idea, and literature review.
+
+---
+
+**1. Title:** **FineActionBench: A High-Fidelity Benchmark for Evaluating Fine-Grained Temporal Grounding in Video-Language Models**
+
+**2. Introduction**
+
+*   **Background:** The proliferation of video data across the internet and various applications (e.g., content creation, surveillance, robotics, autonomous driving) has spurred significant interest in developing sophisticated Video-Language Models (VLMs). These models aim to bridge the gap between visual content and natural language, enabling tasks like video retrieval, captioning, question answering, and action recognition. As highlighted by the "Workshop on Touch Processing: From Data to Knowledge," the development of advanced VLMs faces several critical challenges: the scarcity of high-quality annotated video data, the computational demands of processing large volumes of video frames, the complexity of integrating multimodal information (visual, audio, temporal, textual), and the lack of robust benchmarks for evaluating specific capabilities, particularly concerning fine-grained understanding. While current benchmarks often focus on evaluating models at a coarse level (e.g., retrieving entire videos based on text queries or generating global captions), many emerging applications necessitate a much deeper, temporally precise understanding of video content. For instance, instructional video analysis requires linking specific steps mentioned in text to exact moments in the video, robotic systems need to ground commands to precise action phases, and detailed content analysis demands identifying when specific events or interactions occur. This capability, known as fine-grained temporal grounding or alignment, remains a significant challenge for current VLMs.
+
+*   **Problem Statement & Motivation:** The literature review reveals a growing recognition of the need for benchmarks focusing on fine-grained temporal understanding. Works like TemporalBench (Cai et al., 2024) assess temporal reasoning (e.g., frequency, order), VideoComp (Kim et al., 2025) targets compositional and temporal alignment using challenging negatives, PiTe (Liu et al., 2024) and Grounded-VideoLLM (Wang et al., 2024) propose models specifically designed for better temporal grounding, and FIBER (Xu et al., 2024) introduces a benchmark for fine-grained retrieval evaluating spatial/temporal biases. E.T. Bench (Liu et al., 2024) also touches upon event grounding. However, despite these advances, a critical gap persists: the lack of a dedicated, large-scale benchmark specifically designed to evaluate the ability of VLMs to precisely align *short, descriptive textual phrases* with their corresponding *exact temporal segments* within complex, multi-step activity videos. Existing benchmarks may assess related skills but often lack the required density of annotations or focus specifically on this phrase-to-segment grounding task with high temporal precision. This deficiency hinders rigorous comparison between models claiming fine-grained temporal capabilities and obstructs targeted development towards improving this crucial aspect of video understanding. Without such a benchmark, it is difficult to quantify progress, identify model weaknesses related to temporal precision, and drive innovation towards VLMs that can truly understand *when* specific things happen in a video based on language descriptions.
+
+*   **Research Objectives:** This research aims to address the identified gap by developing **FineActionBench**, a novel benchmark specifically designed for evaluating fine-grained temporal video-language alignment. The primary objectives are:
+    1.  **Curate a High-Quality Video Dataset:** Select a diverse set of videos depicting complex, sequential activities (e.g., cooking, assembly, sports highlights, procedural tasks) suitable for dense temporal annotation. Leverage existing high-quality video datasets where possible (e.g., FineAction, HowTo100M snippets) and potentially supplement with newly sourced clips.
+    2.  **Develop a Dense Annotation Protocol:** Design and implement a rigorous annotation process to generate pairs of short textual phrases (describing specific sub-actions, object interactions, or events) and their precise start and end timestamps within the corresponding videos. Ensure high inter-annotator agreement and annotation quality.
+    3.  **Define Novel Evaluation Metrics:** Propose and formalize evaluation metrics capable of quantifying the accuracy of fine-grained temporal grounding, focusing on phrase-specific localization. This includes adapting existing metrics like Temporal Intersection over Union (T-IoU) and introducing variants like Phrase-Localized T-IoU (PL-T-IoU) and recall metrics at varying T-IoU thresholds.
+    4.  **Establish Baseline Performance:** Evaluate a range of state-of-the-art VLMs (including those specifically designed for temporal understanding like PiTe and Grounded-VideoLLM, as well as general-purpose VLMs) on FineActionBench to establish baseline performance and highlight current limitations.
+    5.  **Public Release:** Release the curated dataset, annotations, evaluation code, and baseline results to the research community to facilitate standardized evaluation and future research in fine-grained temporal video understanding.
+
+*   **Significance:** FineActionBench will provide a much-needed standardized tool for the VLM community. Its significance lies in:
+    *   **Addressing a Critical Evaluation Gap:** Directly tackles the lack of benchmarks for precise, phrase-level temporal grounding, enabling more accurate assessment of model capabilities beyond coarse retrieval or captioning.
+    *   **Driving Model Development:** By providing challenging test cases and precise metrics, FineActionBench will guide the development of new VLM architectures and training strategies explicitly targeting improved temporal localization and alignment.
+    *   **Enabling Fair Comparison:** Offers a common ground for comparing different models' fine-grained temporal understanding abilities, fostering reproducible research and clearer identification of state-of-the-art approaches.
+    *   **Supporting Downstream Applications:** Facilitates progress in applications requiring precise temporal control and understanding, such as robotics, human-computer interaction, detailed video analysis, and assistive technologies.
+    *   **Contributing to Workshop Goals:** Directly addresses the workshop's focus on data scarcity (by providing high-quality annotations), multimodal integration (testing the temporal alignment aspect), and the need for robust benchmarks.
+
+**3. Methodology**
+
+This section details the plan for creating FineActionBench, defining the evaluation task and metrics, and conducting baseline experiments.
+
+*   **3.1. Benchmark Curation: Data Collection and Annotation**
+    *   **Video Source Selection:** We will primarily source videos from existing datasets known for depicting complex, multi-step human activities, ensuring diversity in actions, scenes, and video quality. Potential sources include:
+        *   **FineAction (Liu et al., 2021):** Contains 17K untrimmed videos with annotations for 106 action categories. We can leverage its fine-grained action labels as a starting point but will require much denser, phrase-level temporal annotations.
+        *   **HowTo100M (Miech et al., 2019):** A large-scale dataset of instructional videos. We will select a subset of videos focusing on tasks with clearly discernible steps (e.g., cooking, crafts, repairs).
+        *   **ActivityNet (Cova et al., 2015):** While older, it contains diverse human activities suitable for temporal grounding.
+        *   **Breakfast Actions (Kuehne et al., 2014):** Contains videos of cooking activities with annotated sub-actions, providing a good template for dense annotation.
+        We aim to curate a subset of approximately **1,000-1,500 diverse videos**, balanced across different activity types, with typical durations ranging from 30 seconds to 5 minutes.
+    *   **Annotation Protocol:** This is a critical step requiring careful design.
+        1.  **Phrase Generation:** Human annotators will watch each selected video segment multiple times. They will be tasked with identifying and describing discrete, temporally localized sub-actions, events, or key object interactions using concise natural language phrases (typically 3-10 words). Examples: "picks up the screwdriver," "pours milk into the bowl," "tightens the final bolt," "player scores a goal." The goal is to achieve high annotation density, aiming for 5-15 annotated phrase-segment pairs per video minute, depending on action complexity.
+        2.  **Temporal Boundary Annotation:** For each generated phrase, annotators will mark the precise start and end timestamps ($t_{start}$, $t_{end}$) corresponding to the described action/event in the video. Annotation tools will allow frame-level precision.
+        3.  **Annotation Guidelines:** Detailed guidelines will be provided to annotators, including examples, definitions of action boundaries (e.g., start when interaction begins, end when it completes or primary movement ceases), and rules for handling ambiguity or overlapping actions.
+        4.  **Quality Control:** We will employ multiple annotators per video (at least two initially) and calculate inter-annotator agreement (IAA) on both the temporal boundaries (e.g., using T-IoU agreement) and phrase consistency. A senior annotator or researcher will review annotations, resolve disagreements, and ensure adherence to guidelines. We will iterate on the guidelines based on initial annotation rounds.
+    *   **Dataset Structure and Splits:** The final FineActionBench dataset will consist of video IDs, video files/URLs, and a list of annotations per video. Each annotation will include the textual phrase, the ground truth start time ($t_{s, gt}$), and the ground truth end time ($t_{e, gt}$). We will split the dataset into standard training, validation, and testing sets (e.g., 70%/15%/15% split) ensuring no video overlap between splits. The test set annotations will be held private for standardized evaluation via a dedicated evaluation server.
+
+*   **3.2. Task Definition: Fine-Grained Temporal Grounding**
+    The core task evaluated by FineActionBench is **Phrase-based Temporal Grounding**. Formally, given an input video $V$ and a textual query phrase $q$ describing a specific action or event, the goal is to predict the temporal interval $[t_{s, pred}, t_{e, pred}]$ within $V$ that corresponds to the segment where the action/event described by $q$ occurs.
+
+*   **3.3. Evaluation Metrics**
+    To quantitatively measure performance on this task, we will use the following metrics:
+    1.  **Temporal Intersection over Union (T-IoU):** This standard metric measures the overlap between the predicted temporal segment $[t_{s, pred}, t_{e, pred}]$ and the ground truth segment $[t_{s, gt}, t_{e, gt}]$. It is defined as:
+        $$
+        \text{T-IoU}( [t_{s, pred}, t_{e, pred}], [t_{s, gt}, t_{e, gt}] ) = \frac{|\text{intersection}( [t_{s, pred}, t_{e, pred}], [t_{s, gt}, t_{e, gt}] )|}{|\text{union}( [t_{s, pred}, t_{e, pred}], [t_{s, gt}, t_{e, gt}] )|}
+        $$
+        where the intersection is $\max(0, \min(t_{e, pred}, t_{e, gt}) - \max(t_{s, pred}, t_{s, gt}))$ and the union is $(t_{e, pred} - t_{s, pred}) + (t_{e, gt} - t_{s, gt}) - \text{intersection}$.
+
+    2.  **Phrase-Localized T-IoU (PL-T-IoU):** While standard T-IoU measures the quality of a predicted segment against a *given* ground truth segment, our task involves multiple phrases per video. For each phrase query $q_i$ associated with a ground truth segment $[t_{s, gt}^{(i)}, t_{e, gt}^{(i)}]$, the model predicts a segment $[t_{s, pred}^{(i)}, t_{e, pred}^{(i)}]$. PL-T-IoU is simply the T-IoU calculated specifically for this query-prediction pair: $\text{PL-T-IoU}_i = \text{T-IoU}([t_{s, pred}^{(i)}, t_{e, pred}^{(i)}], [t_{s, gt}^{(i)}, t_{e, gt}^{(i)}])$. We will report the average PL-T-IoU across all queries in the test set.
+
+    3.  **Recall@K with T-IoU Threshold (R@K, tIoU=θ):** This metric evaluates whether the ground truth segment corresponding to a query phrase is successfully "retrieved" among the model's predictions, given a certain temporal accuracy threshold. For each query $q_i$, a model might predict multiple candidate segments or rank proposals. We consider a prediction successful if its T-IoU with the ground truth segment is greater than or equal to a threshold $\theta$ (e.g., $\theta \in \{0.3, 0.5, 0.7\}$). R@K measures the fraction of queries for which at least one of the top-K predictions meets the T-IoU threshold $\theta$. We will primarily focus on R@1, representing the accuracy of the single best prediction for each query. Reporting results at multiple $\theta$ values provides insight into model precision (higher $\theta$) versus localization ability (lower $\theta$).
+
+    4.  **Mean Average Precision (mAP) for Temporal Grounding:** If models produce multiple ranked predictions per query, we can also compute mAP based on the T-IoU threshold $\theta$, adapting standard object detection evaluation practices to the temporal domain.
+
+*   **3.4. Baseline Models and Experimental Design**
+    *   **Model Selection:** We will select a diverse range of recent VLMs to establish baseline performance on FineActionBench. This will include:
+        *   Models explicitly designed for temporal grounding or fine-grained understanding: PiTe (Liu et al., 2024), Grounded-VideoLLM (Wang et al., 2024), potentially adaptations of models from VideoComp (Kim et al., 2025) or FIBER (Xu et al., 2024).
+        *   General-purpose large VLMs: VidLA (Rizve et al., 2024), potentially other SOTA models like VideoLLaMA, Video-ChatGPT, adapting their outputs for temporal grounding if necessary (e.g., prompting them to output timestamps).
+        *   Transformer-based models known for sequence modeling on video features (e.g., adapted versions of TimeSformer or VideoMAE combined with text encoders).
+    *   **Evaluation Protocol:**
+        1.  **Zero-Shot Evaluation:** We will first evaluate all selected models in a zero-shot setting (i.e., without any training or fine-tuning on the FineActionBench training set). This assesses the inherent fine-grained temporal grounding capabilities learned during their original pre-training. Models will be provided with the video and the query phrase, and required to output the predicted start/end times.
+        2.  **Fine-tuning Evaluation:** For models where training code is available, we will fine-tune them on the FineActionBench training split. The fine-tuning task will directly optimize for predicting the correct temporal boundaries given the video and phrase, likely using a regression loss (e.g., L1 or Smooth L1 loss on start/end times) or optimizing T-IoU directly if feasible. Performance will then be evaluated on the held-out test set.
+        3.  **Analysis:** We will analyze the results across different models, activity types, phrase lengths, and action durations. We will investigate common failure modes (e.g., inaccurate boundaries, confusion between similar actions, difficulty with long videos or very short actions) to provide insights into current model limitations.
+    *   **Implementation Details:** Experiments will be conducted using standard deep learning frameworks (PyTorch/TensorFlow) on appropriate GPU hardware. Evaluation scripts implementing the defined metrics (T-IoU, R@K, PL-T-IoU) will be developed and made publicly available.
+
+**4. Expected Outcomes & Impact**
+
+*   **Expected Outcomes:**
+    1.  **The FineActionBench Dataset:** A publicly released dataset comprising 1,000-1,500 videos with dense, high-quality annotations of textual phrases aligned to precise temporal segments (targeting >10,000 annotations).
+    2.  **Formalized Evaluation Metrics:** Clear definitions and implementations of PL-T-IoU and R@K (tIoU=θ) tailored for fine-grained temporal grounding evaluation.
+    3.  **Evaluation Server & Leaderboard:** A platform for standardized evaluation on the hidden test set, allowing researchers to compare their models' performance consistently.
+    4.  **Baseline Performance Report:** Comprehensive results and analysis of state-of-the-art VLMs on FineActionBench, establishing initial benchmarks and identifying key challenges.
+    5.  **Research Publications:** Papers detailing the benchmark creation, evaluation methodology, and findings, submitted to relevant computer vision or machine learning conferences/journals (e.g., CVPR, ICCV, NeurIPS, ACL).
+
+*   **Impact:**
+    *   **Accelerated Research:** FineActionBench will serve as a catalyst for research into more temporally precise VLMs, providing the necessary tool to measure progress objectively.
+    *   **Improved Model Capabilities:** The benchmark's challenging nature will push the community to develop novel architectures, training objectives, and representations that better capture fine-grained temporal dynamics and video-language alignment.
+    *   **Enhanced Applications:** Progress driven by FineActionBench will translate into more capable systems for applications demanding precise temporal understanding, such as robot instruction following, detailed surgical video analysis, sports analytics, and interactive video editing tools.
+    *   **Community Resource:** By providing the dataset, code, and baseline results openly, we will foster collaboration and reproducibility within the VLM research community, directly contributing to the goals of advancing video-language understanding as outlined in the workshop description. This work directly addresses the workshop's highlighted need for better evaluation benchmarks and models capable of handling the complex temporal dimension of video data alongside language.
+
+---
+**5. References**
+
+1.  Cai, M., Tan, R., Zhang, J., Zou, B., Zhang, K., Yao, F., Zhu, F., Gu, J., Zhong, Y., Shang, Y., Dou, Y., Park, J., Gao, J., Lee, Y. J., & Yang, J. (2024). *TemporalBench: Benchmarking Fine-grained Temporal Understanding for Multimodal Video Models*. arXiv:2410.10818.
+2.  Kim, D., Piergiovanni, AJ., Mallya, G., & Angelova, A. (2025). *VideoComp: Advancing Fine-Grained Compositional and Temporal Alignment in Video-Text Models*. arXiv:2504.03970. (Note: Year adjusted based on typical arXiv pre-print timelines if 2504 is April 2025, otherwise assumed typo for 2024).
+3.  Liu, Y., Ding, P., Huang, S., Zhang, M., Zhao, H., & Wang, D. (2024). *PiTe: Pixel-Temporal Alignment for Large Video-Language Model*. arXiv:2409.07239.
+4.  Xu, Y., Li, X., Yang, Y., Huang, R., & Wang, L. (2024). *Fine-grained Video-Text Retrieval: A New Benchmark and Method*. arXiv:2501.00513. (Note: Year adjusted based on typical arXiv pre-print timelines if 2501 is Jan 2025, otherwise assumed typo for 2024).
+5.  Wang, H., Xu, Z., Cheng, Y., Diao, S., Zhou, Y., Cao, Y., Wang, Q., Ge, W., & Huang, L. (2024). *Grounded-VideoLLM: Sharpening Fine-grained Temporal Grounding in Video Large Language Models*. arXiv:2410.03290.
+6.  Liu, Y., Ma, Z., Qi, Z., Wu, Y., Shan, Y., & Chen, C. W. (2024). *E.T. Bench: Towards Open-Ended Event-Level Video-Language Understanding*. arXiv:2409.18111.
+7.  Rizve, M. N., Fei, F., Unnikrishnan, J., Tran, S., Yao, B. Z., Zeng, B., Shah, M., & Chilimbi, T. (2024). *VidLA: Video-Language Alignment at Scale*. arXiv:2403.14870.
+8.  Wu, H., Li, D., Chen, B., & Li, J. (2024). *LongVideoBench: A Benchmark for Long-context Interleaved Video-Language Understanding*. arXiv:2407.15754.
+9.  Liu, Y., Wang, L., Wang, Y., Ma, X., & Qiao, Y. (2021). *FineAction: A Fine-Grained Video Dataset for Temporal Action Localization*. arXiv:2105.11107.
+10. Miech, A., Zhukov, D., Alayrac, J.-B., Tapaswi, M., Laptev, I., & Sivic, J. (2019). *HowTo100M: Learning a Text-Video Embedding by Watching Hundred Million Narrated Video Clips*. arXiv:1906.03327.
+11. Cova, F., Heilbron, E., Ghodrati, A., Brattoli, B., & Niebles, J. C. (2015). *ActivityNet: A Large-Scale Video Benchmark for Human Activity Understanding*. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR).
+12. Kuehne, H., Arslan, A., & Serre, T. (2014). *The Language of Action: Recovering the Syntax and Semantics of Goal-Directed Human Activities*. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR).
+
+*(Note: The reference list includes papers from the literature review and additional relevant datasets mentioned in the methodology.)*

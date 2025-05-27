@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the workshop's focus on 'Effect of Data' within the 'Intriguing phenomena of foundation models' topic, specifically tackling how the number of data passes affects training. The proposal builds upon the literature review by incorporating concepts from papers on data recycling, repetition effects, and theoretical frameworks. It extends these ideas by developing a principled approach to determine optimal epoch counts based on gradient statistics and information geometry. The methodology section thoroughly addresses the theoretical modeling mentioned in the research idea, including stochastic optimization theory and information geometry approaches. The proposal's focus on balancing efficiency and representation quality directly responds to the workshop's call for reconciling theory with practice in the large model era."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is very well-structured and articulated with clear objectives, methodology, and expected outcomes. The research questions and goals are explicitly stated in the introduction, with three concrete objectives: theoretical modeling, convergence/generalization bounds, and empirical validation. The mathematical formulations are precise and well-explained, with equations clearly labeled and their implications discussed. The algorithmic steps and experimental design are thoroughly detailed. However, there are a few areas that could benefit from additional clarity: (1) the connection between the information-geometry refinement and the rest of the theoretical framework could be more explicitly linked, (2) some technical terms (e.g., Fisher information metric) might benefit from brief explanations for broader accessibility, and (3) the transition between theoretical bounds and practical heuristics could be more thoroughly explained."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal offers notable originality in several aspects. The development of a theoretical framework specifically for data recycling in LLM pretraining represents a fresh approach to an important practical problem. The introduction of the effective sample size concept (N_eff) and its relationship to gradient-noise correlation is innovative. The information-geometry perspective on representation quality adds a novel dimension to the analysis. However, the proposal builds significantly on existing stochastic optimization theory and some concepts from the literature review (particularly papers 5, 6, and 10). While it combines these elements in new ways and extends them to the specific context of LLM pretraining, the core mathematical techniques are established. The quality-weighted recycling approach is mentioned in the literature (papers 1 and 8), though the proposal extends this with theoretical justification. Overall, the work represents a valuable novel combination and extension of existing approaches rather than a fundamentally new paradigm."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal demonstrates strong technical rigor and sound theoretical foundations. The stochastic optimization framework is well-established, and the gradient noise model with autocorrelation across epochs is a reasonable approach to capture data recycling effects. The derivation of convergence bounds (Equation 1) and the effective sample size concept (Equation 2) follow logically from the stated assumptions. The information-geometry extension is theoretically justified, though some additional details on the assumptions for Equation 4 would strengthen this aspect. The experimental design is comprehensive, with appropriate control variables, evaluation metrics, and statistical significance testing. The proposal acknowledges the need to fit parameters like σ² and L from small-scale runs, showing awareness of practical limitations. The connection between theory and practice is well-considered, with clear plans to validate theoretical predictions empirically. One minor concern is that the assumption of gradient noise being constant (σ²) across training might be oversimplified for very large models, but this is acknowledged indirectly in the discussion of fitting these parameters from empirical data."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal presents a feasible research plan with clearly defined steps and reasonable scope. The theoretical framework builds on established optimization theory, making the derivation of bounds achievable. The experimental design is practical, using models of varying but manageable scales (110M to 2.7B parameters) rather than the largest LLMs, which is appropriate for validating the theoretical predictions. The data requirements (500GB subset of Common Crawl plus Wikipedia) are substantial but within reach of academic research labs. The proposal wisely includes control variables and multiple evaluation metrics to ensure robust conclusions. However, there are some feasibility concerns: (1) accurately measuring gradient autocorrelation ρ in practice may be challenging at scale, (2) the computational resources required for multiple training runs with different epoch counts could be substantial, even with the proposed model sizes, and (3) the quality-weighted recycling approach requires additional preprocessing overhead. The proposal acknowledges some of these challenges by mentioning the need for a 'lightweight epoch-planner tool' and focusing on practical heuristics, which helps mitigate these concerns."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a highly significant problem in modern machine learning: optimizing the efficiency and effectiveness of LLM pretraining. As noted in the task description, trial and error with billion-parameter models results in enormous computational costs, making principled approaches to hyperparameter selection critically important. The theoretical contributions would advance understanding of how data repetition affects optimization dynamics and generalization in large models. The practical heuristics for determining optimal epoch counts could substantially reduce computational waste in LLM training, with the proposal estimating up to 30% reduction in GPU-hours. This aligns perfectly with the workshop's focus on reconciling theory with practice. The broader impact section correctly identifies how this work could democratize access to large-scale language modeling by reducing costs. The significance is somewhat limited by the focus on a specific hyperparameter (number of epochs) rather than addressing the full range of training dynamics, but this focused approach also increases the likelihood of meaningful progress on an important subproblem."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Excellent alignment with the workshop's focus on reconciling theory with practice in large model training",
+            "Strong theoretical foundation with clear mathematical formulations and bounds",
+            "Practical focus on a significant problem (data recycling) with potential for substantial computational savings",
+            "Comprehensive experimental design with appropriate controls and evaluation metrics",
+            "Clear connection between theoretical predictions and empirical validation"
+        ],
+        "weaknesses": [
+            "Some aspects of the theoretical framework (particularly the information-geometry component) could be more thoroughly explained",
+            "The novelty is more in the combination and application of existing techniques rather than fundamentally new approaches",
+            "Practical challenges in measuring gradient autocorrelation at scale are not fully addressed",
+            "The assumption of constant gradient noise variance may be oversimplified for very large models"
+        ]
+    }
+}

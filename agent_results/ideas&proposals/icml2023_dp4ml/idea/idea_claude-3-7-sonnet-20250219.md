@@ -1,0 +1,9 @@
+# Dual Embedding Networks for Interpretable Deep Learning
+
+## Motivation
+Deep neural networks are often criticized for their black-box nature, making model understanding and explanation challenging. Current interpretability methods typically analyze networks post-training, providing only approximate insights into the model's decision-making process. This research addresses the critical need for inherently interpretable deep learning architectures by leveraging mathematical duality principles to create models that are simultaneously powerful and transparent.
+
+## Main Idea
+We propose Dual Embedding Networks (DENs), a novel architecture that maintains parallel primal and dual representations throughout the network. The primal path processes input data conventionally, while the dual path maintains interpretable feature representations through Fenchel conjugate transformations of hidden layer activations. By enforcing consistency between primal and dual paths via a duality gap regularizer, the model learns representations that are both performant and interpretable. 
+
+The dual path enables direct visualization of feature importance at each layer and provides sensitivity measures for input perturbations without additional computation. Furthermore, DENs naturally support counterfactual explanations by traversing the dual space to identify minimal input changes needed to alter predictions. Preliminary experiments show that DENs achieve comparable accuracy to conventional networks while providing interpretability benefits across vision and language tasks, with minimal computational overhead during inference.

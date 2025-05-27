@@ -1,0 +1,5 @@
+**Title:** Dynamic Input-Adaptive Quantization for Efficient Foundation Model Inference
+
+**Motivation:** Static quantization applies a fixed compression level to foundation models, which can be suboptimal. Simple inputs might be processed with unnecessarily high precision, while complex inputs might suffer accuracy degradation. We need methods that dynamically adapt computational effort based on input complexity for better average efficiency.
+
+**Main Idea:** We propose training a lightweight "complexity prediction" network alongside a large foundation model. This predictor takes early-layer activations or input features and quickly estimates the input's complexity or the model's sensitivity to quantization for this specific input. Based on this prediction, it dynamically selects quantization parameters (e.g., bit-widths, scaling factors) for subsequent, computationally heavier layers/blocks *on-the-fly* during inference. Simpler inputs trigger more aggressive quantization, saving compute/memory, while complex inputs use higher precision to preserve accuracy. This allows maximizing inference throughput while maintaining target accuracy across diverse inputs.

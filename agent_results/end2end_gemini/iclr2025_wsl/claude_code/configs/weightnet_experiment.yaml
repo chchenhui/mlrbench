@@ -1,0 +1,37 @@
+# Configuration for main WeightNet experiment
+
+# Extend base configuration
+extends: "base_config.yaml"
+
+# Experiment metadata
+experiment:
+  name: "weightnet_main"
+  description: "Main experiment for WeightNet model with permutation invariance"
+
+# Model configuration - WeightNet
+model:
+  type: "weightnet"
+  d_model: 256
+  num_intra_layer_heads: 4
+  num_cross_layer_heads: 8
+  num_intra_layer_blocks: 2
+  num_cross_layer_blocks: 2
+  d_ff: 1024
+  dropout: 0.1
+
+# Data configuration
+data:
+  canonicalization_method: "weight_sort"
+  tokenization_strategy: "neuron_centric"
+  batch_size: 16
+  synthetic:
+    num_models_per_architecture: 25
+
+# Training configuration
+training:
+  num_epochs: 100
+  early_stopping_patience: 15
+  optimizer:
+    lr: 0.001
+  scheduler:
+    type: "cosine"

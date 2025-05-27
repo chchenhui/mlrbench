@@ -1,0 +1,7 @@
+1. Title: Policy2Constraint: Automated Translation of Regulatory Text into Constrained ML Training
+
+2. Motivation:  
+There’s a widening gap between formal regulations and their operationalization in ML systems. Manually encoding legal requirements into algorithmic constraints is labor-intensive, error-prone, and doesn’t scale across evolving policies. This research aims to close that gap by automating the end-to-end pipeline from policy text to compliant model training.
+
+3. Main Idea:  
+We propose a three-stage framework. (1) Regulatory NLP: apply domain-tuned semantic parsers and named-entity recognition to extract rights, obligations, and prohibitions from legal documents (e.g., GDPR, fair-housing laws). (2) Formalization: map extracted norms into first-order logic predicates and translate these into differentiable penalty functions. (3) Constrained Optimization: integrate these penalties as soft constraints in the ML loss and solve via multi-objective optimizers. We will validate on case studies—ensuring anti-discrimination in credit scoring and GDPR-compliant data usage—measuring both task performance and regulatory adherence. Expected outcomes include an open-source toolkit for auto-embedding policy constraints, empirical benchmarks on compliance trade-offs, and guidelines for scalable, regulation-aligned ML development.

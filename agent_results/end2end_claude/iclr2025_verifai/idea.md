@@ -1,0 +1,7 @@
+# Fault-Directed Learning for LLM Code Verification
+
+## Motivation
+Despite advances in LLM code generation, ensuring correctness remains challenging. Current approaches like static analysis or grammar-guided generation act as post-hoc filters but don't effectively teach models to avoid similar errors in future generations. This research addresses the gap between detecting errors and improving the generative capacity of LLMs through a structured learning framework, reducing the need for expensive human feedback loops.
+
+## Main Idea
+Fault-Directed Learning (FDL) is a framework that integrates formal verification feedback directly into LLM fine-tuning. Rather than simply filtering incorrect code, FDL creates a feedback loop where formal verification tools (static analyzers, SMT solvers, runtime testers) generate structured error explanations when code fails verification. These explanations are automatically transformed into remediation examples that are reincorporated into the model's training process. The approach involves: (1) a taxonomy of code faults and their formal descriptions, (2) an error-to-explanation converter that generates natural language descriptions of identified faults, and (3) a learning mechanism that prioritizes examples based on error frequency and severity. FDL aims to create LLMs that internalize formal verification principles, gradually producing code that passes verification more frequently without sacrificing generation capabilities.

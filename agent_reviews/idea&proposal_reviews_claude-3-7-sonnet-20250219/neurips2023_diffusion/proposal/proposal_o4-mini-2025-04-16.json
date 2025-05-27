@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the workshop's focus on diffusion models, particularly in the areas of 'solving inverse problems' and 'image/video editing' mentioned in the task description. The proposal faithfully expands on the core idea of developing injective Neural ODE-based conditional diffusion models for exact inversion and image editing, elaborating on all key aspects mentioned in the idea summary. The literature review is thoroughly incorporated, with explicit references to works like ERDDCI, Negative-Prompt Inversion, BDIA, and EDICT, addressing the key challenges identified in the review. The proposal's focus on theoretical guarantees for injectivity and practical applications in medical imaging aligns perfectly with the gaps identified in the literature review."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is very well-articulated with a logical structure that flows from introduction to methodology to expected outcomes. The technical formulations are presented with mathematical precision, clearly explaining the injective Neural ODE flow, noise injection process, and exact reverse ODE inversion. The training objective and localized latent editing protocol are well-defined with step-by-step explanations. The experimental design section provides specific datasets, baselines, and evaluation metrics. However, there are a few areas that could benefit from additional clarification: (1) the relationship between the injected noise and the deterministic inversion could be more explicitly explained, (2) the exact mechanism of the Jacobian pull-back in the editing protocol could be elaborated, and (3) some technical terms (e.g., 'spectral-norm constraints') might benefit from brief explanations for broader accessibility."
+    },
+    "Novelty": {
+        "score": 8,
+        "justification": "The proposal presents a highly novel approach by combining several innovative elements. The core innovation lies in designing a fully injective diffusion architecture using Neural ODEs with Lipschitz regularization to guarantee exact inversion without iterative optimization. While Neural ODEs and diffusion models have been studied separately, their integration with explicit injectivity guarantees for deterministic inversion represents a fresh perspective. The localized latent editing protocol that leverages the Jacobian pull-back for targeted modifications is particularly innovative. The proposal builds upon existing work (cited appropriately from the literature review) but extends it significantly by providing theoretical guarantees for injectivity and a unified framework for both inversion and editing. The approach is not entirely unprecedented (as evidenced by related work in the literature review), but it offers a substantial advancement over current methods."
+    },
+    "Soundness": {
+        "score": 7,
+        "justification": "The proposal demonstrates strong theoretical foundations, drawing on established principles from Neural ODEs, diffusion models, and Lipschitz regularization. The mathematical formulations are generally correct and well-presented. The training objective combines conditional denoising score matching with Lipschitz regularization in a principled manner. However, there are some aspects that could benefit from more rigorous justification: (1) the claim that the Lipschitz bound ensures bijective mapping needs more detailed theoretical support, (2) the interleaving of ODE steps with noise injection requires more analysis of how this affects the theoretical guarantees, and (3) the empirical validation of Jacobian-determinant non-vanishing is mentioned but the specific methodology is not fully detailed. While the overall approach is sound, these gaps in theoretical justification and validation methodology slightly reduce the score."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal presents a feasible research plan with clearly defined implementation details. The use of established frameworks (PyTorch, Diffrax, Hydra) and well-specified architectural choices (U-Net backbone, ResBlock ODE-Net) increases practicality. The experimental design with specific datasets and evaluation metrics is well thought out. However, several challenges may affect implementation: (1) training Neural ODEs with Lipschitz constraints at scale could be computationally intensive, (2) the adaptive ODE solver with tight tolerances (10^-5) may significantly slow down training and inference, (3) ensuring stable training of the joint model (ODE flow and score network) could be difficult, and (4) the Jacobian pull-back for localized editing might be memory-intensive for high-resolution images. While these challenges don't render the proposal infeasible, they do present significant implementation hurdles that would require careful engineering and possibly some compromises."
+    },
+    "Significance": {
+        "score": 9,
+        "justification": "The proposal addresses a critical gap in diffusion models: the lack of exact, deterministic inversion capabilities. This has substantial significance for multiple domains. In medical imaging and forensics, where reconstruction fidelity is paramount, the guaranteed injectivity could enable more trustworthy applications. The unification of generative modeling and inverse problem-solving in a single framework represents a significant theoretical advancement. The potential for one-shot inversion without iterative optimization could dramatically improve computational efficiency. The localized editing capabilities could transform workflows in design and scientific visualization. The proposal also lays groundwork for future extensions to video, 3D, and multimodal applications. The expected outcomes (1-2 dB PSNR gains, 85% user preference for edits) would represent meaningful improvements over state-of-the-art methods. Overall, the work has the potential to significantly influence both theoretical understanding and practical applications of diffusion models."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Novel integration of Neural ODEs with diffusion models to guarantee injectivity",
+            "Comprehensive theoretical framework with explicit Lipschitz regularization",
+            "Unified approach to both exact inversion and localized editing",
+            "Clear potential for high-impact applications in medical imaging and design",
+            "Well-designed experimental evaluation with appropriate baselines and metrics"
+        ],
+        "weaknesses": [
+            "Some theoretical claims need more rigorous justification",
+            "Computational feasibility concerns with Neural ODEs and adaptive solvers at scale",
+            "Potential memory issues with Jacobian-based editing for high-resolution images",
+            "Limited discussion of potential failure modes or limitations of the approach"
+        ]
+    }
+}

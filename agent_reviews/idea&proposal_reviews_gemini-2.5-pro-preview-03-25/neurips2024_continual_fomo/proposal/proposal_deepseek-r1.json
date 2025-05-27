@@ -1,0 +1,41 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the core challenges outlined in the workshop task, such as scalable CL for FMs, catastrophic forgetting, domain shifts, long-tailed data, and the integration of structured knowledge (KGs). The methodology clearly elaborates on the research idea of using dynamic KG-infused adapters. Furthermore, it positions itself well within the provided literature, citing relevant works (K-Adapter, Linked Adapters, Incremental LoRA, I2I) and aiming to tackle the identified key challenges like scalability and KG integration in CL."
+    },
+    "Clarity": {
+        "score": 7,
+        "justification": "The proposal is mostly clear and well-structured. The objectives, methodology components (Dynamic KG, KG-Infused Adapters, Sparse Retrieval), and experimental plan are laid out logically. The core concepts are explained, and the equations for attention and distillation are standard. However, some areas could benefit from refinement: the exact criteria for KG subgraph consolidation ('redundant or conflicting') are slightly vague despite mentioning cosine similarity, the specific formulation of the KG alignment loss term (L_kg) is missing, and details about the construction of the 'K-LongTail' custom dataset are sparse. These minor ambiguities slightly detract from perfect clarity but do not obscure the main thrust of the proposal."
+    },
+    "Novelty": {
+        "score": 8,
+        "justification": "The proposal demonstrates notable originality by combining dynamic knowledge graph construction/consolidation with lightweight adapters specifically for the purpose of scalable continual learning in foundation models. While adapters for CL (I2I, Linked Adapters) and KG integration with models (K-Adapter) exist, the proposed dynamic nature of the KG, its incremental construction tied to tasks, periodic consolidation, and integration via cross-attention within adapters for CL guidance appears to be a novel synthesis. It moves beyond static KG infusion (like K-Adapter) or adapter-only methods, offering a fresh approach to leveraging structured knowledge dynamically in a lifelong learning setting, particularly emphasizing scalability through sparse retrieval and consolidation."
+    },
+    "Soundness": {
+        "score": 7,
+        "justification": "The proposal is generally sound, built upon established techniques like adapters, knowledge graphs, cross-attention, and knowledge distillation. The overall approach of using KG context to guide adapter updates and distillation to mitigate forgetting during consolidation is theoretically reasonable. However, some aspects lack full technical rigor in the description: the KG consolidation process needs more precise definition (especially conflict resolution), the crucial KG alignment loss (L_kg) is not defined, and the effectiveness of sparse retrieval for potentially large, dynamic KGs needs empirical validation. The reliance on a custom dataset also requires careful construction and validation for the results to be considered robust. These points slightly weaken the overall soundness pending further detail."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal is largely feasible using current ML frameworks and hardware. Implementing adapters, attention mechanisms, and distillation is standard. The main challenges lie in the engineering complexity of efficiently managing the dynamic knowledge graph (construction, consolidation, storage, sparse retrieval at scale) and creating the proposed 'K-LongTail' custom dataset, which could be resource-intensive. While sparse retrieval and low-rank adapters aim to mitigate computational costs, ensuring the dynamic KG component scales effectively remains a practical hurdle. Overall, it's ambitious but achievable with appropriate resources and engineering effort."
+    },
+    "Significance": {
+        "score": 9,
+        "justification": "The proposal addresses a highly significant and timely problem: enabling foundation models to learn continually and efficiently adapt to new information without catastrophic forgetting or prohibitive retraining costs. This is a critical bottleneck for deploying large models in dynamic real-world environments. By proposing a method that integrates structured knowledge (KGs) dynamically and aims for scalability, the research has the potential for major impact on the field of continual learning, foundation models, and sustainable AI. Success would represent a substantial advancement in creating truly lifelong learning systems, directly aligning with the core goals of the workshop task."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "High relevance and significance to the critical problem of scalable CL for FMs.",
+            "Excellent alignment with the task description, research idea, and literature context.",
+            "Novel integration of dynamic KGs with adapters for CL.",
+            "Clear potential for impact on knowledge retention, computational efficiency, and real-world adaptability.",
+            "Well-structured experimental plan with appropriate benchmarks and metrics."
+        ],
+        "weaknesses": [
+            "Lack of precise technical detail in some methodological aspects (KG consolidation rules, L_kg formulation).",
+            "Potential feasibility challenges related to the scalability of dynamic KG management and custom dataset creation.",
+            "Soundness relies on assumptions about KG representation and retrieval effectiveness that require empirical validation."
+        ]
+    }
+}

@@ -1,0 +1,9 @@
+**Title:** Cross-Domain Backdoor Defense via Latent Trigger Suppression and Model Sanitization  
+
+**Motivation:** Current defenses against backdoor attacks are siloed within single domains (e.g., computer vision) and struggle with generalizability, leaving emerging domains like NLP and federated learning vulnerable. A unified defense framework is critical to safeguard widely deployed pre-trained models and cross-domain applications.  
+
+**Main Idea:** Propose **LTSan**, a defense method that identifies and suppresses latent trigger patterns across domains by analyzing feature-space anomalies. LTSan employs two phases:  
+1. **Latent Trigger Discovery:** Leverage contrastive learning on clean and poisoned data proxies to detect trigger-induced feature clusters, irrespective of input modality (e.g., pixels, tokens). This adapts to domain-specific triggers by focusing on their shared property of creating spurious decision boundaries.  
+2. **Model Sanitization:** Prune neurons contributing to anomalous clusters and finetune the model using adversarial training with synthesized triggers derived from discovered patterns.  
+
+The methodology bypasses domain-specific assumptions, operating purely in feature space. Evaluations on CV (image classifiers), NLP (text classifiers), and FL (federated models) would demonstrate robustness against diverse triggers (patch-based, lexical, gradient-injected). Expected outcomes include a 20-40% improvement in backdoor mitigation across domains compared to state-of-the-art defenses. This framework addresses the critical need for scalable, cross-domain security in real-world ML systems.

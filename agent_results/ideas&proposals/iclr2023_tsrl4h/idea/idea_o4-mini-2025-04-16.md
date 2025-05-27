@@ -1,0 +1,8 @@
+Title: Clin-ACT – Clinician-in-the-Loop Active Contrastive Learning for Pediatric Time Series
+
+Motivation:  
+Pediatric ICU time series are high-dimensional, irregular, and sparsely labeled due to expert time constraints. Standard self-supervised representations often ignore missingness patterns and lack clinician trust. A label-efficient, robust, and interpretable embedding is needed to support downstream tasks (e.g., sepsis prediction) while minimizing annotation burden.
+
+Main Idea:  
+Clin-ACT combines contrastive self-supervision with active learning and a prototype-based interpretability layer. (1) Encoder training uses imputation-aware augmentations tailored to irregular sampling and outliers, enforcing representation consistency. (2) An uncertainty-diversity criterion flags the most informative windows for clinician annotation, reducing labels by an estimated 60%. (3) A lightweight prototype module maps learned embeddings to clinical archetypes and generates feature saliency maps, giving experts transparent insights into what drives each representation.  
+We will validate Clin-ACT on pediatric ICU vital signs and lab series, measuring downstream task accuracy improvements (target +12% in sepsis detection) and clinician satisfaction with interpretability. By merging active contrastive learning with human feedback and prototype explanations, Clin-ACT aims to deliver actionable, trustworthy time series representations in critical low-data healthcare settings.

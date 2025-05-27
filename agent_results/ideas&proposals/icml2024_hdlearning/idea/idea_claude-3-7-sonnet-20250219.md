@@ -1,0 +1,9 @@
+# Title: Geometric Horizons: Mapping Optimization Landscapes in High-Dimensional Neural Networks
+
+## Motivation
+The counterintuitive nature of high-dimensional spaces challenges our geometric intuition when analyzing neural network optimization. While low-dimensional visualizations suggest smooth loss landscapes with clear paths to minima, large-scale networks operate in spaces where these intuitions break down. This research addresses the disconnect between traditional geometric understanding and the actual optimization dynamics of modern deep learning systems, aiming to develop more accurate mathematical frameworks for reasoning about high-dimensional learning.
+
+## Main Idea
+We propose developing a novel topological framework for characterizing the geometry of loss landscapes in high-dimensional neural networks. By combining techniques from algebraic topology, Riemannian geometry, and information theory, we will construct "geometric signatures" that capture the essential structural properties of loss landscapes as they evolve during training. These signatures will identify critical topological features (like plateaus, narrow valleys, and saddle point regions) that influence optimization dynamics. 
+
+We'll analyze how these signatures transform across different network architectures, optimization algorithms, and data distributions, creating a mapping between geometric properties and empirical performance. This framework will enable principled comparison of optimizer designs, explain why certain architectures exhibit specific learning behaviors, and potentially guide the development of new optimization strategies specifically designed for high-dimensional spaces where traditional Euclidean intuitions fail.

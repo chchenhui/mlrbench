@@ -1,0 +1,7 @@
+Title: Prototypical Contrastive Alignment for Brain-DNN Representations
+
+Motivation:  
+Despite advances in comparing deep neural network (DNN) and brain representations, existing metrics are largely post-hoc and rarely offer interpretable anchors or direct intervention mechanisms. A prototypical framework can yield a small set of semantically meaningful “anchor” vectors shared across systems, enabling both robust, generalizable alignment measures and the ability to steer DNN learning toward human-like representations.
+
+Main Idea:  
+We introduce a two-stage method. First, collect paired DNN activations and neural responses (e.g., fMRI or electrophysiology) over a stimulus set and cluster them jointly to define a compact library of semantic prototypes. Second, train or fine-tune the DNN with a prototypical contrastive loss that (a) pulls each latent representation toward its corresponding brain-derived prototype and (b) pushes it away from others. This loss serves both as an alignment metric—measuring cosine similarity distributions over prototypes—and as an intervention during model training. We will evaluate improvements in neural predictivity, task transfer, and behavioral alignment (e.g., feature‐importance patterns). By providing interpretable anchors and an actionable regularizer, this approach advances representational alignment across artificial and biological intelligence.

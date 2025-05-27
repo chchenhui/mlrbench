@@ -1,0 +1,43 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal aligns exceptionally well with the task description, research idea, and literature review. It directly addresses the challenge of hallucinations in LLMs by implementing an Uncertainty-Aware Decoding framework that integrates uncertainty quantification during text generation. The proposal incorporates key elements from the research idea, including token-level uncertainty metrics (predictive entropy, MC dropout variance, ensemble disagreement) and intervention strategies when uncertainty exceeds thresholds. It also addresses the workshop's focus areas, particularly on creating scalable methods for uncertainty estimation, detecting hallucinations, and establishing benchmarks. The proposal builds upon the literature review by acknowledging existing work while proposing a comprehensive framework that combines multiple uncertainty estimation techniques. The only minor inconsistency is that while the literature review mentions uncertainty-aware training, the proposal focuses primarily on decoding-time interventions."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is well-structured and clearly articulated, with a logical flow from introduction to methodology to expected outcomes. The objectives are explicitly stated, and the technical components are explained in detail with appropriate mathematical formulations. The UAD framework is presented with a clear algorithm, and the intervention strategies are well-defined. The experimental design section provides comprehensive information about models, metrics, and evaluation approaches. However, there are a few areas that could benefit from additional clarity: (1) The relationship between the three uncertainty metrics could be more explicitly explained - how they complement each other and when one might be preferred over others; (2) The dynamic threshold adaptation formula is presented but could use more explanation about its rationale; (3) Some technical details about the implementation of the lightweight ensemble (e.g., training procedure, architecture differences) are not fully elaborated."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal demonstrates notable originality by integrating multiple uncertainty estimation techniques into a cohesive decoding framework. While individual components like MC dropout and ensemble methods have been explored in the literature, the combination of three complementary uncertainty metrics and the dynamic intervention strategies represents a fresh approach. The proposal's innovation lies in its comprehensive end-to-end framework that operates during the generation process rather than as a post-hoc check. The dynamic threshold adaptation and the three-tiered intervention strategy (factual-constrained sampling, re-ranking, and uncertainty flag injection) are particularly novel aspects. However, as indicated in the literature review, several papers have explored uncertainty-aware decoding, so this proposal builds incrementally on existing concepts rather than introducing a fundamentally new paradigm. The proposal could have pushed novelty further by exploring more innovative uncertainty metrics beyond the established ones or by proposing more creative intervention strategies."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal demonstrates strong technical foundations and methodological rigor. The uncertainty metrics are well-established in the literature and appropriately formulated with correct mathematical expressions. The intervention strategies are logically connected to the uncertainty estimates and have clear theoretical justifications. The experimental design is comprehensive, with appropriate baselines, datasets, and evaluation metrics that cover multiple dimensions (hallucination, factual consistency, generation quality, efficiency). The ablation studies are well-designed to isolate the contributions of different components. The proposal also acknowledges limitations, which shows critical thinking. However, there are some aspects that could be strengthened: (1) The theoretical justification for combining the three uncertainty metrics could be more rigorous; (2) The proposal doesn't fully address how to handle potential conflicts between different uncertainty metrics; (3) While the dynamic threshold adaptation is presented, its statistical properties and guarantees could be more thoroughly analyzed; (4) The factual-constrained sampling approach assumes reliable knowledge retrieval, but doesn't fully address how to handle cases where the retrieved information itself might be uncertain or contradictory."
+    },
+    "Feasibility": {
+        "score": 6,
+        "justification": "The proposal presents a feasible approach but faces several implementation challenges. On the positive side, it uses existing models (LLaMA-7B, Falcon-7B, GPT-3) and established techniques (MC dropout, ensembles), and the evaluation metrics and datasets are readily available. The expected outcome of <20% increase in inference time seems reasonable for some components. However, several aspects raise feasibility concerns: (1) Running multiple forward passes with MC dropout or maintaining an ensemble of models, even lightweight ones, would significantly increase computational requirements during inference, potentially exceeding the stated 20% overhead target; (2) The factual-constrained sampling requires real-time knowledge retrieval and integration, which adds substantial latency and complexity; (3) Creating and training distilled models for the lightweight ensemble requires additional resources; (4) The proposal doesn't fully address how to efficiently implement these techniques in production environments where latency is critical; (5) The human evaluation component with 10 experts is resource-intensive and may be difficult to scale. While the core ideas are implementable, the full system as described would require significant engineering effort and computational resources to deploy effectively."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a critical problem in AI: hallucinations in large language models. This issue directly impacts the trustworthiness and applicability of LLMs in high-stakes domains like healthcare, legal systems, and autonomous vehicles. The significance of the work is well-articulated in terms of both theoretical contributions to uncertainty quantification and practical applications. If successful, the proposed framework could substantially improve the reliability of LLM outputs while maintaining their generative capabilities, potentially enabling their safer deployment in regulated industries. The expected outcomes are ambitious but reasonable (≥50% reduction in TruthScore errors, ≥30% improvement in FActScore), which would represent meaningful progress. The open-source release of the UAD toolkit would further amplify the impact by making these techniques widely accessible. The proposal also acknowledges limitations, which provides a balanced view of its significance. While not completely transformative of the field, this work could significantly advance the state of practice in reliable text generation and serve as a foundation for further research in uncertainty-aware language models."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Comprehensive framework that integrates multiple uncertainty estimation techniques with clear intervention strategies",
+            "Well-designed experimental methodology with appropriate metrics and evaluation approaches",
+            "Addresses a critical problem (hallucinations) that limits the practical deployment of LLMs in high-stakes domains",
+            "Clear alignment with the research task and literature while extending existing approaches",
+            "Balanced consideration of trade-offs between factual accuracy, generation quality, and computational efficiency"
+        ],
+        "weaknesses": [
+            "Computational overhead may exceed stated targets, particularly for real-time applications",
+            "Implementation complexity of the full system, especially the knowledge retrieval component for factual-constrained sampling",
+            "Limited theoretical analysis of how the three uncertainty metrics interact and complement each other",
+            "Potential challenges in threshold calibration across different domains and applications",
+            "Relies on external knowledge bases which may themselves contain inaccuracies or biases"
+        ]
+    }
+}

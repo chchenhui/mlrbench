@@ -1,0 +1,7 @@
+Title: Adaptive Continuous-Time Masked Autoencoder for Multi-Modal Health Signals
+
+Motivation:  
+Health time series—from EHR labs to wearable sensor streams—are rife with irregular sampling, missing entries, and cross-modal misalignment. Existing Transformers and VAEs struggle to handle such idiosyncrasies, limiting their utility in forecasting disease onset or recommending interventions. A self-supervised foundation model that natively accounts for variable intervals and fuses multiple data sources could dramatically improve robustness and downstream performance in real-world clinical settings.
+
+Main Idea:  
+We propose a Continuous-Time Masked Autoencoder (CT-MAE) that (1) encodes each timestamp via learnable temporal kernels (e.g. Gaussian-process bases) to capture irregular gaps, (2) masks both values and timestamps randomly across modalities, and (3) reconstructs missing segments jointly across EHR, ECG, and wearable channels. The encoder is a continuous-time Transformer that ingests irregular inputs without imputation; the decoder uses cross-modal attention to leverage complementary signals. Pretraining on large multi-site cohorts yields a foundation model adaptible via lightweight fine-tuning for tasks such as sepsis forecasting or arrhythmia detection. We expect CT-MAE to deliver calibrated uncertainty estimates, interpretability via attention maps, and superior accuracy under missingness, thereby bridging the gap toward deployable health time-series AI.

@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the workshop's focus on understanding why and how different neural models learn similar representations, and proposes a concrete methodology (Task-Conditioned Functional Alignment) for leveraging this phenomenon for cross-architecture model merging. The proposal incorporates key concepts from the literature review, such as the Canonical Representation Hypothesis from Ziyin et al. (2024) and representation alignment concepts from Insulla et al. (2025). It also addresses the practical applications mentioned in the task description, particularly model merging and stitching. The proposal's focus on task-conditioned alignment is well-motivated by the research idea's emphasis on aligning activation spaces based on functional similarity conditioned on specific task properties."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is very well-structured and clearly articulated. The introduction effectively establishes the context and motivation, while the methodology section provides a detailed, step-by-step explanation of the proposed approach with specific algorithms. The mathematical formulations are precise and well-presented. The experimental design and evaluation metrics are comprehensively outlined. However, there are a few areas that could benefit from additional clarity: (1) the distinction between the CCA and OT approaches in Algorithm 3 could be more explicitly justified, explaining when one might be preferred over the other; (2) some of the mathematical notation in Algorithm 4, particularly regarding the task-specific routing weights, could be elaborated further to ensure complete understanding of the implementation details."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal presents a novel approach to cross-architecture model merging through task-conditioned functional alignment. While model merging itself is not new, the specific focus on task-conditioned alignment and the comprehensive methodology for identifying and connecting functionally equivalent components across architectures represents a meaningful advancement. The proposal innovatively combines techniques from representation learning, optimal transport, and canonical correlation analysis to address the challenges of cross-architecture merging. However, some individual components of the methodology, such as using CKA for representation similarity and CCA for alignment, build upon existing techniques rather than introducing entirely new methods. The task-conditioning aspect and the comprehensive integration of these techniques into a cohesive framework for cross-architecture merging constitute the main novelty."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal demonstrates strong technical soundness with well-justified methodological choices. The four-phase approach (representation probing, functional mapping, alignment transformation learning, and stitching) is logically structured and builds upon established techniques in representation learning. The mathematical formulations are correct and appropriate for the tasks they address. The use of both linear (CCA, OT) and non-linear transformation options shows awareness of the limitations of simpler approaches. The evaluation methodology is comprehensive, with appropriate metrics for assessing both task performance and representation quality. The theoretical grounding in concepts like the Canonical Representation Hypothesis provides a solid foundation. One minor concern is that the proposal could more explicitly address potential failure modes, such as cases where functional alignment might not be possible or where the learned transformations might not generalize well across all instances of a task condition."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal presents a feasible approach with clearly defined steps and reasonable computational requirements. The methodology leverages existing techniques (CKA, CCA, OT) that have proven implementations, and the experimental design uses standard datasets and model architectures. The approach of learning lightweight transformation functions rather than retraining entire models enhances feasibility. However, there are some challenges that might affect implementation: (1) the task-conditioned probing requires careful design of task conditions that adequately capture the functional space of the models; (2) the bipartite matching approach might not scale well to very large models with hundreds of layers; (3) the fine-tuning of stitching layers while keeping source components frozen might face optimization difficulties if the transformations need to be highly non-linear. The proposal acknowledges some of these challenges but could provide more detailed mitigation strategies. Overall, the approach is implementable with current technology and methods, though it may require moderate refinement and optimization."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a significant problem in machine learning: the computational inefficiency of training large models from scratch and the difficulty of reusing pre-trained models with different architectures. The potential impact is substantial across multiple dimensions: (1) computational efficiency gains through effective model reuse; (2) democratization of AI by reducing resource requirements; (3) environmental sustainability through reduced energy consumption; (4) advancement of theoretical understanding of representation learning across architectures. The approach could enable researchers with limited resources to combine existing models in novel ways, potentially leading to new capabilities without the need for extensive retraining. The theoretical contributions regarding functional similarity across architectures could also influence broader research on representation learning and transfer learning. The significance is well-articulated in the 'Expected Outcomes & Impact' section, with clear connections to both theoretical advancement and practical applications."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Comprehensive methodology with clear algorithms and mathematical formulations",
+            "Strong alignment with current research on representation learning and model merging",
+            "Addresses a significant practical problem with potential for broad impact",
+            "Well-designed experimental evaluation plan with appropriate metrics",
+            "Balances theoretical contributions with practical applications"
+        ],
+        "weaknesses": [
+            "Some components of the methodology build upon existing techniques rather than introducing entirely new methods",
+            "Potential scalability challenges when applying to very large models",
+            "Limited discussion of failure cases and mitigation strategies",
+            "Could provide more justification for choosing between different alignment techniques in specific scenarios"
+        ]
+    }
+}

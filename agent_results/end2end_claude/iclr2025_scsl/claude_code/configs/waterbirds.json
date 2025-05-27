@@ -1,0 +1,46 @@
+{
+  "modalities": ["vision", "text"],
+  "data": {
+    "dataset": "waterbirds",
+    "data_dir": "data/waterbirds",
+    "modalities": ["vision", "text"],
+    "num_classes": 2,
+    "tokenizer": "bert-base-uncased"
+  },
+  "model": {
+    "vision_encoder": "vit",
+    "text_encoder": "bert-base-uncased",
+    "shared_dim": 256,
+    "modality_specific_dim": 128,
+    "num_shared_layers": 2,
+    "num_attention_heads": 4,
+    "dropout": 0.1,
+    "num_classes": 2,
+    "temperature": 0.07
+  },
+  "training": {
+    "batch_size": 32,
+    "num_epochs": 30,
+    "optimizer": "AdamW",
+    "optimizer_params": {
+      "lr": 2e-5,
+      "weight_decay": 0.01
+    },
+    "scheduler": "ReduceLROnPlateau",
+    "scheduler_params": {
+      "mode": "min",
+      "factor": 0.5,
+      "patience": 3
+    },
+    "gradient_clip": 1.0,
+    "patience": 5,
+    "ortho_weight": 0.1,
+    "contrastive_weight": 1.0,
+    "md_weight": 0.5,
+    "intervention_weight": 0.5,
+    "dro_eta": 1.0,
+    "jtt_upweight_factor": 5.0,
+    "ccr_feature_reg": 0.01,
+    "ccr_propensity_threshold": 0.1
+  }
+}

@@ -1,0 +1,41 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the core theme of bridging the theory-practice gap in deep learning optimization, specifically focusing on the Edge of Stability (EoS) phenomenon mentioned in the task description. The proposed DCAO method directly implements the research idea by using periodic curvature probing (Hessian spectral properties) to dynamically adapt hyperparameters, aiming to operationalize theoretical insights from EoS studies (like those by Cohen et al., Damian et al., cited in the proposal and literature review). The objectives and methodology are fully consistent with the goal of developing and analyzing an optimizer that leverages curvature information, fitting squarely within the workshop's scope."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is mostly clear and well-articulated. The introduction sets the context effectively, objectives are explicitly listed, and the overall methodology (probing, extraction, adaptation) is well-described. The algorithmic details provide specific formulas for Hessian approximation and hyperparameter updates. The experimental plan is outlined with relevant datasets, baselines, and metrics. Minor areas could benefit from refinement: the theoretical analysis section is brief and lacks detail on how non-smoothness or dynamic hyperparameters will be rigorously handled in the convergence proof. The specific choices for meta-parameters in the adaptation rules (\\kappa, \\alpha, \\tau, etc.) are not discussed. However, the core concepts and plan are presented clearly and logically."
+    },
+    "Novelty": {
+        "score": 8,
+        "justification": "The proposal demonstrates notable originality. While Hessian-informed optimizers (e.g., AdaHessian, ADLER, Hi-DLR mentioned in the literature review or baselines) exist, DCAO's approach has distinct features. Specifically, it proposes using *periodic* low-rank Hessian approximations to extract *both* the spectral radius (\\lambda_1) and the spectral *gap* (\\Delta), and using these distinct metrics to dynamically adapt *multiple* hyperparameters (learning rate, momentum, and weight decay). The explicit use of the spectral gap to modulate momentum, and the direct link of LR adaptation to the EoS stability threshold (2/\\eta), represents a novel combination and application of curvature information compared to existing methods that often focus solely on LR adaptation or preconditioning based primarily on the top eigenvalue or Hessian trace. The focus on operationalizing EoS theory through these specific mechanisms adds to its novelty."
+    },
+    "Soundness": {
+        "score": 6,
+        "justification": "The proposal is somewhat sound but has weaknesses in theoretical rigor. The conceptual basis, linking EoS and curvature to optimizer design, is strong. The use of established techniques like stochastic Lanczos for eigenvalue estimation and HVPs is appropriate. However, the theoretical analysis section is underdeveloped. It presents a generic single-step convergence inequality but doesn't detail the specific proof strategy for handling the dynamic, curvature-dependent hyperparameters (\\eta_t, L_t) within a non-convex, potentially non-smooth landscape. The assumptions (local smoothness/convexity) need careful justification and handling in the global analysis. Furthermore, the specific mathematical forms chosen for the momentum (tanh) and weight decay (exp) adaptation rules lack strong theoretical justification beyond intuition. While the overall direction is sound, the theoretical underpinnings require significant strengthening."
+    },
+    "Feasibility": {
+        "score": 8,
+        "justification": "The proposal is largely feasible. The core algorithmic components (stochastic Lanczos, HVPs, hyperparameter updates) are implementable using standard deep learning frameworks. Using periodic probing (every T=100 steps is suggested) makes the computational overhead manageable compared to methods requiring continuous second-order information; the claim of <10% overhead versus Adam seems plausible but needs empirical verification. Standard datasets and evaluation protocols are proposed. The main risks involve the potential need for extensive tuning of the new meta-parameters introduced in the adaptation rules, the actual computational overhead, and the significant challenge of providing rigorous theoretical guarantees as planned. However, the empirical validation and algorithm implementation appear practical with current resources."
+    },
+    "Significance": {
+        "score": 9,
+        "justification": "The proposal is highly significant. It addresses a critical and timely problem in deep learning: the gap between optimization theory (particularly EoS) and the behavior of practical optimizers. Developing optimizers that explicitly and efficiently leverage curvature information, informed by phenomena like EoS, has the potential to lead to more stable training, faster convergence, and improved generalization for large models. Success in this research could provide valuable theoretical insights into adaptive optimization dynamics and offer a practical, impactful tool (the DCAO optimizer) for the deep learning community. The potential to influence optimizer design in major frameworks further underscores its significance."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Strong alignment with the task's goal of bridging the theory-practice gap in DL optimization, specifically addressing the EoS phenomenon.",
+            "Clear motivation, objectives, and a well-described core methodology.",
+            "Novel approach combining periodic spectral radius and gap analysis for multi-hyperparameter adaptation.",
+            "Addresses a significant problem with high potential impact on both theory and practice.",
+            "Proposed methodology appears largely feasible with manageable computational overhead."
+        ],
+        "weaknesses": [
+            "The theoretical analysis plan is underdeveloped and lacks detail on how convergence guarantees will be rigorously derived under the proposed dynamic, curvature-aware setting, especially for non-smooth landscapes.",
+            "The specific mathematical forms for the momentum and weight decay adaptation rules lack strong theoretical justification.",
+            "The method introduces new meta-parameters that might require careful tuning."
+        ]
+    }
+}

@@ -1,0 +1,5 @@
+**Title:** Adversarially Evolved Benchmarks for Dynamic and Holistic Model Evaluation
+
+**Motivation:** Current ML benchmarking often relies on static, overused datasets, leading to benchmark-specific overfitting and a narrow view of true model capabilities. This research aims to address the limitations of fixed benchmarks by proposing a system for dynamic benchmark generation that actively probes model weaknesses and encourages more robust, generalizable models.
+
+**Main Idea:** We propose a framework where a "Benchmark Evolver," an AI agent (e.g., using generative models or reinforcement learning), co-evolves with the models being evaluated. The Evolver's objective is to generate or discover challenging and diverse data instances (or even scenarios/tasks) that expose specific failure modes, biases, or vulnerabilities of the current state-of-the-art models. Performance will be measured not just on accuracy but on resilience to these evolved challenges. This creates a living benchmark system, pushing models towards genuine understanding rather than pattern matching on fixed data, fostering a more holistic and adaptive evaluation paradigm.

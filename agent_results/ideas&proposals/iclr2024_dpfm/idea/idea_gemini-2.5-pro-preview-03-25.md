@@ -1,0 +1,5 @@
+**Title:** Influence-Guided Data Selection for Efficient Continual Learning in Foundation Models
+
+**Motivation:** Continually updating Foundation Models (FMs) with new data is vital but computationally prohibitive and risks catastrophic forgetting. Identifying minimal yet impactful data subsets for training can drastically improve efficiency and maintain performance.
+
+**Main Idea:** This research proposes using influence functions or related gradient-based metrics to estimate the impact of incoming data points on the FM's performance and knowledge retention. We will develop an efficient method to approximate these influence scores for new data batches. Based on these scores, we select a compact subset of data that maximally promotes learning new information while minimizing interference with previously learned knowledge (forgetting). The FM will be continually updated using only these high-influence subsets. We expect this approach to significantly reduce the computational cost of continual learning for FMs, enabling faster adaptation to new data streams while preserving existing capabilities more effectively than naive fine-tuning or full retraining.

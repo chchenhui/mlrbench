@@ -1,0 +1,37 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-written and structured in a logical manner, with clear sections that follow a standard research paper format. The authors clearly articulate their contributions and the problem they're addressing. The methodology is explained in detail, including the data generation process, evaluation metrics, and robustification methods. The figures and tables effectively illustrate the results. However, there are some areas that could be improved: (1) The mathematical formulations of the Spurious Sensitivity Score and Invariance Gap could be explained more intuitively; (2) The relationship between the spurious channels and the class labels could be more clearly explained; (3) Some technical details about the implementation of IRM are somewhat sparse."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper presents a novel synthetic benchmark (SpurGen) for studying spurious correlations in multimodal settings. The key novel contributions include: (1) A configurable data generator that can create paired examples with controlled spurious channels; (2) Two new evaluation metrics (Spurious Sensitivity Score and Invariance Gap) for quantifying model reliance on spurious features; (3) A framework for systematically evaluating robustification methods. While the robustification methods themselves (ERM, IRM) are not new, the application of these methods in a controlled multimodal setting with precise measurement of spurious reliance is valuable. The paper builds upon existing work in spurious correlation detection but provides a more systematic and controlled approach to studying this problem."
+    },
+    "Soundness": {
+        "score": 6,
+        "justification": "The paper's methodology is generally sound, but there are several concerns: (1) The experiments are limited to only two methods (ERM and IRM) despite mentioning five in the methodology section; (2) The dataset is quite small (300 samples) which raises questions about statistical significance; (3) The worst-group accuracy is 0.0 for both methods, suggesting that neither approach successfully addresses the core challenge; (4) The validation loss increases while training accuracy improves (as shown in the training curves), indicating potential overfitting that isn't addressed; (5) The code implementation matches the paper's description, but the experimental setup is minimal compared to what was promised in the methodology. The metrics proposed (SSS and IG) are theoretically sound, but their practical utility isn't fully demonstrated given the limited experimental scope."
+    },
+    "Significance": {
+        "score": 7,
+        "justification": "The paper addresses an important problem in machine learning: the detection and mitigation of spurious correlations. The significance lies in: (1) Providing a controlled testbed for studying spurious correlations across modalities; (2) Introducing metrics that can quantify a model's reliance on spurious features; (3) Enabling systematic comparison of robustification methods. The SpurGen benchmark and associated metrics could be valuable tools for researchers working on robust machine learning. The results demonstrate the classic accuracy-robustness trade-off, with ERM achieving higher accuracy but greater spurious sensitivity compared to IRM. The public release of the codebase enhances the paper's significance by enabling reproducibility and extension. However, the limited experimental validation and small dataset size somewhat reduce the immediate impact."
+    },
+    "Overall": {
+        "score": 6,
+        "strengths": [
+            "Novel synthetic benchmark for studying spurious correlations in multimodal settings",
+            "Introduction of two useful metrics (SSS and IG) for quantifying reliance on spurious features",
+            "Clear demonstration of the trade-off between accuracy and robustness to spurious correlations",
+            "Modular and extensible framework that can be applied to different modalities and robustification methods",
+            "Reproducible research with publicly available code"
+        ],
+        "weaknesses": [
+            "Limited experimental validation with only two methods (ERM and IRM) despite mentioning five in the methodology",
+            "Small dataset size (300 samples) raises questions about statistical significance",
+            "Both methods fail completely on worst-group accuracy (0.0), suggesting fundamental limitations",
+            "Signs of overfitting in the training curves that aren't addressed in the analysis",
+            "Experiments focus only on image modality despite claiming multimodal capabilities",
+            "Gap between the ambitious methodology described and the actual experiments conducted"
+        ]
+    },
+    "Confidence": 4
+}

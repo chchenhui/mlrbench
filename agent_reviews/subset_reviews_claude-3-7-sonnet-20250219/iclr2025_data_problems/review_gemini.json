@@ -1,0 +1,35 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-structured and generally well-written. The authors clearly articulate the problem of fair data valuation in RAG systems and present their proposed solution in a logical manner. The methodology section provides a detailed explanation of the algorithmic components, including mathematical formulations for attribution, contribution quantification, and dynamic pricing. The experimental setup and results are presented systematically with appropriate figures and tables. However, there are some areas that could be improved: the distinction between the attribution mechanisms could be more clearly explained, and some technical details about the implementation of the lightweight attribution mechanism are somewhat vague."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper presents a novel approach to data valuation specifically tailored for RAG systems. The integration of attribution techniques with dynamic pricing mechanisms for data marketplaces is innovative. The authors build upon existing work in data valuation (like Shapley values) and RAG attribution, but extend these concepts to create a closed-loop system where RAG outputs inform data chunk valuation. The combination of attribution scores, output quality metrics, user feedback, and retrieval frequency into a unified valuation framework represents a meaningful advance over existing static or popularity-based pricing models. However, some individual components (like the attribution mechanisms) are simplified versions of existing techniques rather than completely new approaches."
+    },
+    "Soundness": {
+        "score": 5,
+        "justification": "The paper has several methodological issues that raise concerns about its soundness. First, the experimental evaluation relies entirely on synthetic data and simulated user feedback, which limits the real-world applicability of the findings. Second, the attribution mechanism described as 'lightweight' is significantly simplified compared to state-of-the-art methods, raising questions about its accuracy. Third, the code reveals that the RAG system implementation uses BM25 retrieval with simplified attribution based on term overlap rather than the more sophisticated attention-based methods described in the paper. The experimental results show correlation between price and quality, but this correlation (Spearman's ρ = 0.453) is moderate at best. Additionally, the log files show that the experiments were run with only 100 data chunks and 20 QA pairs, which is much smaller than what would be needed for a robust evaluation of a data marketplace system."
+    },
+    "Significance": {
+        "score": 6,
+        "justification": "The problem addressed by the paper is important and relevant to the workshop's focus on data problems in foundation models. Fair compensation for data contributors is a critical challenge for the AI ecosystem. The proposed framework could potentially lead to more equitable data marketplaces and better incentives for high-quality data provision. However, the significance is limited by the preliminary nature of the evaluation and the simplified implementation. The paper demonstrates a proof-of-concept rather than a fully developed solution ready for real-world deployment. The results show improvement over baselines, but the absolute performance metrics (e.g., price-quality correlation of 0.453) suggest that substantial further work would be needed before this approach could have a significant practical impact."
+    },
+    "Overall": {
+        "score": 6,
+        "strengths": [
+            "The paper addresses an important problem in the context of foundation models and data marketplaces",
+            "The proposed framework integrates multiple signals (attribution, quality, feedback, retrieval frequency) into a coherent valuation mechanism",
+            "The experimental results demonstrate improvement over baseline methods in terms of price-quality correlation",
+            "The paper is well-structured with clear explanations of the methodology and results"
+        ],
+        "weaknesses": [
+            "The evaluation relies entirely on synthetic data and simulated feedback rather than real-world data",
+            "The implementation of the attribution mechanism is significantly simplified compared to what is described in the paper",
+            "The experimental scale is very limited (100 data chunks, 20 QA pairs) according to the code logs",
+            "The correlation between price and quality (Spearman's ρ = 0.453) is only moderate, suggesting limited effectiveness",
+            "The paper lacks ablation studies to understand the contribution of different components to the overall performance"
+        ]
+    },
+    "Confidence": 4
+}

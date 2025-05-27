@@ -1,0 +1,7 @@
+Title: Graph Neural Surrogate-Driven GFlowNets for Black-Box Discrete Sampling
+
+Motivation:  
+Sampling and optimization over black-box discrete objectives with long-range, high-order correlations (e.g., language model posteriors, protein design) remain prohibitively slow due to lack of gradient access and expensive function evaluations. Existing discrete MCMC or flow methods often require excessive queries and struggle to capture complex interactions.
+
+Main Idea:  
+We propose an iterative framework that couples a trainable graph neural network (GNN) surrogate with a GFlowNet sampler. The GNN is initialized on a small seed set of true objective evaluations to learn an approximate energy landscape and supply pseudo-gradients. The GFlowNet then generates diverse proposals guided by the surrogate’s learned structure. Periodically, selected proposals are evaluated on the true objective and used to (1) fine-tune the GNN via active learning (focusing on high-uncertainty regions) and (2) recalibrate GFlowNet rewards to correct surrogate bias. By alternating surrogate updates and flow sampling with importance-weighted corrections, the method drastically reduces true-objective queries while efficiently exploring high-order discrete spaces. This approach accelerates black-box sampling/optimization in language modeling, protein engineering, and combinatorial design.

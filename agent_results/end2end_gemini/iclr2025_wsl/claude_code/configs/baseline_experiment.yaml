@@ -1,0 +1,43 @@
+# Configuration for baseline experiments
+
+# Extend base configuration
+extends: "base_config.yaml"
+
+# Experiment metadata
+experiment:
+  name: "baseline_models"
+  description: "Experiments for baseline models (MLP and Stats baselines)"
+
+# Data configuration
+data:
+  # No canonicalization needed for baselines
+  canonicalization_method: null
+  tokenization_strategy: "global"  # Simplest tokenization for baselines
+  batch_size: 32  # Can use larger batch size for simpler models
+  synthetic:
+    num_models_per_architecture: 25
+
+# Training configuration
+training:
+  num_epochs: 100
+  early_stopping_patience: 10
+  optimizer:
+    lr: 0.001
+  scheduler:
+    type: "plateau"
+    patience: 5
+    factor: 0.5
+
+# Baseline configurations (specific overrides)
+baselines:
+  models:
+    - name: "mlp_baseline"
+      type: "mlp"
+      hidden_dims: [1024, 512, 256, 128]
+      dropout: 0.3
+      
+    - name: "stats_baseline"
+      type: "stats" 
+      num_features: 30
+      hidden_dims: [256, 128, 64, 32]
+      dropout: 0.2

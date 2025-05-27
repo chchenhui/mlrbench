@@ -1,0 +1,7 @@
+### Title: Modular Deep Learning for Adaptive and Reusable Architectures
+
+### Motivation
+The current "bigger is better" approach in deep learning has led to models that are difficult to maintain and adapt. This research aims to address these issues by applying modularity principles, inspired by software development and biological systems. Modular architectures would enable more flexible, reusable, and efficient models, promoting collaborative development and reducing the need for retraining from scratch.
+
+### Main Idea
+The proposed research focuses on developing modular deep learning architectures that can be easily adapted and reused. We will explore methods to convert existing dense models into modular frameworks, such as Mixture-of-Experts (MoE) and Parameter-Efficient Fine-Tuning (PEFT). The research will involve creating efficient routing algorithms to dynamically allocate tasks to specialized experts, enhancing both computational efficiency and model adaptability. Additionally, we will investigate techniques for combining independently trained checkpoints to create versatile multi-task models. The expected outcomes include improved model performance, reduced training costs, and enhanced flexibility for various applications, such as lifelong/continual learning and machine unlearning. The potential impact is a paradigm shift in deep learning, making models more sustainable and adaptable to diverse and changing environments.

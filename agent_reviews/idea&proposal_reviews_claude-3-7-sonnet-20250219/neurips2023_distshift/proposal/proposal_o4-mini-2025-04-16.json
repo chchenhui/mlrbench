@@ -1,0 +1,41 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal aligns exceptionally well with the task description, research idea, and literature review. It directly addresses the workshop's focus on distribution shifts in foundation models, particularly the challenge of maintaining robustness during adaptation/fine-tuning. The proposed Robustness Teacher Distillation (RTD) framework implements the knowledge distillation approach outlined in the research idea, using the original foundation model as a teacher to guide fine-tuning. The proposal incorporates relevant literature, building upon works like Kumar et al. (2022) on robustness degradation during fine-tuning, and comparing against methods like WiSE-FT (Wortsman et al., 2021) and Self-Distillation Fine-Tuning (Yang et al., 2024). The hybrid loss function combining task-specific performance with distillation loss on OOD examples directly implements the main idea, and the activation-preserving regularizer aligns with the concept of preserving pre-trained features mentioned in the literature review."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is very well-articulated with a logical structure that flows from motivation to methodology to expected outcomes. The research objectives are clearly defined with specific, measurable goals. The methodology section is particularly strong, providing detailed mathematical formulations of the loss functions, pseudocode for the training algorithm, and clear explanations of the OOD example generation strategies. Implementation details and hyperparameters are explicitly specified. The experimental design is well-defined with appropriate datasets, baselines, and evaluation metrics. However, there are a few minor areas that could benefit from additional clarity: (1) the relationship between the activation-preserving regularizer and specific layers could be more explicitly defined, (2) the process for selecting which layers to apply the regularization to could be elaborated, and (3) the exact procedure for generating domain-specific transformations could be more detailed."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal demonstrates notable originality by combining several existing concepts in a novel way. The RTD framework integrates knowledge distillation with activation regularization specifically to address robustness degradation during fine-tuning of foundation models. While knowledge distillation itself is not new (as seen in the literature review with papers like Zhou et al., 2023), the application to preserving distributional robustness during fine-tuning and the specific combination with activation-preserving regularization represents a fresh approach. The proposal also introduces domain-specific transformations for OOD example generation tailored to specific application domains like healthcare imaging and legal/clinical text. However, the core techniques (knowledge distillation, activation regularization, adversarial perturbations) are established methods being applied to a new problem rather than fundamentally new algorithmic innovations. The proposal builds incrementally on existing work like WiSE-FT and Self-Distillation Fine-Tuning rather than proposing a radically different paradigm."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal demonstrates strong technical soundness with well-defined mathematical formulations and a rigorous approach. The hybrid loss function is properly formalized with clear notation and justification for each component. The training algorithm is presented as detailed pseudocode that could be readily implemented. The experimental design includes appropriate datasets (WILDS benchmark) that specifically target distribution shifts, and the evaluation metrics directly measure the phenomena of interest (robustness gap, calibration). The comparison against strong baselines like WiSE-FT and SDFT strengthens the evaluation framework. The proposal is grounded in established theoretical concepts from knowledge distillation and regularization. However, there are some aspects that could benefit from stronger theoretical justification: (1) the theoretical connection between activation preservation and robustness could be more explicitly established, (2) the choice of specific activation layers for regularization lacks theoretical motivation, and (3) the proposal could benefit from more formal analysis of the trade-offs in the hybrid loss function."
+    },
+    "Feasibility": {
+        "score": 9,
+        "justification": "The proposal is highly feasible with current technology and resources. It builds on established methods (knowledge distillation, fine-tuning, regularization) and uses widely available foundation models (CLIP, Llama-2). The computational requirements are reasonable, with the proposal explicitly stating that RTD should not require more than 10% additional compute compared to standard fine-tuning. The hyperparameters are well-specified with reasonable ranges, and the training procedure is clearly defined. The datasets proposed (WILDS-Camelyon17, iWildCam, MedNLI, BIOS) are publicly available. The OOD example generation techniques (Gaussian blur, color jitter, JPEG compression, synonym replacement, etc.) are straightforward to implement using existing libraries. The evaluation metrics are standard and easily computed. The proposal also acknowledges practical constraints by including parameter and FLOPs overhead as evaluation metrics. The implementation plan is realistic and achievable within a reasonable timeframe, with clear milestones and expected outcomes."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a critical problem in the deployment of foundation models: the degradation of robustness during fine-tuning for specialized tasks. This issue is particularly important in high-stakes domains like healthcare and criminal justice, where distribution shifts are common and consequential. The expected outcomes are substantial and clearly articulated, with specific quantitative targets (reducing robustness gap by ≥50%, maintaining ID accuracy within 1-2% of standard fine-tuning). If successful, RTD would enable safer deployment of foundation models in sensitive domains, addressing a key challenge identified in the workshop description. The broader impact section outlines meaningful contributions to the research community through code release and theoretical insights. The proposal also has potential to influence future research on distribution shifts and foundation model adaptation. However, while the impact would be significant, it represents an important incremental advance rather than a transformative paradigm shift in how foundation models are adapted."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Addresses a critical problem in foundation model adaptation with clear real-world implications",
+            "Provides a comprehensive, mathematically rigorous methodology with detailed implementation specifications",
+            "Proposes a feasible approach that builds on established techniques while introducing novel combinations",
+            "Includes a well-designed experimental framework with appropriate datasets, baselines, and metrics",
+            "Sets clear, quantifiable success criteria and expected outcomes"
+        ],
+        "weaknesses": [
+            "Relies primarily on combining existing techniques rather than introducing fundamentally new methods",
+            "Some theoretical connections between activation preservation and robustness could be more explicitly established",
+            "Certain implementation details (layer selection for activation regularization, domain-specific transformation procedures) could be more thoroughly specified"
+        ]
+    }
+}

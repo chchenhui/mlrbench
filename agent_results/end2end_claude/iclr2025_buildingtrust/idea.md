@@ -1,0 +1,7 @@
+# TrustPath: A Framework for Transparent Error Detection and Correction in LLMs
+
+## Motivation
+As Large Language Models (LLMs) are increasingly integrated into high-stakes applications, their tendency to hallucinate, present false information, or make errors poses significant risks. Current error detection methods often lack transparency, making it difficult for users to understand when and why an LLM might be incorrect. This research addresses the critical need for systems that can not only detect errors in LLM outputs but also explain these errors to users and suggest corrections in a transparent, understandable manner.
+
+## Main Idea
+TrustPath proposes a multi-layered approach to error detection and correction that prioritizes transparency. The framework employs three complementary mechanisms: 1) A self-verification module that prompts the LLM to evaluate its own uncertainty through generated alternative responses and explanations; 2) A factual consistency checker that retrieves information from trusted knowledge sources to verify claims; and 3) A human-in-the-loop feedback system that learns from user corrections. Uniquely, TrustPath presents detected errors alongside confidence scores, reasoning paths, and suggested alternatives through an intuitive visual interface that highlights potential problematic sections of text. This approach not only improves accuracy but builds user trust by making the error detection process visible and understandable, allowing users to make informed decisions about accepting or rejecting LLM outputs.

@@ -1,0 +1,8 @@
+**1. Title:**  
+**Modular Self-Supervised Causal Learning for Compositional Generalization**  
+
+**2. Motivation:**  
+Despite progress in modular learning, it remains unclear whether structural modularity (e.g., adapters, sparse activation) inherently ensures compositional generalization. Current foundation models often fail to recombine learned concepts in novel contexts, especially in dynamic environments. Addressing this gap is critical for applications like continual learning, where models must adapt to evolving data without catastrophic forgetting.  
+
+**3. Main Idea:**  
+We propose a self-supervised framework to explicitly align modular components with causal abstractions of compositional rules. By (1) dynamically identifying compositional primitives (e.g., objects, actions) via contrastive learning and (2) enforcing modular routing mechanisms (e.g., mixture-of-experts) to align with these primitives, the method trains modules to encode task-agnostic causal relationships. A synthetic benchmark (*CausalComposiBench*) with programmable compositions will evaluate how modularity types (sparsity, prompts) correlate with generalization on out-of-distribution tasks (e.g., novel attribute-object pairs). Theoretical analysis will link module specialization to invariance under distribution shifts. Expected outcomes include a model-agnostic strategy for modular learning, benchmark datasets, and insights into the causality-modularity compositionality link, advancing robustness in real-world scenarios like cross-lingual reasoning and vision-language tasks.

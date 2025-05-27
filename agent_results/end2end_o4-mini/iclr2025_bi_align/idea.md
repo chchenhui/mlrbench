@@ -1,0 +1,7 @@
+Title: Uncertainty-Driven Reciprocal Alignment
+
+Motivation:  
+Static, one-way alignment techniques often fail to capture evolving human preferences and can undermine user agency and trust. By introducing a bidirectional feedback loop that surfaces AI uncertainty and solicits human corrections, we aim to continuously calibrate both the AI’s behavior and the human’s mental model of it, improving collaboration in dynamic, safety-critical settings.
+
+Main Idea:  
+We propose an interactive framework combining Bayesian user modeling, multi-objective reinforcement learning, and a lightweight HCI interface for real-time explanations. At each decision point, the AI flags high-uncertainty actions and generates concise visualizations of predicted outcomes and confidence intervals. Users then provide targeted feedback—correcting actions or adjusting preference weights—via the interface. The system updates its policy to simultaneously maximize task performance and minimize alignment divergence, while the Bayesian model refines its estimate of user preferences for future interactions. We will evaluate this approach through user studies on simulated decision-making tasks, measuring alignment error, task efficiency, and trust calibration. This reciprocal, uncertainty-driven loop fosters dynamic, bidirectional human-AI alignment and preserves human agency in complex environments.

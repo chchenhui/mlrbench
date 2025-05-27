@@ -1,0 +1,9 @@
+**Title:** **Time-Aware Uncertainty Quantification Networks for Robust Healthcare Forecasting**  
+
+**Motivation:**  
+Healthcare time series data often exhibit irregular sampling, missing values, and noisy measurements, leading to unreliable model predictions. Existing methods struggle to quantify uncertainty arising from these irregularities, limiting their clinical utility. Developing models that explicitly account for temporal uncertainty could improve the reliability of critical forecasts, such as sepsis onset or ICU deterioration, enabling safer deployment in real-world settings.  
+
+**Main Idea:**  
+We propose a novel architecture combining stochastic differential equations (SDEs) with Bayesian neural networks to model temporal dynamics and uncertainty jointly. The framework treats time intervals as random variables, learning latent trajectories that adapt to irregular data. During training, the model samples plausible time gaps and missing values using a learned noise schedule, while a hierarchical Bayesian prior captures patient-specific variability. For inference, it propagates uncertainty through Monte Carlo sampling, producing calibrated confidence intervals for predictions. This approach addresses missing data and irregularity in a unified probabilistic framework, enhancing robustness to distribution shifts. We evaluate it on EHR and wearable datasets, targeting tasks like early sepsis forecasting. Expected outcomes include improved prediction accuracy under sparse data and better uncertainty calibration, directly addressing key deployment barriers in healthcare ML. The work bridges the gap between theoretical time series methods and practical clinical needs, advancing trustworthy AI for dynamic patient monitoring.  
+
+(199 words)

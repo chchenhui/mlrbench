@@ -1,0 +1,7 @@
+# Truth-Guided Memory Architecture for LLM Agents
+
+## Motivation
+Large Language Models (LLMs) used in agent systems often suffer from hallucinations and memory corruption during long-running tasks. These issues reduce trustworthiness, as agents may generate false information, fabricate facts, or incorrectly recall previous states. As agents are deployed in critical domains like healthcare, finance, and education, ensuring their memory systems maintain factual consistency becomes paramount for safe deployment and public trust.
+
+## Main Idea
+The proposed Truth-Guided Memory (TGM) architecture introduces a novel three-tiered memory system for LLM agents that actively defends against hallucinations. First, a Factual Verification Layer cross-references retrieved memories against a trusted knowledge base before use in reasoning. Second, a Confidence Scoring Mechanism enables the agent to assign uncertainty metrics to memories and flag potential hallucinations. Third, a Memory Rectification Protocol allows agents to safely update incorrect memories when confronted with contradictory evidence. The system includes an auxiliary "doubt token" that agents can emit when uncertain about memory reliability. We will evaluate TGM against standard memory architectures using a new benchmark focusing on long-term factual consistency, and develop metrics for measuring "memory drift" over extended agent operations. This research aims to create agents that know when they don't know—a critical safety feature for trustworthy AI systems.

@@ -1,0 +1,10 @@
+**Title:** AutoFedOpt: Automated Federated Learning via Meta-Optimization and Hierarchical Aggregation for Robust Cross-Device Deployment  
+
+**Motivation:**  
+Federated learning (FL) systems face significant challenges in real-world deployment due to client heterogeneity, communication inefficiency, and manual hyperparameter tuning. Existing FL frameworks struggle to adapt to diverse data distributions and device capabilities, leading to suboptimal convergence and model performance. Automating hyperparameter optimization and improving robustness to non-IID data are critical for scaling FL to practical applications like mobile health or edge IoT systems.  
+
+**Main Idea:**  
+We propose **AutoFedOpt**, a framework that combines meta-learning and hierarchical aggregation to automate hyperparameter tuning and enhance robustness in cross-device FL. The system uses meta-optimization to learn global hyperparameters (e.g., learning rates, local training epochs) that generalize across heterogeneous clients. During training, a reinforcement learning (RL) agent dynamically adjusts client-specific hyperparameters based on real-time feedback (e.g., device resources, data distribution). Hierarchical aggregation clusters clients with similar data patterns, enabling personalized model updates while maintaining global consistency. The framework also integrates differential privacy (DP) to balance privacy and utility.  
+
+**Expected Outcomes:**  
+AutoFedOpt aims to reduce manual tuning efforts by 70% while improving convergence speed and accuracy on non-IID data. By hierarchically aggregating updates, it will mitigate straggler effects and resource imbalances, enabling scalable deployment. The integration of meta-learning and RL ensures adaptability to dynamic environments, with potential applications in healthcare and edge computing. This work bridges the gap between theoretical FL research and practical deployment by addressing both algorithmic and systems-level challenges.

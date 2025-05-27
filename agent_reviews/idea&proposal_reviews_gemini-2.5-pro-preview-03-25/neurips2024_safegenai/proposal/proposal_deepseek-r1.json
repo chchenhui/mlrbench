@@ -1,0 +1,41 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the task's focus on AI safety, specifically the vulnerability of generative models to adversarial attacks and the need for robustness. The methodology precisely follows the research idea of extending randomized smoothing to conditional generative models (diffusion, LLMs) for certified robustness. It effectively synthesizes the literature, acknowledging prior work (e.g., smoothing for classifiers and GANs) and explicitly aiming to tackle the identified key challenges (high-dimensionality, robustness/quality trade-off, computational cost, theoretical guarantees for generative models)."
+    },
+    "Clarity": {
+        "score": 9,
+        "justification": "The proposal is crystal clear and very well-defined. The background, objectives, and significance are articulated concisely. The methodology section provides a clear step-by-step description of the SmoothGen framework, including input perturbation, noisy generation, and aggregation. The theoretical basis (Theorem 1) and the concept of adaptive noise calibration are explained well. The experimental design is detailed and logically structured. The language is precise, and the overall structure facilitates easy understanding. Minor ambiguities might exist in the exact implementation details for specific model types (e.g., aggregation beyond majority vote for LLMs), but these are acceptable at the proposal stage."
+    },
+    "Novelty": {
+        "score": 8,
+        "justification": "The proposal exhibits notable originality and innovation. While randomized smoothing is an established technique for classifiers [1, 5] and has seen extensions [2, 7, 10], this proposal focuses on its application to modern, high-dimensional *conditional* generative models like diffusion models and LLMs, which is a less explored area. The key novel contributions include: 1) Extending certified robustness guarantees to the *output distribution* of these models using Wasserstein distance bounds, 2) Developing *adaptive noise calibration* techniques tailored for generative models to balance robustness and fidelity, and 3) Integrating these into a unified framework (SmoothGen). It clearly distinguishes itself from prior work on GANs [7] or classifiers by tackling more complex models and focusing on distributional stability."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal is sound and mostly rigorous. It builds upon the solid theoretical foundation of randomized smoothing [1, 5]. The proposed extension using Wasserstein distance to measure output distribution stability is theoretically plausible for generative models. Theorem 1 provides a concrete theoretical guarantee, adapting standard smoothing results. The methodology, including noise injection, aggregation (Wasserstein barycenters), and adaptive calibration (gradient-based), is logical. The experimental design is comprehensive, including relevant models, datasets, strong baselines, diverse metrics, and attack scenarios. A potential minor weakness is the reliance on the Lipschitz continuity assumption for complex generators, which might be hard to verify or enforce strictly, potentially affecting the tightness or applicability of the derived bounds in practice."
+    },
+    "Feasibility": {
+        "score": 6,
+        "justification": "The proposal is somewhat feasible but faces significant implementation challenges, primarily related to computational cost. Randomized smoothing requires generating n samples for each input, which is computationally intensive for large models like Stable Diffusion and LLMs. While the proposal acknowledges this and suggests dynamic sampling, the overhead remains substantial, potentially limiting the scale of experiments or practical deployment. Implementing Wasserstein barycenters for high-dimensional outputs (images) is also non-trivial. Access to significant computational resources (GPUs) is essential. While conceptually sound, the practical execution, especially achieving meaningful certified radii with acceptable computational cost and generation quality, presents considerable hurdles."
+    },
+    "Significance": {
+        "score": 9,
+        "justification": "The proposal is highly significant and impactful. It addresses a critical and timely problem in AI safety: the lack of provable robustness guarantees for widely used generative models against adversarial perturbations in conditioning inputs. Providing certified robustness, as opposed to empirical defenses, would be a major advancement, enabling safer deployment in high-stakes domains like healthcare and legal tech, directly aligning with the workshop's themes. Success would establish a foundational methodology for certifying modern generative models, potentially influencing research directions and industry standards for trustworthy AI. The potential impact on mitigating risks associated with generative AI misuse is substantial."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Addresses a highly significant and timely problem in AI safety (certified robustness for generative models).",
+            "Strong alignment with the task description, research idea, and literature.",
+            "Clear and well-structured proposal with well-defined objectives and methodology.",
+            "Novel application and extension of randomized smoothing to modern conditional generative models (diffusion, LLMs) with theoretical contributions (Wasserstein bounds).",
+            "Rigorous experimental plan with relevant models, datasets, metrics, and baselines."
+        ],
+        "weaknesses": [
+            "Significant feasibility concerns due to the high computational cost of randomized smoothing for large-scale generative models.",
+            "Potential challenges in implementing aggregation methods (Wasserstein barycenters) efficiently.",
+            "Practical verification of theoretical assumptions (e.g., Lipschitz continuity) and tightness of bounds for complex models might be difficult."
+        ]
+    }
+}

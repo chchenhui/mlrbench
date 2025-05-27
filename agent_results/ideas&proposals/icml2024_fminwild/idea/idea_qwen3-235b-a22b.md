@@ -1,0 +1,9 @@
+```  
+1. Title: **EfficientEdge: Real-Time Adaptive Foundation Model Inference for Resource-Constrained Edge Devices**  
+
+2. Motivation:  
+Real-world deployment of foundation models (FMs) often faces bottlenecks due to computational inefficiency, latency, and energy constraints, limiting their applicability in edge devices (e.g., mobiles, IoT, drones). Existing FMs prioritize performance over practical deployment, leading to high costs and infeasibility for critical applications like healthcare or rural education. Addressing these limitations is vital to democratize access to FM capabilities in low-resource settings.  
+
+3. Main Idea:  
+Develop **EfficientEdge**, a framework that dynamically adapts FM inference based on real-time resource availability (e.g., CPU/GPU, battery, network). The core innovation blends lightweight model compression (e.g., quantization, pruning) with contextual early-stopping mechanisms: shallow computations for low-complexity tasks and deeper inference for critical decisions. A meta-controller, trained via reinforcement learning, optimizes trade-offs between accuracy, latency, and energy consumption per input. For example, in medical imaging, the system might prioritize speed for triage cases but engage full resolution for tumors. The framework also enables modular customization—e.g., allowing hospitals to specify latency budgets or energy budgets for mobile clinics. Expected outcomes include up to 50% reduction in latency and energy use while maintaining 95%+ accuracy on benchmarks like SQuAD and ImageNet. This could enable FMs in applications like offline agriculture diagnostics or disaster response robotics, directly tackling Workshop Question 4 by closing the gap between theoretical capabilities and real-world deployment feasibility.  
+```

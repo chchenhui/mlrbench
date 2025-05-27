@@ -1,0 +1,7 @@
+Title: DiffuNA – Diffusion-Powered Generative Design of RNA Therapeutics
+
+Motivation:  
+Designing functional RNA molecules (aptamers, ribozymes, siRNAs) currently depends on labor-intensive screening and trial-and-error. A principled generative framework could accelerate discovery, reduce costs, and expand the therapeutic repertoire.
+
+Main Idea:  
+We propose DiffuNA, a 3D graph-based diffusion model that jointly learns RNA sequence, secondary and tertiary structure distributions from public databases (PDB, SHAPE reactivity). During training, the model corrupts RNA graphs and denoises to reconstruct native conformations and motifs. At inference, users specify a target binding pocket or structural scaffold; DiffuNA samples candidate sequences/structures via reverse diffusion. An embedded reinforcement-learning loop then refines candidates by optimizing predicted folding stability (via a pretrained folding predictor) and binding affinity (via a docking surrogate). We will validate on standard benchmarks—thrombin-binding aptamers, hammerhead ribozymes—and compare to existing generative baselines. Expected outcomes include high-novelty, high-affinity RNA therapeutics, significantly speeding up lead generation and broadening the scope of RNA-based drug design.

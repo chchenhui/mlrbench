@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal aligns exceptionally well with the task description, research idea, and literature review. It directly addresses the workshop's central question of 'what do we need for successful domain generalization' by proposing causal structure-aware learning as a solution. The proposal incorporates domain-level metadata and causal modeling to achieve robustness to distribution shift, which are explicitly mentioned as topics of interest in the workshop description. The methodology section thoroughly develops the ideas presented in the research idea, expanding on the integration of causal discovery with representation learning. The proposal also builds upon the literature review by addressing the identified challenges, particularly in identifying invariant causal features and integrating causal discovery with representation learning. The experimental design includes standard DG benchmarks mentioned in the literature review, such as PACS, OfficeHome, and TerraIncognita."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is well-structured and clearly articulated, with a logical flow from motivation to methodology to expected outcomes. The problem setup and notation are precisely defined, making the technical approach easy to follow. The three main components of the framework (Latent Causal Graph Inference, Invariant Representation Learning, and Joint Optimization) are well-explained with appropriate mathematical formulations. The experimental design section provides specific details on datasets, protocols, metrics, and implementation. However, there are a few areas that could benefit from additional clarity: (1) the exact procedure for partitioning latent units into 'causal' and 'non-causal' indices could be more explicitly defined, (2) the theoretical analysis section is somewhat condensed and could elaborate more on the assumptions and derivations, and (3) some technical terms (e.g., HSIC) are introduced without full explanation of their properties."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal demonstrates notable originality by combining causal discovery with invariant representation learning in a unified framework. The integration of NOTEARS-based causal graph inference with domain-invariant feature learning represents a fresh approach to domain generalization. The use of domain metadata to weight the reconstruction loss in causal graph inference is an innovative technique to reduce spurious edges. The partitioning of latent space into causal and non-causal components, with different regularization strategies for each, is also a novel contribution. However, several individual components draw from existing methods (NOTEARS for causal discovery, HSIC for independence testing, autoencoder architectures), and the overall approach shares conceptual similarities with existing causality-inspired domain generalization methods mentioned in the literature review, such as Contrastive Causal Model and Causality Inspired Representation Learning. The theoretical analysis, while valuable, builds upon established results in causal inference rather than introducing fundamentally new theoretical insights."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal is technically sound and built on solid theoretical foundations. The causal inference approach is grounded in established structural causal models and the NOTEARS algorithm. The invariance regularization using HSIC is mathematically well-justified as a measure of statistical dependence. The joint optimization framework coherently integrates the different components with appropriate regularization terms. The theoretical analysis provides generalization bounds that connect the method to formal guarantees. The experimental design is comprehensive, with appropriate datasets, baselines, and evaluation metrics. However, there are some potential limitations in the soundness: (1) the linear SCM assumption in the theoretical analysis may be restrictive for complex real-world data, (2) the acyclicity constraint might be challenging to enforce in practice during optimization, and (3) the proposal doesn't fully address potential identifiability issues in causal discovery from purely observational data. Despite these limitations, the overall approach is rigorous and well-founded."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal is largely feasible with current technology and methods, though it presents some implementation challenges. The core components—causal discovery via NOTEARS, representation learning with autoencoders, and independence testing with HSIC—all have existing implementations that can be adapted. The datasets proposed (DomainBed suite, medical imaging) are publicly available and commonly used in domain generalization research. The optimization procedure, while complex due to the acyclicity constraint, can be implemented using Lagrangian methods or recent advances in differentiable constrained optimization. However, several practical challenges may arise: (1) scaling the causal discovery component to high-dimensional latent spaces could be computationally intensive, (2) the joint optimization of multiple objectives with different scales might require careful hyperparameter tuning and balancing, (3) the quality of the inferred causal graph heavily depends on having sufficient multi-domain data with informative domain metadata, and (4) the theoretical guarantees rely on assumptions (linear SCM, Gaussian noise) that may not hold in practice. Despite these challenges, the proposal includes reasonable implementation details and ablation studies to address potential issues."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a critical problem in machine learning: building models that generalize robustly under distribution shift. This has significant implications for real-world applications in safety-critical domains like autonomous driving and medical diagnostics, as explicitly mentioned in the expected impact section. The integration of causal inference with deep learning contributes to bridging an important gap between theoretical causality and practical representation learning. If successful, the approach could provide both performance improvements (3-7% accuracy gains) and enhanced interpretability through learned causal graphs. The theoretical insights on generalization bounds under causal assumptions would advance our understanding of domain generalization. The proposal also has broader impact potential through open-source resources that could accelerate follow-on work. While the significance is high, it's not rated at the highest level because similar causality-inspired approaches have been proposed before (as seen in the literature review), and the practical impact depends on whether the performance improvements materialize across diverse real-world settings beyond standard benchmarks."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Strong theoretical foundation combining causal inference and representation learning",
+            "Comprehensive methodology with clear mathematical formulations",
+            "Well-designed experimental protocol with appropriate datasets and baselines",
+            "Direct relevance to the workshop's focus on domain generalization",
+            "Potential for significant real-world impact in safety-critical applications"
+        ],
+        "weaknesses": [
+            "Some components rely on simplifying assumptions (linear SCM, Gaussian noise) that may limit applicability",
+            "Computational challenges in scaling causal discovery to high-dimensional spaces",
+            "Potential difficulties in joint optimization of multiple objectives with different scales",
+            "Moderate rather than transformative novelty, building on existing causality-inspired approaches"
+        ]
+    }
+}

@@ -1,0 +1,36 @@
+{
+    "Clarity": {
+        "score": 7,
+        "justification": "The paper is generally well-written and structured, with a clear explanation of the ContractGPT framework, its components (DSL, algorithm), and experimental setup. The contributions are explicitly listed. However, clarity is reduced by vagueness on crucial technical details, such as how LLM-generated inline assertions are utilized in verification and, more importantly, the mechanism for generating and verifying loop invariants (Section 3.2). The analysis in Section 6 also lacks clarity in differentiating ContractGPT from the LLM4CodeLike baseline, given their identical top-tier performance in Table 1."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposed ContractGPT framework, which integrates a lightweight DSL for specifications, LLM-based code generation, SMT-based verification, and an iterative refinement loop driven by natural language feedback from counterexamples, presents a novel combination of techniques. The translation of SMT counterexamples into natural language feedback for the LLM is a particularly interesting aspect. While individual components (LLMs for code, SMT solvers, iterative refinement) exist, their specific integration into a fully automated closed-loop system as described appears novel, especially when compared to the cited related works which might lack one or more of these aspects (e.g., VeCoGenLike lacking NL feedback, LLM4CodeLike being one-shot)."
+    },
+    "Soundness": {
+        "score": 5,
+        "justification": "The methodology describes a plausible closed-loop system. However, there are several concerns regarding soundness: \n1. The reported 100% success rate for ContractGPT, VeCoGenLike, and LLM4CodeLike (Table 1) across diverse benchmarks (algorithmic and systems) is exceptionally high and raises questions about benchmark complexity, the expressiveness of the DSL, or potential overfitting/selection of benchmarks. \n2. A critical detail regarding the verification of loops—how inductive invariants are generated (Section 3.2: 'we generate inductive invariants I_k')—is underspecified. Whether these are LLM-generated (raising reliability questions) or tool-generated (requiring details about the tool's capabilities) is crucial for assessing the soundness of the verification claims. \n3. The analysis (Section 6) fails to adequately address why ContractGPT's iterative approach is superior or necessary when the LLM4CodeLike baseline (one-shot conditioning on formal spec) also achieves a 100% success rate and the same 60% bug-rate reduction. The paper claims statistically significant improvements but doesn't convincingly demonstrate practical superiority over LLM4CodeLike based on the aggregate data presented. \n4. The 'Mean Verif. Time' for 'LLMOnly' (0.65s in Table 1) is confusing as LLMOnly is described as having 'no verification loop'; the nature of this timing is unexplained. \n5. No code is provided for review, so reproducibility and the reality of experimental results cannot be independently verified. The figures provided are consistent with the table, but the underlying data's plausibility is the concern."
+    },
+    "Significance": {
+        "score": 6,
+        "justification": "The paper addresses the highly significant problem of generating correct and reliable code using LLMs, which is a key challenge in AI and software engineering. The proposed approach of integrating formal specifications and verification into the LLM workflow is a valuable direction. The plan to open-source the DSL, benchmarks, and implementation (Contribution 4) would be a significant contribution if realized. However, the significance of ContractGPT's specific contributions is somewhat undermined by the reported experimental results where the LLM4CodeLike baseline (a simpler, one-shot method) achieves identical top-tier performance (100% success, 60% bug reduction). The paper does not clearly demonstrate scenarios where ContractGPT's iterative refinement and NL feedback offer a distinct advantage over this strong baseline, thereby limiting the perceived impact of its core iterative mechanism based on the provided evidence. If ContractGPT can handle more complex problems or specs where one-shot methods fail, this needs to be shown."
+    },
+    "Overall": {
+        "score": 6,
+        "strengths": [
+            "Addresses a timely and important problem: generating correct code with LLMs using formal methods.",
+            "Proposes a comprehensive, closed-loop framework (ContractGPT) integrating a lightweight DSL, LLM generation, SMT verification, and iterative refinement via natural language feedback.",
+            "The concept of translating SMT counterexamples into natural language feedback for LLM refinement is innovative.",
+            "Reports a user study on DSL usability, which is a good practice.",
+            "Plans to open-source artifacts, which would foster further research."
+        ],
+        "weaknesses": [
+            "The experimental results show that a simpler, one-shot baseline (LLM4CodeLike) achieves the same 100% success rate and bug-rate reduction as ContractGPT, which undermines the demonstrated necessity and unique advantage of ContractGPT's iterative approach in the presented aggregate results.",
+            "Crucial technical details, particularly regarding the generation and verification of loop invariants, are underspecified, impacting the assessment of the method's soundness.",
+            "The reported 100% success rates for multiple methods across diverse benchmarks seem overly optimistic without more detailed information on benchmark complexity and specification limitations.",
+            "The analysis does not sufficiently differentiate ContractGPT from the LLM4CodeLike baseline or explain why the iterative approach is preferable given LLM4CodeLike's performance.",
+            "Minor lack of clarity, such as the unexplained 'verification time' for the LLMOnly baseline."
+        ]
+    },
+    "Confidence": 4
+}

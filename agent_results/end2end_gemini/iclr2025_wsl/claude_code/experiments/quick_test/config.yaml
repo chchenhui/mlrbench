@@ -1,0 +1,83 @@
+experiment:
+  name: quick_test
+  description: Quick test of WeightNet model with reduced data and epochs
+  seed: 42
+  device: cuda
+  use_gpu: true
+  log_dir: /home/chenhui/mlr-bench/pipeline_gemini/iclr2025_wsl/claude_code/logs/quick_test
+  save_dir: /home/chenhui/mlr-bench/pipeline_gemini/iclr2025_wsl/claude_code/experiments/quick_test
+  figures_dir: /home/chenhui/mlr-bench/pipeline_gemini/iclr2025_wsl/claude_code/figures/quick_test
+  tensorboard_dir: /home/chenhui/mlr-bench/pipeline_gemini/iclr2025_wsl/claude_code/tensorboard/quick_test
+data:
+  data_dir: /home/chenhui/mlr-bench/pipeline_gemini/iclr2025_wsl/claude_code/data/raw
+  processed_dir: /home/chenhui/mlr-bench/pipeline_gemini/iclr2025_wsl/claude_code/data/processed
+  model_properties:
+  - accuracy
+  - robustness
+  - generalization_gap
+  train_ratio: 0.7
+  val_ratio: 0.15
+  test_ratio: 0.15
+  canonicalization_method: weight_sort
+  tokenization_strategy: neuron_centric
+  max_token_length: 4096
+  split_by_architecture: false
+  batch_size: 4
+  num_workers: 4
+  synthetic:
+    create: true
+    num_models_per_architecture: 5
+    architectures:
+    - resnet18
+    - mobilenet_v2
+    generate_variations: true
+model:
+  type: weightnet
+  d_model: 128
+  num_intra_layer_heads: 2
+  num_cross_layer_heads: 4
+  num_intra_layer_blocks: 1
+  num_cross_layer_blocks: 1
+  d_ff: 512
+  dropout: 0.1
+  max_seq_length: 4096
+  num_segments: 100
+training:
+  num_epochs: 5
+  early_stopping_patience: 3
+  optimizer:
+    type: adam
+    lr: 0.001
+    weight_decay: 0.0001
+  scheduler:
+    type: cosine
+    patience: 5
+    factor: 0.5
+    min_lr: 1.0e-05
+  criterion: mse
+evaluation:
+  metrics:
+  - mae
+  - rmse
+  - r2
+  save_predictions: true
+  evaluate_on_train: true
+  evaluate_on_val: true
+  evaluate_on_test: true
+baselines:
+  run: true
+  models:
+  - name: mlp_baseline
+    type: mlp
+    hidden_dims:
+    - 256
+    - 128
+    dropout: 0.2
+visualization:
+  create_history_plots: true
+  create_prediction_plots: true
+  create_error_plots: true
+  create_model_comparison: true
+  create_interactive_plots: true
+  create_property_correlation_plots: true
+  create_radar_charts: true

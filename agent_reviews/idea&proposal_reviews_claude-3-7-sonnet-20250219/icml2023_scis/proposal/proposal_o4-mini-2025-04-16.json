@@ -1,0 +1,43 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the workshop's focus on spurious correlations in machine learning by proposing a framework (ACA) that identifies and mitigates spurious features without requiring group annotations. The proposal covers all three example domains mentioned in the task (medical imaging, NLP, and precision medicine/genomics) and aligns perfectly with the solicited topics of discovering spurious correlations and learning robust models. The methodology builds upon the core idea of adversarial counterfactual augmentation as outlined in the research idea, and incorporates relevant techniques from the literature review such as influence functions, gradient-based attribution, and counterfactual data augmentation. The proposal also acknowledges and addresses key challenges identified in the literature review, particularly around identification of spurious features without annotations and enforcement of model invariance."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is well-structured and generally clear in its presentation. The problem formulation is mathematically precise, defining the goal of learning a model invariant to spurious features. The methodology is broken down into logical components (identification, generation, retraining) with clear mathematical formulations for each step. The experimental design specifies datasets, baselines, metrics, and ablations. However, there are a few areas where clarity could be improved: (1) the distinction between m_g(x) and m_i(x) masks and how they're combined could be elaborated, (2) the theoretical justification section is somewhat brief and could benefit from more detailed explanation of how the linear case extends to non-linear models, and (3) some technical details about the implementation of influence functions (which are computationally expensive) are not fully specified."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal offers notable originality by combining several existing techniques into a unified framework. The integration of gradient-based attribution and influence functions for spurious feature identification, followed by conditional generative modeling for counterfactual creation, and consistency-enforcing retraining represents a novel pipeline. The approach is distinguished from prior work by not requiring group annotations (unlike GroupDRO) and by using generative models to create targeted counterfactuals (unlike simpler data augmentation approaches). However, each individual component (influence functions, generative counterfactuals, consistency losses) has precedent in the literature. The novelty lies primarily in their integration and application to the spurious correlation problem rather than in developing fundamentally new algorithms. The proposal builds upon rather than radically departs from existing approaches like those mentioned in the literature review (e.g., EVaLS, self-guided mitigation)."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal demonstrates strong technical soundness with well-defined mathematical formulations and methodological rigor. The problem is formalized using a clear causal framework distinguishing between causal and spurious features. The gradient attribution and influence function approaches for feature identification are grounded in established techniques. The generative models (CycleGAN and diffusion) are appropriate choices for counterfactual generation with well-specified loss functions. The consistency loss formulation for enforcing invariance is mathematically sound. The theoretical justification, while brief, provides a reasonable foundation for why the approach should work in simplified settings. The experimental design includes appropriate datasets, strong baselines, and relevant metrics for evaluation. The main limitation is that the theoretical analysis is primarily for linear models, and the extension to non-linear cases is mentioned but not fully developed. Additionally, some practical challenges (like the computational cost of influence functions or potential mode collapse in generative models) are not thoroughly addressed."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal is largely feasible with existing technology and methods, though it presents some implementation challenges. The gradient-based attribution methods are straightforward to implement, but influence functions can be computationally expensive for large models and datasets, potentially requiring approximations. The generative models (CycleGAN and diffusion) are established architectures, though training them to produce high-quality counterfactuals that modify only spurious features while preserving semantic content is non-trivial. The consistency loss and retraining procedure are standard practices. The experimental design uses existing datasets and metrics, making evaluation feasible. The proposal acknowledges implementation details like model architectures and optimization procedures. However, there are some feasibility concerns: (1) the quality of generated counterfactuals may vary across domains, (2) the computational resources required for influence functions and diffusion models are substantial, and (3) the approach assumes that spurious features can be cleanly identified and modified, which may not always be the case in complex real-world data."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a critical problem in machine learning: the reliance on spurious correlations that leads to poor out-of-distribution generalization. This issue affects high-stakes applications like medical diagnosis, language understanding, and genomics, making the research highly significant. The proposed ACA framework has the potential for substantial impact by: (1) eliminating the need for expensive group annotations, which is a major bottleneck in current approaches, (2) providing a unified approach applicable across multiple domains (vision, language, genomics), (3) improving worst-group accuracy and OOD generalization, which are crucial for real-world deployment, and (4) offering theoretical insights into invariance to spurious features. The expected outcomes include significant improvements over existing methods (10% over ERM, 50% reduction in OOD gap), which would represent meaningful progress. The broader impact section convincingly argues for applications in healthcare, NLP, and genomics. While the approach builds on existing techniques rather than introducing revolutionary new methods, its potential to address a fundamental challenge in ML robustness makes it highly significant."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Addresses a critical problem in ML robustness with applications in high-stakes domains",
+            "Proposes a unified framework that doesn't require expensive group annotations",
+            "Combines multiple techniques (feature attribution, generative modeling, consistency training) in a novel way",
+            "Well-formulated mathematically with clear problem definition and methodology",
+            "Comprehensive experimental design with appropriate datasets, baselines, and metrics"
+        ],
+        "weaknesses": [
+            "Theoretical justification is primarily for linear models with limited extension to non-linear cases",
+            "Computational feasibility concerns with influence functions and diffusion models",
+            "Individual components build on existing techniques rather than introducing fundamentally new methods",
+            "Quality of generated counterfactuals may vary across domains and could be challenging to evaluate",
+            "Some practical implementation details and challenges are not fully addressed"
+        ]
+    }
+}

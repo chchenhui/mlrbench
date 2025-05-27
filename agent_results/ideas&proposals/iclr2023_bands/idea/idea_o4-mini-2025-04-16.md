@@ -1,0 +1,7 @@
+Title: Cross-Modal MetaShield: Meta-Learned Domain-Agnostic Backdoor Detection
+
+Motivation  
+Current backdoor defenses are narrowly tailored to vision or NLP, failing to generalize across emerging domains (e.g., federated learning or reinforcement learning). A unified, lightweight detector that adapts to unseen tasks and trigger types with minimal clean data is crucial to safeguard the growing ecosystem of pre-trained models.
+
+Main Idea  
+We propose MetaShield, a meta-learning framework that acquires a domain-agnostic backdoor signature detector. During meta-training, we simulate diverse poisoning scenarios over CV, NLP, and FL benchmarks, generating synthetic triggers and benign samples. For each task, we extract latent activations from an arbitrary target model’s penultimate layer and train a small anomaly detector that distinguishes clean versus triggered activations. Meta-learning aggregates these detectors into a shared initialization that captures universal backdoor irregularities. At deployment on a new model/domain, MetaShield fine-tunes on a handful of clean samples (no trigger examples required) to calibrate detection thresholds. Expected outcomes include fast adaptation (few-shot), high true-positive rates on unseen trigger patterns, and low false alarms on clean models. This cross-modal approach promises a practical, plug-and-play defense applicable wherever backdoors may lurk.

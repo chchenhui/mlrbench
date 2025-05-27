@@ -1,0 +1,7 @@
+Title: Counterfactual-Augmented Contrastive Causal Representation Learning
+
+Motivation:  
+Current self-supervised methods capture correlations but fail to uncover true causal factors, limiting generalization, robustness to domain shifts and adversarial attacks, and higher-order reasoning. Integrating counterfactual interventions into representation learning promises disentangled, interpretable features that support planning and transfer.
+
+Main Idea:  
+We propose a VAE with a learnable latent intervention module. During training, we randomly perturb one latent coordinate (simulating an atomic intervention) while holding others fixed, and decode both original and perturbed latents through a conditional normalizing-flow decoder to produce realistic counterfactual images. A contrastive objective then pulls together representations of the original and counterfactual pair along the intervened axis, while pushing apart representations intervened along different axes. This enforces each latent dimension to represent an independent causal factor. We will evaluate on synthetic benchmarks (dSprites, CLEVR) and real-world domain-shift tasks, measuring disentanglement, out-of-distribution robustness and downstream planning performance. Expected outcomes include unsupervised discovery of causal factors yielding robust, interpretable and transferable representations for reasoning and control.

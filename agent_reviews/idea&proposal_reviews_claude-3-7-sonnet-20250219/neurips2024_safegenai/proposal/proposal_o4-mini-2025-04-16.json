@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal aligns exceptionally well with the task description, research idea, and literature review. It directly addresses the vulnerability of generative models to adversarial attacks, which is explicitly mentioned in the workshop topics. The proposal builds upon randomized smoothing techniques from the literature review (Cohen et al., 2019; Zhang et al., 2021) and extends them to high-dimensional generative models. The methodology section thoroughly develops the theoretical framework outlined in the research idea, including the adaptive noise schedules and gradient-based calibration. The proposal also acknowledges the challenge of balancing robustness with generation quality, which was identified in the literature review. The expected outcomes align with the safe deployment goals mentioned in both the task description and research idea."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is well-structured and clearly articulated. The problem formulation in Section 3.1 precisely defines the mathematical framework, and the theoretical certification in Section 3.2 provides rigorous derivations. The SmoothGen_Sample algorithm is presented step-by-step, making implementation straightforward. The experimental design section outlines datasets, baselines, attacks, and evaluation metrics comprehensively. However, there are a few areas that could benefit from additional clarity: (1) the aggregation step in the algorithm could be more detailed about how the FID distance is computed against the expected output, (2) the proof references to Appendices A and B cannot be verified in the provided document, and (3) some technical details about estimating the Lipschitz constant L could be more explicit."
+    },
+    "Novelty": {
+        "score": 8,
+        "justification": "The proposal demonstrates significant novelty in several aspects. While randomized smoothing has been applied to classifiers (Cohen et al., 2019) and conditional GANs (Zhang et al., 2021), SmoothGen extends this approach to modern high-dimensional generative models like diffusion models and large language models—a gap explicitly identified in the literature review. The adaptive noise calibration techniques, particularly the gradient-based calibration and time-dependent noise schedule for diffusion models, represent innovative contributions. The theoretical framework for deriving Wasserstein distance certificates for generative outputs is also novel. However, the core mechanism still builds upon established randomized smoothing principles, which slightly limits its groundbreaking nature."
+    },
+    "Soundness": {
+        "score": 7,
+        "justification": "The proposal demonstrates strong theoretical foundations, particularly in the derivation of Wasserstein distance certificates through optimal coupling between Gaussian distributions. The mathematical formulation is rigorous and builds logically on established randomized smoothing principles. The experimental design includes appropriate baselines, attacks, and evaluation metrics. However, there are some potential weaknesses: (1) the assumption of L-Lipschitz continuity for the mapping from input to output distribution may be difficult to verify or enforce for complex generative models, (2) the Monte Carlo approximation with finite samples introduces estimation error that isn't fully analyzed, and (3) the gradient-based calibration approach assumes that local sensitivity estimates generalize well to adversarial perturbations, which may not always hold. These limitations don't invalidate the approach but do suggest areas where additional theoretical analysis would strengthen the proposal."
+    },
+    "Feasibility": {
+        "score": 6,
+        "justification": "The proposal presents a feasible approach but faces significant implementation challenges. The core algorithm is clearly defined and builds on established techniques. However, several practical concerns arise: (1) Generating 500 noisy samples per input for large models like Stable Diffusion or GPT-2 would require substantial computational resources, potentially making real-time applications impractical. (2) Estimating Lipschitz constants via spectral norm bounds on Jacobians for large generative models is computationally intensive and may be approximate at best. (3) The adaptive noise calibration requires gradient computation in latent space, which adds overhead. (4) The proposal acknowledges but doesn't fully resolve the tension between robustness and generation quality. While these challenges don't render the approach infeasible, they do suggest that practical implementation may require compromises or additional engineering solutions not fully addressed in the proposal."
+    },
+    "Significance": {
+        "score": 9,
+        "justification": "The proposal addresses a critical gap in safe generative AI deployment. As noted in the task description, generative models are increasingly used in scientific discovery and commercial applications, making their robustness to adversarial attacks a pressing concern. SmoothGen would be the first framework providing certified robustness guarantees for modern high-dimensional generative models, enabling their safer deployment in sensitive domains like healthcare, legal, and financial services. The theoretical contributions extend randomized smoothing to a new class of models, while the practical implementation could significantly enhance trust in generative AI systems. The expected outcomes include substantial improvements in certified robustness radii compared to prior approaches, with manageable impacts on generation quality. The proposal directly addresses multiple topics from the workshop call, particularly vulnerability to adversarial attacks and limited robustness in out-of-distribution contexts."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "First framework to provide certified robustness guarantees for modern high-dimensional generative models",
+            "Strong theoretical foundation with rigorous mathematical derivations",
+            "Novel adaptive noise calibration techniques that balance robustness and generation quality",
+            "Direct relevance to critical AI safety concerns in generative models",
+            "Comprehensive experimental design with appropriate baselines and evaluation metrics"
+        ],
+        "weaknesses": [
+            "High computational requirements may limit practical deployment",
+            "Challenges in accurately estimating Lipschitz constants for complex generative models",
+            "Potential trade-offs between robustness and generation quality not fully resolved",
+            "Monte Carlo approximation errors not thoroughly analyzed"
+        ]
+    }
+}

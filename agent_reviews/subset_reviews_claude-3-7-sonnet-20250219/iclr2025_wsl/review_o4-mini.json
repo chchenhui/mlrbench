@@ -1,0 +1,36 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-written with a clear structure that effectively communicates the key ideas. The problem statement, approach, and contributions are articulated concisely in the introduction. The methodology section provides a detailed explanation of the layer graph representation, intra-layer MPNN, inter-layer Transformer, and contrastive objective. Mathematical formulations are presented clearly with appropriate notation. The experimental setup and results are organized logically. However, there are some areas that could be improved: (1) The explanation of how the permutation-equivariant property is preserved through the architecture could be more explicit, (2) The description of the model merging process via embedding interpolation lacks some technical details on how the interpolated embeddings are converted back to weights."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper presents a novel approach to representing neural network weights in a permutation-invariant manner using a hierarchical architecture combining graph neural networks and transformers. The key innovation is the representation of weight matrices as graphs where neurons are nodes and weights are edges, processed by permutation-equivariant message-passing networks. The contrastive learning objective with permutation and scaling augmentations is also a valuable contribution. While the individual components (GNNs, Transformers, contrastive learning) are established techniques, their combination for the specific purpose of weight space embedding is novel. However, the paper builds upon existing work in permutation-equivariant representations (citing Kofinas et al., Morris et al., etc.) rather than introducing fundamentally new theoretical concepts."
+    },
+    "Soundness": {
+        "score": 6,
+        "justification": "The methodological approach is generally sound, with appropriate use of permutation-equivariant GNNs to address the symmetry challenges in neural network weights. However, there are several concerns about the experimental validation: (1) The code reveals that the results are generated using placeholder data rather than actual experiments - the 'run_minimal.py' script creates synthetic figures and performance metrics without running real models. (2) The performance table shows suspiciously round numbers for the GNN model (0.85, 0.91, 0.94) compared to baselines. (3) The model interpolation results show a perfect sinusoidal curve that appears artificially constructed. (4) The paper claims a dataset of 1,000 pre-trained models but doesn't provide sufficient details about their diversity or how they were collected. (5) The experimental comparison with baselines is limited, with only two simple baselines (PCA+MLP and MLP) rather than comparing with more sophisticated approaches."
+    },
+    "Significance": {
+        "score": 7,
+        "justification": "The paper addresses an important problem in the emerging field of weight space learning. Creating permutation-invariant embeddings of neural network weights has significant applications in model retrieval, performance prediction, and model merging. The reported results, if valid, would represent a substantial improvement over baseline methods (Recall@10 of 0.94 vs 0.72 for PCA+MLP). The ability to predict model accuracy from weights alone (R²=0.88) would be valuable for model selection. The model merging application demonstrates potential for creating better models through interpolation. However, the significance is limited by: (1) The focus on relatively small models rather than large-scale networks that are more relevant to current research, (2) The lack of comparison with state-of-the-art methods in model merging, (3) The absence of real-world applications beyond the synthetic dataset, and (4) The questionable reproducibility given the issues identified in the code."
+    },
+    "Overall": {
+        "score": 6,
+        "strengths": [
+            "Novel approach to representing neural network weights as graphs with permutation-equivariant processing",
+            "Well-designed hierarchical architecture combining intra-layer MPNNs and inter-layer Transformers",
+            "Effective contrastive learning objective with appropriate augmentations for the symmetry constraints",
+            "Multiple downstream applications demonstrated (retrieval, accuracy prediction, model merging)",
+            "Clear presentation with appropriate mathematical formulations"
+        ],
+        "weaknesses": [
+            "Serious concerns about the validity of experimental results, as the code reveals they are generated using placeholder data rather than actual experiments",
+            "Limited experimental comparison with only simple baselines rather than state-of-the-art methods",
+            "Insufficient details about the dataset of pre-trained models used for evaluation",
+            "Lack of ablation studies to validate the contribution of different components of the architecture",
+            "No discussion of computational efficiency or scalability to larger models"
+        ]
+    },
+    "Confidence": 4
+}

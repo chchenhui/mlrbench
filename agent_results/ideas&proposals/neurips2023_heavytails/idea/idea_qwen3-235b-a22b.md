@@ -1,0 +1,9 @@
+```text
+# Heavy-Tailed Optimization Dynamics and Generalization in Deep Learning
+
+## Motivation
+Understanding how heavy-tailed dynamics in stochastic gradient descent (SGD) influence generalization could resolve contradictions between classical optimization theory and modern ML practice. While heavy tails are often treated as destabilizing noise, emerging evidence suggests they might actively improve generalization by enabling adaptive exploration of flat minima. A theoretical framework connecting heavy-tailed patterns in optimization trajectories to generalization performance could bridge gaps between empirical scaling laws and dynamical system perspectives.
+
+## Main Idea
+This research proposes to (1) quantify heavy-tailed behavior in SGD iterates using tail-index metrics at different learning rate phases, (2) establish geometric relationships between loss landscape curvature and tail heaviness via stochastic differential equations driven by Lévy processes, and (3) develop a theory of "implicit heavy-tail regularization" where tail parameters control effective model complexity. Methodologically, we will design controlled experiments with ResNet and Transformer architectures to isolate how heavy tails emerge from hyperparameter scheduling and batch size scaling. New optimization algorithms will test if adaptive tail-index control during training (via time-varying noise augmentation or scheduler design) systematically improves out-of-distribution accuracy and robustness metrics. Expected outcomes include theoretical guarantees on generalization bounds dependent on tail exponents and practical optimization schedules that explicitly steer through heavy-tailed exploration phases to reach flatter minima.
+```

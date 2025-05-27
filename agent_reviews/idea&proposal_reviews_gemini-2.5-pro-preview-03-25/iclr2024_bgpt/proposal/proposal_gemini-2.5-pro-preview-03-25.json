@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the workshop's theme of bridging the theory-practice gap by focusing on optimization theory (EoS, adaptive optimizers, non-smoothness) and its practical implications. The proposed DCAO method is a direct elaboration of the research idea, aiming to operationalize theoretical insights about curvature (motivated by EoS and landscape geometry) into a practical optimizer. The proposal correctly situates itself within the provided literature, acknowledging seminal works on EoS (Cohen et al., 2021) and related Hessian-informed methods (Balboni & Bacciu, 2023; Xu et al., 2025), clearly stating its goal to build upon and differentiate from these."
+    },
+    "Clarity": {
+        "score": 9,
+        "justification": "The proposal is crystal clear and exceptionally well-defined. The background, motivation, and research objectives are articulated precisely. The methodology section provides a detailed breakdown of the DCAO algorithm, including the curvature estimation technique (stochastic Lanczos with a clear sketch), the specific hyperparameter adaptation rules (with illustrative formulas), integration into the training loop, and overhead considerations. The plans for theoretical analysis and empirical validation are comprehensive and unambiguous, specifying datasets, models, baselines, metrics, and ablation studies. The structure is logical and easy to follow, leaving little room for misinterpretation."
+    },
+    "Novelty": {
+        "score": 8,
+        "justification": "The proposal demonstrates notable originality and innovation. While using Hessian information (specifically eigenvalues) or adaptive learning rates is not entirely new (e.g., ADLER, Hi-DLR), DCAO's novelty lies in the specific combination of: 1) Using efficient stochastic Lanczos for top-k eigenpair estimation periodically. 2) Dynamically adapting *multiple* hyperparameters (learning rate, momentum, *and* weight decay) based on this spectral information. 3) Explicitly motivating these adaptations using recent theoretical insights like the Edge of Stability (EoS) phenomenon (e.g., targeting a specific \\\\eta \\\\lambda_{max} value). This holistic, dynamically adaptive approach based on efficiently estimated spectral properties, particularly the simultaneous adaptation of momentum and weight decay alongside LR based on curvature, distinguishes it from prior work focusing primarily on LR or using different Hessian approximations."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal is sound and mostly rigorous. It is well-grounded in established optimization theory, loss landscape analysis, and the EoS literature. The choice of stochastic Lanczos for eigenvalue estimation is appropriate and computationally viable via Hessian-vector products. The proposed adaptation rules for LR, momentum, and weight decay are heuristically justified by theoretical concepts (stability, regularization based on curvature). The plan for theoretical analysis acknowledges key challenges (stochasticity, adaptivity, non-smoothness) and outlines a reasonable approach. The experimental design is comprehensive and follows best practices for evaluating optimizers. Minor weaknesses include the inherent noise in stochastic estimation and the acknowledged difficulty of rigorous analysis under non-smoothness, but these are common research challenges rather than fundamental flaws."
+    },
+    "Feasibility": {
+        "score": 8,
+        "justification": "The proposal is largely feasible with current deep learning frameworks and computational resources. The core computational addition, stochastic Lanczos via Hessian-vector products, can be implemented efficiently, and the estimated overhead (< 5-10%) seems realistic and manageable for many applications. The implementation requires expertise in deep learning frameworks and numerical methods but does not rely on unavailable technology. The theoretical analysis, while potentially challenging, uses established mathematical tools. The experimental plan involves standard datasets and models, making it practical to execute. Potential risks include the complexity of tuning DCAO's own hyperparameters and ensuring robustness, but these are typical research hurdles rather than insurmountable obstacles."
+    },
+    "Significance": {
+        "score": 9,
+        "justification": "The proposal is highly significant and impactful. It tackles the critical and timely problem of bridging the gap between deep learning theory (especially regarding optimization dynamics like EoS and loss curvature) and practical algorithm design. Developing optimizers that are more stable, converge faster, generalize better, and require less manual tuning would be a major contribution to the field. By providing a concrete algorithm (DCAO) that operationalizes theoretical insights, the research has the potential to directly improve deep learning practice. Furthermore, the analysis of DCAO's behavior could yield valuable new insights into optimization dynamics in complex landscapes, particularly concerning EoS in adaptive, stochastic settings, thus also advancing theory."
+    },
+    "OverallAssessment": {
+        "score": 9,
+        "strengths": [
+            "Excellent alignment with the task's goal of bridging theory and practice.",
+            "Clear, detailed, and well-structured proposal.",
+            "Novel approach combining efficient curvature estimation with dynamic adaptation of multiple hyperparameters (LR, momentum, weight decay).",
+            "Sound methodology grounded in relevant theory (EoS, landscape geometry).",
+            "Feasible implementation with manageable computational overhead.",
+            "High potential for both practical impact (better optimizer) and theoretical insights."
+        ],
+        "weaknesses": [
+            "Theoretical analysis under non-smoothness remains a significant challenge.",
+            "The practical effectiveness might depend on careful tuning of the adaptation rule hyperparameters.",
+            "Empirical gains need to demonstrably outweigh the added complexity compared to highly optimized baselines like AdamW."
+        ]
+    }
+}

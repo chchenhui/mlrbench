@@ -1,0 +1,12 @@
+**Title:** *Hierarchical Multimodal Transformers for Unified World Modeling Across Vision, Language, and Control*  
+
+**Motivation:**  
+Current World Models often silo data modalities (e.g., vision, language, control), limiting their ability to simulate complex, real-world environments where these modalities are tightly interconnected. This fragmentation hampers realistic simulation, cross-domain generalization, and controllable decision-making. Bridging these modalities is critical for applications like embodied AI agents (e.g., robots following natural language instructions) or healthcare simulations integrating patient data, text, and physiological signals.  
+
+**Main Idea:**  
+Propose a hierarchical multimodal Transformer architecture that jointly learns spatial-temporal dynamics, linguistic semantics, and control policies within a unified latent space. The model will use modality-specific encoders (CNNs for vision, causal Transformers for language, and MLPs for control) to extract local features, then hierarchically assemble them via cross-modal attention at higher layers. Key innovations include:  
+1. **Dynamic cross-modal fusion:** Adaptive attention weights modulate feature interactions based on task context (e.g., prioritizing vision-control links for navigation).  
+2. **Unified generative and discriminative training:** A hybrid objective combining conditional generation (e.g., predicting next visual frame from control actions) and contrastive learning (e.g., aligning trajectories with textual goals).  
+3. **Scalable memory mechanism:** A sparse attention-based memory bank retains long-horizon dependencies without quadratic complexity, enabling simulation over extended timeframes.  
+
+The architecture will be evaluated on synthetic physics-based domains (e.g., Multimodal Pusher with text instructions) and real-world datasets (e.g., EpicKitchens video-instruction-control triplets). Expected outcomes include improved multimodal coherence, transfer to unseen tasks (e.g., novel instruction following), and baseline performance on benchmark suites like the Workbench World Models Reference Suite. This unlocks applications in robotics, healthcare simulation, and multimodal AI assistants.

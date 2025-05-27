@@ -1,0 +1,7 @@
+**Title:** **Entropy-Driven Neural Pruning with Information-Theoretic Guarantees**  
+
+**Motivation:**  
+Modern neural networks are overparameterized, leading to high computational costs and storage demands. While pruning—removing redundant weights—offers a solution, existing heuristic methods lack theoretical guarantees on performance retention. Bridging this gap requires a framework that balances compression and task accuracy using principles from information theory, enabling scalable AI systems without manual tuning.  
+
+**Main Idea:**  
+We propose an **information-theoretic pruning framework** that dynamically allocates compression intensity across model layers based on their *task-relevant mutual information*. Our method computes the minimal entropy (information content) each layer must retain to preserve downstream accuracy, using a differentiable relaxation of mutual information estimation via variational bounds. During training, a Lagrangian optimizer jointly minimizes task loss and layer-specific entropy constraints, automatically identifying pruning thresholds without post hoc tuning. By integrating fine-grained layer sensitivity into an end-to-end objective, this approach ensures globally optimal compression under theoretical bounds. Anticipated outcomes include systematic pruning schedules for vision and language models, achieving Pareto-optimal trade-offs between size and accuracy. This work bridges compression theory with practical deployment, enabling provably efficient models for edge devices and distributed training scenarios.

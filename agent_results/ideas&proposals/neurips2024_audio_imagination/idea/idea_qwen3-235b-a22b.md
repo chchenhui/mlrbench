@@ -1,0 +1,7 @@
+1. **Title**: Steganographic Watermarking for Verifiable Synthesis in Text-to-Speech Generative Models  
+2. **Motivation**: Audio deepfakes pose existential risks to trust in media, journalism, and personal identity. While generative models achieve high-fidelity text-to-speech (TTS) synthesis, there is no robust technical framework to detect synthetic speech or trace its origin. Current detection methods suffer from high false positives and lack integration with generation pipelines, creating an urgent need for accountable AI solutions that ensure ethical deployment.  
+3. **Main Idea**: We propose integrating steganographic watermarking into TTS model latent spaces, embedding imperceptible, content-specific identifiers during synthesis. Using diffusion models conditioned on both text and a secret watermark code, the approach would:  
+   - Generate audio with lightweight watermarks tied to input prompts, authors, and timestamps.  
+   - Develop differentiable watermark extraction networks for authentication.  
+   - Train watermark-robust speech encoders for zero-shot detection.  
+   Expected outcomes include a ∼98% watermark detection accuracy with <1dB audio distortion on VCTK/FS2 datasets. This creates a standardized framework for verifying synthetic audio provenance, mitigating misuse in misinformation, privacy breaches, and voice cloning, while setting benchmarks for responsible AI deployment. Impact spans journalism, legal systems, and democratized voice creation tools with embedded accountability.

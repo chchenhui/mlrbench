@@ -1,0 +1,36 @@
+{
+    "Clarity": {
+        "score": 7,
+        "justification": "The paper is generally well-written and structured logically, making it relatively easy to follow. The core idea of Attribution-Guided Training (AGT) is articulated. However, there are some areas that could be improved for clarity. For instance, the description of the Multi-Layer Perceptron (MLP) architectures for the attribution network in Section 4.1 (e.g., '2-layer MLP (768→512→124)') implies a single hidden layer, but the provided code's default implementation (`hidden_dims=[512, 256]`) suggests two hidden layers for the attribution network. Additionally, the presentation of the 19.5% improvement in Attribution F1 score is confusing: the abstract states it's 'compared to state-of-the-art post-hoc methods,' while Section 5.1 claims it's 'over the best baseline method (MinimalSubset with 0.7589).' A 19.5% improvement is seen over the 'Post-hoc' baseline (0.6982), but only a 9.9% improvement over 'MinimalSubset' (0.7589), which Table 1 indicates is the best performing baseline. This inconsistency affects the clarity of the main results."
+    },
+    "Novelty": {
+        "score": 8,
+        "justification": "The paper proposes Attribution-Guided Training (AGT), a framework that integrates attribution mechanisms directly into the foundation model training process. This approach, using a dual-objective optimization to balance predictive performance with attribution accuracy via a dedicated attribution network, is a novel contribution to addressing transparency and copyright concerns in foundation models. While data attribution itself is an existing field, the proactive embedding of these mechanisms during training, rather than relying solely on post-hoc methods, presents a new direction. The specific design of the attribution network and its variants also contributes to the novelty."
+    },
+    "Soundness": {
+        "score": 5,
+        "justification": "The methodology for AGT, including the dual-objective loss and the different attribution network architectures, is conceptually sound and largely implemented in the provided code (`models.py`, `training.py`). The experimental setup includes relevant baselines, ablation studies, and adversarial testing. However, there are several weaknesses affecting soundness: \n1. **Computational Efficiency Claims**: The results for computational efficiency (Section 5.4, Figure 10) are based on 'simulated relative training and inference times' hardcoded in `run_experiment.py` (e.g., `training_times = [1.2, 1.0, 1.1, 1.05]`). These are not measured results from the experiments, making claims about AGT's efficiency unreliable and the corresponding figure potentially misleading.\n2. **Baseline Simplification**: The paper mentions that some baselines are simplified (e.g., 'Post-hoc Attribution... simplified for computational feasibility', 'Data Shapley... simulates feature attribution'). While understandable, this limits the strength of comparison to true state-of-the-art post-hoc methods.\n3. **MLP Architecture Discrepancy**: As mentioned under Clarity, the MLP architectures for attribution networks described in Section 4.1 of the paper (implying 2-layer MLPs with one hidden layer) do not match the default implementation in the code (`run_experiment.py` uses `hidden_dims=[512, 256]`), which creates 3-layer MLPs with two hidden layers. This inconsistency makes it unclear what architecture actually produced the reported results.\n4. **Contradictory Improvement Claim**: The 19.5% improvement claim is inconsistently attributed (see Clarity justification). If it's over the 'best baseline method (MinimalSubset)', the calculation is incorrect (it's 9.9%). This raises concerns about the accuracy of result interpretation.\n5. **Dataset Specificity**: The paper reports exact dataset sizes (e.g., 3,578 training examples, 124 sources). The code (`data_processing.py`) generates datasets by sampling, so these exact numbers are specific to a particular run and not guaranteed. While the code can generate datasets of similar scale, the reported numbers might not be perfectly reproducible without the exact seed and version for dataset sampling.\n\nDespite these issues, the core experimental pipeline (training models, evaluating metrics like Attribution F1) seems to be implemented in the code, suggesting that most other results tables and figures (excluding computational efficiency) could be generated from the provided codebase."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The paper addresses a highly important and timely problem: enhancing transparency and copyright compliance in foundation models. The potential to automatically cite sources during content generation is a significant step towards responsible AI. If AGT proves to be effective, scalable, and robust (as suggested by the adversarial example results), it could have a lasting impact on how foundation models are developed and deployed. The work aligns well with the workshop's themes of data attribution and legal/technical solutions for copyright. The reported improvement in attribution F1 score and robustness to paraphrasing, if fully validated, would be significant contributions to the field."
+    },
+    "Overall": {
+        "score": 6,
+        "strengths": [
+            "Addresses a critical and relevant problem in foundation models (transparency and copyright).",
+            "Proposes a novel approach (Attribution-Guided Training) that integrates attribution into the training process.",
+            "Provides a comprehensive experimental setup with multiple baselines, ablation studies, and adversarial testing.",
+            "The provided code is well-structured and appears to implement most of the described methods and experiments, facilitating reproducibility for many aspects.",
+            "Demonstrates promising results in terms of attribution accuracy and robustness to paraphrasing."
+        ],
+        "weaknesses": [
+            "The claims regarding computational efficiency are based on simulated/hardcoded data, not actual measurements, which significantly undermines this aspect of the results.",
+            "There's a notable inconsistency in the reported 19.5% improvement, with conflicting statements about which baseline it's compared against, and an apparent miscalculation if compared to the 'best baseline method' as stated.",
+            "Discrepancies exist between the described MLP architectures for the attribution network in the paper and the default implementations in the provided code.",
+            "Baselines are simplified or simulated versions, which may not represent the full strength of existing state-of-the-art post-hoc methods.",
+            "Minor clarity issues regarding specific architectural details and result interpretations."
+        ]
+    },
+    "Confidence": 5
+}

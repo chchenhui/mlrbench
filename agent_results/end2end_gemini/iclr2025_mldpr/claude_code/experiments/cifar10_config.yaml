@@ -1,0 +1,69 @@
+name: aeb_cifar10
+output_dir: /home/chenhui/mlr-bench/pipeline_gemini/iclr2025_mldpr/claude_code/results
+device: cuda
+hardening_epochs: 15
+hardening_alpha: 0.5
+
+data:
+  dataset: cifar10
+  data_dir: /home/chenhui/mlr-bench/pipeline_gemini/iclr2025_mldpr/claude_code/data
+  val_split: 0.1
+  batch_size: 128
+  num_workers: 4
+  seed: 42
+
+models:
+  standard_cnn:
+    name: standard_cnn
+    model_type: simplecnn
+    pretrained: false
+    lr: 0.001
+    weight_decay: 0.00001
+    batch_size: 128
+    epochs: 30
+    early_stopping: 5
+    scheduler:
+      type: reduce_on_plateau
+      patience: 3
+      factor: 0.5
+
+  standard_resnet:
+    name: standard_resnet
+    model_type: resnet18
+    pretrained: true
+    lr: 0.0005
+    weight_decay: 0.00001
+    batch_size: 128
+    epochs: 30
+    early_stopping: 5
+    scheduler:
+      type: reduce_on_plateau
+      patience: 3
+      factor: 0.5
+      
+  standard_lenet:
+    name: standard_lenet
+    model_type: lenet
+    pretrained: false
+    lr: 0.001
+    weight_decay: 0.00001
+    batch_size: 128
+    epochs: 30
+    early_stopping: 5
+    scheduler:
+      type: reduce_on_plateau
+      patience: 3
+      factor: 0.5
+
+evolver:
+  pop_size: 30
+  max_generations: 20
+  tournament_size: 3
+  crossover_prob: 0.7
+  mutation_prob: 0.3
+  elitism_count: 2
+  min_transformations: 1
+  max_transformations: 3
+  fitness_weights: [0.6, 0.2, 0.2]
+  save_dir: /home/chenhui/mlr-bench/pipeline_gemini/iclr2025_mldpr/claude_code/results/evolutionary_runs
+  seed: 42

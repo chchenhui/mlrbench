@@ -1,0 +1,34 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-structured and clearly articulates its contributions. The introduction effectively frames the problem of machine unlearning for LLMs and outlines the key challenges. The methodology section provides a detailed explanation of the four-stage approach: representation clustering, influence-score approximation, targeted gradient surgery, and Fisher certification. The authors use appropriate mathematical notation and provide sufficient detail for understanding the approach. Experimental results are presented in well-organized tables and figures. However, some technical details could be explained more thoroughly, such as the exact implementation of the influence score approximation and how the Fisher certification bounds are computed in practice."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper presents a novel approach to machine unlearning for LLMs by combining several techniques in a coherent framework. The key innovation is the decomposition of model knowledge into semantically coherent clusters via hierarchical spectral clustering, followed by targeted interventions in the affected subspaces. While individual components like low-rank adaptation and influence functions have been used in prior work, their integration into a unified certified unlearning framework is novel. The paper builds upon existing unlearning methods (cited as baselines) but offers a distinct approach focused on cluster-level knowledge representation. The certification component also adds value by providing formal guarantees. However, the core techniques (spectral clustering, influence functions, gradient surgery) are adaptations of existing methods rather than fundamentally new algorithms."
+    },
+    "Soundness": {
+        "score": 5,
+        "justification": "The paper has several methodological concerns that affect its soundness. First, the reported metrics show suspiciously high performance - a KRR of 0.9987 with only a 2% perplexity change is extremely optimistic. Second, examining the code reveals that the experimental setup uses minimal datasets and simplified implementations. The 'run_minimal_experiment.py' script shows that the actual implementation uses a toy model and synthetic data rather than the full GPT-2 claimed in the paper. The metrics in the code match exactly those reported in Table 1, suggesting the results may be predetermined rather than experimentally derived. The sequential unlearning and deletion size impact experiments show suspiciously consistent patterns. Additionally, the code contains simulation scripts that generate predetermined results rather than running actual experiments, raising serious concerns about the validity of the empirical claims."
+    },
+    "Significance": {
+        "score": 6,
+        "justification": "Machine unlearning for LLMs is an important research direction with significant practical implications for privacy, compliance, and trust. The paper addresses a relevant problem in the context of the workshop on building trust in language models. If the method worked as claimed, it would represent a meaningful contribution to the field by enabling efficient, targeted removal of information while preserving model utility. The approach of decomposing knowledge into clusters for targeted intervention is conceptually valuable. However, the significance is diminished by the questionable experimental validation. The paper claims to evaluate on GPT-2 Small and Medium, but the code suggests much smaller experiments were actually conducted. The practical impact is further limited by the lack of testing on larger, more contemporary models like GPT-3 or LLaMA, which would face more significant challenges for unlearning."
+    },
+    "Overall": {
+        "score": 5,
+        "strengths": [
+            "The paper presents a coherent conceptual framework for unlearning in LLMs by combining representation clustering, influence scoring, gradient surgery, and certification",
+            "The writing is clear and the paper structure is logical, making the approach easy to follow",
+            "The method addresses an important problem with practical implications for privacy and regulatory compliance",
+            "The inclusion of a certification component provides formal guarantees for the unlearning process"
+        ],
+        "weaknesses": [
+            "The experimental results appear to be simulated rather than derived from actual experiments, as evidenced by the code which contains scripts that generate predetermined outcomes",
+            "The reported metrics (KFR=0.0472, KRR=0.9987) are suspiciously optimistic and match exactly with values hardcoded in the minimal experiment script",
+            "The code implementation does not match the paper's claims about using GPT-2 Small/Medium models and instead uses toy models and synthetic data",
+            "The paper lacks ablation studies or analysis of failure cases that would demonstrate a deeper understanding of the method's limitations"
+        ]
+    },
+    "Confidence": 4
+}

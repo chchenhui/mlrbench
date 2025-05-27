@@ -1,0 +1,43 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the workshop's focus on spurious correlations and shortcut learning by proposing AIFS as a solution that works without requiring group labels. The methodology incorporates synthetic interventions in latent space as outlined in the research idea, and the proposal extensively references and builds upon the literature review, citing relevant works like Ye et al. (2024), Zheng et al. (2024), and Mitchell et al. (2024). The proposal comprehensively covers the workshop's objectives of developing robust models that can handle unknown spurious correlations, which is explicitly mentioned as a key challenge in the task description."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is very well-structured and articulated with clear sections covering background, research gap, objectives, methodology, and expected outcomes. The AIFS framework is explained in detail with mathematical formulations and algorithmic steps that make the approach understandable. The training algorithm is presented in pseudo-code format, enhancing clarity. The evaluation protocol and metrics are well-defined. However, there are a few areas that could benefit from additional clarification, such as more details on how the sensitivity scores are calculated in practice and how the mask update rule might be optimized during training. The relationship between the intervention strength and the effectiveness of the approach could also be elaborated further."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The AIFS approach offers notable originality by combining several existing concepts in a new way. The key innovation lies in the adaptive masking strategy that dynamically identifies and targets latent dimensions associated with spurious features without requiring group labels. This addresses a significant gap in current methods that often rely on explicit knowledge of spurious attributes. While the core components (latent interventions, invariance objectives) have precedents in the literature, their integration with the adaptive sensitivity-based masking mechanism represents a fresh approach. The proposal builds upon existing work like IRM (Arjovsky et al., 2019) and feature reweighting (Izmailov et al., 2022), but extends these ideas with the novel adaptive intervention mechanism. It's not entirely groundbreaking but offers a meaningful advancement over current approaches."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal demonstrates strong technical soundness with well-justified theoretical foundations. The AIFS framework is built on established principles of invariant representation learning and causal feature extraction. The mathematical formulations for the intervention module, dual-objective loss function, and adaptive masking strategy are rigorous and well-defined. The approach logically connects the sensitivity of latent dimensions to their likely association with spurious features, which is theoretically sound. The experimental design includes appropriate baselines, metrics, and ablation studies to validate the method. The proposal acknowledges potential limitations and includes analysis techniques to verify if AIFS correctly identifies dimensions related to spurious features. The only minor weakness is that some theoretical guarantees about the convergence properties of the adaptive masking approach could be more thoroughly explored."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The AIFS approach appears largely feasible to implement with current deep learning frameworks and computational resources. The proposal uses standard neural network architectures and training procedures, with the addition of the intervention module and adaptive masking strategy. The datasets mentioned (Waterbirds, CelebA, CivilComments, Adult Income) are publicly available and commonly used for evaluating robustness to spurious correlations. The computational overhead of the intervention module and periodic sensitivity analysis seems manageable, though it will increase training time compared to standard ERM. Some practical challenges might arise in tuning the numerous hyperparameters (λ_inv, σ, k, update frequency) and ensuring the stability of the adaptive masking process. The proposal would benefit from more discussion on potential implementation challenges, such as how to handle very high-dimensional latent spaces or how to ensure the mask updates don't lead to training instability."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a critical problem in machine learning: building robust models that don't rely on spurious correlations, especially when these correlations are unknown. This has significant implications for deploying AI systems in real-world scenarios where distribution shifts are common and group annotations are scarce. If successful, AIFS could provide a practical tool for enhancing model robustness across various domains and modalities without the prohibitive cost of extensive group annotation. The approach is particularly valuable for applications in high-stakes domains like healthcare and social systems where fairness and reliability are crucial. The modality-agnostic nature of AIFS suggests broad applicability, potentially extending to foundation models as mentioned in the workshop topics. The proposal also contributes to the fundamental understanding of how models learn and utilize features, which aligns with the workshop's goal of exploring the foundations of spurious correlations and shortcut learning."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Addresses a significant problem in machine learning (unknown spurious correlations) with a novel adaptive approach",
+            "Well-structured methodology with clear mathematical formulations and algorithmic steps",
+            "Does not require group labels during training, making it broadly applicable to real-world scenarios",
+            "Comprehensive evaluation plan with appropriate baselines, metrics, and analysis techniques",
+            "Modality-agnostic design with potential applications across various data types and domains"
+        ],
+        "weaknesses": [
+            "Some theoretical aspects of the adaptive masking strategy could be more thoroughly explored",
+            "Limited discussion of potential implementation challenges and solutions for high-dimensional latent spaces",
+            "The effectiveness of the sensitivity-based approach for identifying spurious dimensions needs empirical validation",
+            "Numerous hyperparameters may require extensive tuning to achieve optimal performance",
+            "The computational overhead of the intervention module and periodic sensitivity analysis may be significant for large models"
+        ]
+    }
+}

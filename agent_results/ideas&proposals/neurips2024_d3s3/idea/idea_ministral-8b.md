@@ -1,0 +1,11 @@
+### Title: "Differentiable Neural Surrogates for Physics-based Simulations"
+
+### Motivation:
+Physics-based simulations are crucial for various scientific and engineering domains, but they are computationally expensive and often lack real-time performance. Machine Learning (ML) offers promising solutions to bridge the simulation-to-real gap and improve the accuracy and efficiency of these simulations. Differentiable neural surrogates, which can be trained to mimic the behavior of complex physics models, provide an innovative approach to address these challenges. This research aims to develop and apply differentiable neural surrogates to enhance the accuracy and speed of physics-based simulations, thereby enabling more effective scientific discovery and engineering applications.
+
+### Main Idea:
+The proposed research focuses on developing differentiable neural surrogates that can accurately mimic the behavior of physics-based simulations. The methodology involves training neural networks to approximate the underlying physics models, allowing for efficient and differentiable computations. By leveraging the power of differentiable programming, we can optimize the surrogate models using gradient-based techniques, enabling us to address inverse problems and improve simulation accuracy.
+
+The expected outcomes include the development of highly accurate and efficient neural surrogates for various physics-based simulations, such as molecular dynamics and fluid dynamics. These surrogates will not only reduce the computational burden but also enable real-time simulations, making them invaluable for applications in scientific research, engineering design, and autonomous systems.
+
+The potential impact of this research is significant, as it will facilitate more accurate and efficient simulations across diverse domains, leading to breakthroughs in fields such as material science, climate modeling, and autonomous vehicle systems. Moreover, the development of differentiable neural surrogates will pave the way for further advancements in hybrid simulation and rendering approaches, generative modeling, and probabilistic uncertainty quantification.

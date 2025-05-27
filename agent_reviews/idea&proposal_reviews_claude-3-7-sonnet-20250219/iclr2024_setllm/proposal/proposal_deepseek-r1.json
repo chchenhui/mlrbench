@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal aligns exceptionally well with the task description, research idea, and literature review. It directly addresses the 'fact verification (e.g. hallucinated generation)' topic from the workshop call, focusing on proactive hallucination detection in LLMs. The methodology builds upon the contrastive learning approach mentioned in the original idea and incorporates insights from the literature review, particularly drawing from InternalInspector [1], MIND [2], and PRISM [3]. The proposal correctly references TrueTeacher [10] for synthetic data generation and incorporates benchmarks like HELM [2] and TRUE [10] mentioned in the literature. The three-phase framework effectively addresses the challenges identified in the literature review, especially regarding calibration of internal confidence metrics, real-time detection efficiency, and cross-domain generalization."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is very well-structured and articulated with clear sections for introduction, methodology, and expected outcomes. The research objectives are explicitly stated and logically organized. The three-phase framework provides a clear roadmap for implementation. Technical details are presented with appropriate mathematical formulations, making the approach concrete and understandable. The proposal clearly explains how internal states will be extracted and used for contrastive learning, and how confidence thresholding will be applied during inference. However, there are a few areas that could benefit from additional clarification: (1) the exact mechanism for prompt-guided adaptation mentioned in the expected outcomes could be elaborated, and (2) the relationship between the contrastive training and the calibration step could be more explicitly defined. Despite these minor points, the overall clarity is excellent."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal demonstrates notable originality by combining several existing approaches in a novel way. While individual components like contrastive learning on internal states (InternalInspector [1]), real-time hallucination detection (MIND [2]), and prompt-guided adaptation (PRISM [3]) have been explored separately, the integration of these approaches into a unified framework represents a fresh perspective. The proposal's novelty lies in: (1) the specific combination of token-wise entropy, layer-wise activation norms, and attention entropy as features for confidence estimation; (2) the application of triplet loss for contrastive learning specifically on hallucination detection; and (3) the real-time confidence thresholding mechanism with uncertainty markers. However, the core techniques (contrastive learning, internal state analysis) are extensions of existing methods rather than fundamentally new approaches, which limits the highest novelty score."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal demonstrates strong technical soundness with well-defined methodological components. The mathematical formulations for token-wise entropy, layer-wise activation norms, attention entropy, and the triplet loss function are correctly presented and appropriate for the task. The three-phase framework is logically structured and builds upon established techniques in machine learning. The evaluation methodology is comprehensive, with appropriate baselines, datasets, and metrics. The proposal correctly identifies Expected Calibration Error (ECE) as a key metric for confidence calibration. The experimental validation plan is thorough, covering detection performance, calibration quality, efficiency, and generalization. The timeline is realistic given the scope of work. One minor limitation is that while the proposal mentions temperature scaling for calibration, it doesn't fully detail how this will be integrated with the contrastive learning approach. Overall, the technical foundations are solid and well-justified."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal presents a feasible research plan with realistic components. The three-phase approach breaks down the complex problem into manageable steps. The data sources (synthetic data via TrueTeacher and human-curated benchmarks) are accessible. The contrastive learning methodology builds on established techniques that have been demonstrated to work in related contexts. The 12-month timeline is reasonable for the scope of work. However, there are some implementation challenges that affect the feasibility score: (1) extracting and processing internal states from large models in real-time may introduce significant computational overhead; (2) achieving the target latency of ≤10ms per token may be ambitious given the complexity of the confidence calculation; (3) ensuring cross-domain generalization with F1 ≥0.85 is challenging given the known domain adaptation difficulties in LLMs. While these challenges are acknowledged in the proposal, they represent non-trivial hurdles that may require additional resources or methodological adjustments."
+    },
+    "Significance": {
+        "score": 9,
+        "justification": "The proposal addresses a critical challenge in LLM deployment with high potential impact. Hallucination detection is one of the most pressing issues limiting the trustworthy application of LLMs in high-stakes domains like healthcare, legal analysis, and education. The significance of this work is evident in several aspects: (1) it tackles the problem proactively during generation rather than relying on post-hoc verification, which represents a significant advancement; (2) it aims to reduce reliance on external knowledge bases, making the approach more widely applicable; (3) the expected outcomes include both technical contributions (improved calibration framework) and practical applications (real-time detection with low latency); (4) the insights into which internal states are most predictive of hallucinations would advance the field's understanding of LLM behavior. The proposal explicitly connects to broader societal impacts in mitigating misinformation risks and enhancing transparency in AI systems, which aligns perfectly with the workshop's focus on secure and trustworthy LLMs."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Addresses a critical challenge in LLM trustworthiness with a proactive approach to hallucination detection",
+            "Well-structured methodology with clear technical formulations and evaluation plan",
+            "Strong alignment with existing literature while offering novel combinations of techniques",
+            "Comprehensive experimental validation plan with appropriate baselines and metrics",
+            "High potential impact for improving LLM reliability in high-stakes applications"
+        ],
+        "weaknesses": [
+            "Some implementation challenges regarding computational efficiency and real-time processing",
+            "Ambitious performance targets for cross-domain generalization that may be difficult to achieve",
+            "Limited elaboration on how prompt-guided adaptation will be implemented for domain generalization",
+            "Core techniques build upon existing methods rather than introducing fundamentally new approaches"
+        ]
+    }
+}

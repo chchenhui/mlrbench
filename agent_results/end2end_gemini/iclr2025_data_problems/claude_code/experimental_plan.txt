@@ -1,0 +1,95 @@
+# Experimental Plan for RAG-Informed Dynamic Data Valuation
+
+## Overview
+This experiment aims to evaluate the proposed RAG-Informed Dynamic Data Valuation framework for fair data marketplaces. We will simulate a data marketplace where contributors provide data chunks that are used in a RAG system, and evaluate how different data valuation methods affect fairness, data quality incentives, and overall RAG system performance.
+
+## Key Components
+
+1. **RAG System**
+   - Retriever: BM25 and Dense Passage Retriever (DPR)
+   - Generator: Pre-trained language model with fine-tuning capability (e.g., T5-base)
+
+2. **Attribution Mechanisms**
+   - Attention-based attribution
+   - Perturbation-based attribution (leave-one-out)
+   - Combined attribution approach
+
+3. **Data Valuation Methods**
+   - Proposed dynamic valuation (our method)
+   - Static pricing (baseline 1)
+   - Popularity-based pricing (baseline 2)
+   - Data Shapley (baseline 3, for a small subset due to computational constraints)
+
+4. **Evaluation Metrics**
+   - Attribution quality:
+     * Faithfulness (measured by output quality drop when removing chunks)
+     * Computational efficiency (latency)
+   - Market fairness:
+     * Correlation between price and utility
+     * Gini coefficient of rewards
+     * Market dynamics (price stability over time)
+   - RAG system performance:
+     * Task-specific metrics (e.g., F1, ROUGE)
+     * User satisfaction (simulated)
+
+## Experimental Workflow
+
+1. **Data Preparation**
+   - Select a suitable corpus (e.g., subset of Wikipedia)
+   - Segment into data chunks
+   - Assign quality labels to chunks (for evaluation purposes)
+   - Prepare query-answer pairs for RAG evaluation
+
+2. **Simulation Setup**
+   - Create simulated data providers with varying data quality profiles
+   - Create simulated users who issue queries and provide feedback
+   - Configure marketplace parameters (transaction costs, base prices, etc.)
+
+3. **Experimental Runs**
+   - For each valuation method (proposed + baselines):
+     * Initialize the marketplace
+     * Run RAG queries with attribution tracking
+     * Update data valuations based on method-specific formulas
+     * Simulate marketplace dynamics (providers responding to incentives)
+     * Measure all evaluation metrics
+     * Repeat for multiple iterations to observe trends
+
+4. **Analysis**
+   - Compare methods across all evaluation metrics
+   - Analyze how incentives affect data quality over time
+   - Identify strengths and weaknesses of each approach
+   - Generate visualizations and tables for results
+
+## Specific Experiments
+
+1. **Attribution Mechanism Evaluation**
+   - Compare attribution methods for faithfulness and efficiency
+   - Select the best mechanism for further experiments
+
+2. **Market Dynamics Simulation**
+   - Long-running simulation to observe how different valuation methods affect:
+     * Data quality evolution
+     * Provider behavior
+     * Price stability
+
+3. **RAG Performance Impact**
+   - Evaluate how different data valuation methods affect RAG system performance
+   - Test hypothesis that dynamic valuation leads to better data selection
+
+4. **Scalability Testing**
+   - Measure performance with increasing dataset sizes
+   - Analyze computational efficiency of different methods
+
+5. **Robustness Testing**
+   - Introduce noise in user feedback
+   - Test sensitivity to parameter choices
+   - Evaluate resilience to strategic provider behavior
+
+## Implementation Plan
+
+1. First implement core RAG system
+2. Add attribution mechanisms
+3. Implement valuation methods
+4. Create simulation environment
+5. Run experiments and collect results
+6. Analyze results and generate visualizations

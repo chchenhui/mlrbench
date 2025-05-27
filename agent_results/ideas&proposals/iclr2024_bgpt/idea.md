@@ -1,0 +1,7 @@
+Title: Dynamic Curvature-Aware Optimizer (DCAO)
+
+Motivation:  
+Theoretical insights into loss-landscape non-smoothness and the Edge-of-Stability phenomenon highlight gaps with current optimizers that underutilize curvature information. Bridging this gap can yield more stable convergence and better generalization in practice.
+
+Main Idea:  
+We propose DCAO, an optimizer that periodically probes local curvature spectra via low-rank Hessian approximations using stochastic Lanczos iterations. At set intervals, DCAO computes top-k eigenpairs to derive curvature metrics such as spectral radius and spectral gap. These metrics inform dynamic adjustments of learning rate, momentum, and weight decay: high spectral radius triggers conservative updates, while increased spectral gap allows for acceleration. The method integrates seamlessly into existing training pipelines with minimal overhead. We will theoretically derive convergence bounds under non-smooth assumptions and empirically validate on vision and language models. Expected outcomes include improved training stability, faster convergence in the Edge-of-Stability regime, and enhanced generalization. This work narrows the theory-practice divide by operationalizing curvature-based analyses.

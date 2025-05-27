@@ -1,0 +1,43 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the workshop's focus on spurious correlations and model instability by proposing a framework (ACA) that identifies and mitigates spurious features without requiring group annotations. The proposal incorporates all key elements from the original idea (attribution methods, conditional generative models, and consistency loss) and expands them into a comprehensive methodology. It also acknowledges and builds upon the literature review by positioning itself relative to existing approaches like SPUME and EVaLS. The examples used (chest X-rays, CelebA, iWildCam) align perfectly with the workshop's examples of spurious correlation problems. The only minor inconsistency is that while the literature review mentions several recent papers from 2024, the proposal doesn't explicitly discuss how it improves upon these very recent methods."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is well-structured and clearly articulated, with a logical flow from introduction to methodology to expected outcomes. The three-stage approach (spurious feature detection, counterfactual augmentation, and model retraining) is well-defined with appropriate mathematical formulations. The experimental design section provides specific datasets, baselines, and evaluation metrics. However, there are a few areas that could benefit from additional clarity: (1) The exact procedure for identifying spurious features could be more detailed, particularly how correlation with environmental variables is determined without group labels; (2) The relationship between the attribution maps and the spurious feature mask 's' could be more explicitly defined; and (3) The proposal could more clearly explain how the conditional GAN ensures that counterfactuals preserve the true label while only modifying spurious features. Despite these minor issues, the overall proposal is clear and understandable."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal demonstrates notable originality by integrating several existing techniques into a novel framework. The core innovation lies in the three-stage pipeline that combines attribution methods, conditional generative models, and consistency regularization to address spurious correlations without group annotations. This integration is fresh and potentially powerful. However, each individual component (attribution methods, GANs for counterfactual generation, consistency regularization) has precedents in the literature. For instance, papers mentioned in the literature review like 'On Counterfactual Data Augmentation Under Confounding' already explore counterfactual data augmentation, and EVaLS also addresses spurious correlations without group annotations. The proposal acknowledges these connections but could more explicitly articulate its novel contributions beyond combining existing approaches. The application to medical imaging datasets represents a valuable but incremental innovation rather than a groundbreaking new direction."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal is technically sound and built on well-established theoretical foundations. The mathematical formulations for Integrated Gradients, the CycleGAN objective, and the consistency loss are correctly presented and appropriate for the task. The methodology logically connects spurious feature identification to counterfactual generation and model retraining. The experimental design includes appropriate datasets, baselines, and evaluation metrics that align with the research objectives. The ablation studies are well-designed to isolate the contributions of different components. However, there are some areas where additional rigor would strengthen the proposal: (1) The theoretical guarantees that the counterfactual examples will preserve the true label are not fully established; (2) The proposal could benefit from a more formal analysis of when the approach might fail or its limitations; and (3) While the consistency loss is well-motivated, there could be more discussion of potential trade-offs between consistency and standard performance. Overall, the technical approach is sound with only minor gaps in theoretical justification."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal presents a feasible research plan with realistic components. The computational resources (NVIDIA A100 GPUs) are appropriate for the scale of the experiments. The datasets (CelebA, iWildCam, MIMIC-CXR) are publicly available and have been used in similar research. The methods (Integrated Gradients, CycleGAN, consistency regularization) are established techniques with available implementations. However, there are several implementation challenges that affect feasibility: (1) Training conditional GANs to generate high-quality counterfactuals that only modify spurious features while preserving true labels is non-trivial and may require significant tuning; (2) The process of identifying spurious features without group annotations relies on correlation with environmental variables, which may be difficult to determine in practice; (3) The proposal doesn't fully address potential failure modes where the counterfactual generation might introduce new biases or artifacts. The timeline for completing all components (feature detection, GAN training, model retraining) across multiple datasets is ambitious but achievable with the specified resources."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a critical problem in machine learning: the reliance on spurious correlations that lead to failures in real-world deployments. Its significance is high for several reasons: (1) It eliminates the need for group annotations, which are often unavailable or sensitive in practice; (2) It provides a general framework applicable across domains (vision, NLP, medical imaging); (3) It has direct implications for high-stakes applications like healthcare, where model robustness is crucial. The potential impact on reducing racial disparities in diagnostic models is particularly noteworthy. The proposal also contributes to bridging theoretical concepts from causality with practical robustness techniques. However, the significance is somewhat limited by the incremental nature of the technical innovations and the fact that other approaches (like EVaLS) also address spurious correlations without group annotations. The proposal could more clearly articulate how its impact would exceed that of existing methods. Nevertheless, the practical utility and cross-domain applicability make this a significant contribution to the field."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Addresses a critical real-world problem of spurious correlations in ML models without requiring group annotations",
+            "Integrates multiple techniques (attribution methods, generative models, consistency regularization) into a coherent framework",
+            "Provides a comprehensive experimental design with appropriate datasets, baselines, and evaluation metrics",
+            "Has direct applications to high-stakes domains like healthcare where robustness is crucial",
+            "Aligns perfectly with the workshop's focus on spurious correlations and model stability"
+        ],
+        "weaknesses": [
+            "Individual components of the framework are not entirely novel, building primarily on existing techniques",
+            "The process for identifying spurious features without group annotations needs more detailed explanation",
+            "Lacks theoretical guarantees that counterfactual examples will preserve true labels while only modifying spurious features",
+            "Training conditional GANs to generate high-quality counterfactuals presents significant implementation challenges",
+            "Does not fully address potential failure modes where counterfactual generation might introduce new biases"
+        ]
+    }
+}

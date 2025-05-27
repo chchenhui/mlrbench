@@ -1,0 +1,36 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-structured and clearly articulates its contributions. The methodology section provides a detailed explanation of the Attribution-Guided Training framework, including formal mathematical definitions and architectural details. The experimental setup is thoroughly described, covering models, datasets, baselines, and evaluation metrics. The results are presented systematically with appropriate tables and figures. However, there are some areas that could be improved: (1) The paper could better explain how the attribution network specifically identifies source documents during inference, (2) Some figures (like the training curves) show unusual patterns where validation performance exceeds training performance, which is not adequately explained, and (3) The relationship between the attribution loss and the main task loss could be more clearly illustrated."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper presents a novel approach to attribution in foundation models by embedding attribution mechanisms directly into the training process rather than applying them post-hoc. This is a significant departure from existing methods like influence functions and Data Shapley. The dual-objective optimization that balances predictive performance with attribution accuracy is innovative. However, the novelty is somewhat limited by: (1) The core idea of multi-task learning with an attribution objective is not entirely new, (2) The attribution network architectures are relatively straightforward adaptations of existing neural network components, and (3) The paper builds upon rather than fundamentally reimagines existing work in attribution and transparency."
+    },
+    "Soundness": {
+        "score": 5,
+        "justification": "There are several concerns about the soundness of the paper: (1) The training curves in the figures show unusual patterns where validation metrics consistently outperform training metrics across epochs, which is atypical and raises questions about the experimental setup or data leakage. (2) The code implementation reveals that the 'adversarial examples' are created using a very simplistic word replacement approach rather than sophisticated paraphrasing, which may not be a robust test of attribution capabilities. (3) The computational efficiency comparison appears to use simulated relative times rather than actual measurements. (4) The dataset construction process combines texts from different sources but doesn't clearly establish ground truth attribution for evaluation. (5) The paper claims a 19.5% improvement in attribution F1 score, but this number appears to be predetermined in the results template rather than derived from actual experiments. These issues raise significant concerns about the reliability of the reported results."
+    },
+    "Significance": {
+        "score": 7,
+        "justification": "The paper addresses an important problem in the field of foundation models: attribution and copyright compliance. This is a timely topic given increasing concerns about copyright infringement in AI-generated content. The proposed Attribution-Guided Training framework offers a practical approach that could be integrated into existing foundation model training pipelines. The experimental results, if valid, would represent a meaningful improvement over existing attribution methods. The paper also provides insights into the trade-offs between attribution accuracy and model performance. However, the significance is somewhat limited by: (1) The experiments are conducted on a relatively small scale with distilroberta-base rather than larger foundation models, (2) The approach is only demonstrated on text data, not multimodal content, and (3) The practical implementation in real-world scenarios with copyright-sensitive content is not fully explored."
+    },
+    "Overall": {
+        "score": 6,
+        "strengths": [
+            "The paper addresses an important and timely problem in AI: attribution and copyright compliance in foundation models",
+            "The proposed Attribution-Guided Training framework is conceptually sound and represents a shift from post-hoc to integrated attribution",
+            "The paper provides comprehensive ablation studies on different aspects of the framework (attribution loss weight, network architecture, threshold)",
+            "The mathematical formulation of the dual-objective optimization is clear and well-presented",
+            "The code implementation is detailed and covers multiple components of the framework"
+        ],
+        "weaknesses": [
+            "The training curves show validation performance consistently exceeding training performance, which is unusual and unexplained, raising concerns about experimental validity",
+            "The 'adversarial examples' are created using a simplistic word replacement approach rather than sophisticated paraphrasing, limiting the robustness evaluation",
+            "The computational efficiency comparison appears to use simulated rather than measured values",
+            "The experiments are limited to a relatively small model (distilroberta-base) rather than true foundation models",
+            "Some reported metrics appear to be predetermined in templates rather than derived from actual experiments, raising questions about result authenticity"
+        ]
+    },
+    "Confidence": 4
+}

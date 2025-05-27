@@ -1,0 +1,43 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The DiffuNA proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the AI4NA workshop's focus on AI applications for nucleic acids, specifically targeting RNA therapeutic design through novel AI methods. The proposal builds upon the literature review by extending concepts from RiboDiffusion and DiffSBDD to RNA design, while addressing the identified challenge of joint sequence-structure generation. The methodology incorporates SE(3)-equivariant diffusion models mentioned in the literature and addresses the key challenges identified, such as RNA folding complexity and sequence-structure relationships. The proposal maintains consistency throughout, from the background and objectives to the methodology and expected outcomes."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is very well-articulated with a logical structure that flows from background to methodology to expected outcomes. The technical approach is explained in detail with clear mathematical formulations for the diffusion process, neural network architecture, and training objectives. The preprocessing pipeline, conditioning mechanisms, and RL refinement loop are all well-defined. The evaluation metrics and experimental design are thoroughly specified. However, there are a few areas that could benefit from additional clarification: (1) the exact mechanism for integrating SHAPE reactivity data into the model, (2) more details on how the RL policy selects or perturbs candidates, and (3) further explanation of how the docking network for binding affinity prediction will be implemented or trained."
+    },
+    "Novelty": {
+        "score": 8,
+        "justification": "DiffuNA presents significant novelty in several aspects. While diffusion models have been applied to proteins and small molecules (as noted in the literature review), and RiboDiffusion addresses RNA inverse folding, DiffuNA innovates by: (1) jointly modeling RNA sequence and 3D structure in a unified diffusion framework, (2) incorporating SHAPE reactivity data to inform flexible vs. rigid regions, (3) integrating a reinforcement learning refinement loop to optimize folding stability and binding affinity, and (4) enabling conditional generation based on binding pockets. The combination of these elements represents a novel approach not present in existing literature. However, some individual components (like SE(3)-equivariant GNNs and diffusion models) are adaptations from existing work in related domains, which slightly reduces the novelty score."
+    },
+    "Soundness": {
+        "score": 7,
+        "justification": "The proposal demonstrates strong technical foundations and rigor in many aspects. The diffusion model formulation is mathematically sound, with clear forward and reverse processes for both continuous (coordinates) and discrete (sequence) components. The SE(3)-equivariant GNN architecture ensures physical invariances are respected. The training objective and evaluation metrics are well-defined. However, there are some areas where the technical soundness could be strengthened: (1) the multinomial diffusion process for discrete sequences may face challenges with RNA's specific base-pairing constraints, but this isn't addressed, (2) the proposal doesn't fully explain how secondary structure constraints will be maintained during generation, (3) the RL reward function combining folding stability and binding affinity needs more theoretical justification for its effectiveness, and (4) the validation approach relies heavily on in silico metrics rather than experimental validation."
+    },
+    "Feasibility": {
+        "score": 6,
+        "justification": "The proposal presents a feasible approach but with several implementation challenges. On the positive side: (1) the data sources are well-established and accessible, (2) the computational requirements are clearly specified (8 A100 GPUs, 3 weeks training), and (3) the timeline is reasonable for the scope of work. However, several feasibility concerns arise: (1) training a joint sequence-structure diffusion model may require more data than is currently available for high-quality RNA structures, (2) the integration of the RL loop during sampling adds significant complexity and computational cost, (3) the development of an accurate binding affinity surrogate model is non-trivial and may require separate extensive training, and (4) the proposal doesn't address potential challenges in generating RNA sequences that satisfy complex base-pairing constraints. The 12-month timeline may be optimistic given these challenges."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a critical need in RNA therapeutics development by potentially accelerating the discovery of novel RNA molecules with desired properties. If successful, DiffuNA could significantly reduce the time and cost of developing RNA-based drugs by minimizing experimental trial-and-error. The significance is enhanced by: (1) the growing importance of RNA therapeutics in medicine (highlighted by recent mRNA vaccines), (2) the potential to discover entirely new RNA motifs beyond known families, (3) the transferable methodology applicable to diverse RNA targets, and (4) the open-source release plan that would benefit the broader AI4NA community. The proposal directly addresses the workshop's goal of applying AI to nucleic acid research challenges, particularly in designing bespoke RNA molecules with therapeutic potential."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Novel integration of diffusion models with RL for joint RNA sequence-structure design",
+            "Comprehensive technical approach with well-defined mathematical formulations",
+            "Strong alignment with the AI4NA workshop goals and literature",
+            "Potential for significant impact in accelerating RNA therapeutic development",
+            "Well-structured evaluation plan with appropriate baselines and metrics"
+        ],
+        "weaknesses": [
+            "Limited discussion of how RNA-specific constraints (base-pairing) will be maintained during generation",
+            "Potential data scarcity issues for training a complex joint sequence-structure model",
+            "Computational feasibility concerns regarding the RL refinement loop",
+            "Lack of experimental validation plan beyond in silico metrics",
+            "Optimistic timeline given the technical complexity of the proposed system"
+        ]
+    }
+}

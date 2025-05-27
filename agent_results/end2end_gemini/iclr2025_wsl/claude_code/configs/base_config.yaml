@@ -1,0 +1,93 @@
+# Base configuration for WeightNet experiments
+
+# Experiment metadata
+experiment:
+  name: "weightnet_base"
+  description: "Base experiment for WeightNet model"
+  seed: 42
+  device: "cuda"  # or "cpu"
+  use_gpu: true
+  log_dir: "logs"
+  save_dir: "experiments"
+  figures_dir: "figures"
+  tensorboard_dir: "tensorboard"
+
+# Data configuration
+data:
+  data_dir: "data/raw"
+  processed_dir: "data/processed"
+  model_properties: ["accuracy", "robustness", "generalization_gap"]
+  train_ratio: 0.7
+  val_ratio: 0.15
+  test_ratio: 0.15
+  canonicalization_method: "weight_sort"  # "weight_sort", "activation_sort", "ot", or null
+  tokenization_strategy: "neuron_centric"  # "global", "neuron_centric", "layer_centric"
+  max_token_length: 4096
+  split_by_architecture: false
+  batch_size: 16
+  num_workers: 4
+  synthetic:
+    create: true
+    num_models_per_architecture: 25
+    architectures: ["resnet18", "resnet34", "resnet50", "vgg11", "vgg16", "mobilenet_v2", "densenet121"]
+    generate_variations: true
+
+# Model configuration - WeightNet
+model:
+  type: "weightnet"
+  d_model: 256
+  num_intra_layer_heads: 4
+  num_cross_layer_heads: 8
+  num_intra_layer_blocks: 2
+  num_cross_layer_blocks: 2
+  d_ff: 1024
+  dropout: 0.1
+  max_seq_length: 4096
+  num_segments: 100
+
+# Training configuration
+training:
+  num_epochs: 50
+  early_stopping_patience: 10
+  optimizer:
+    type: "adam"
+    lr: 0.001
+    weight_decay: 0.0001
+  scheduler:
+    type: "cosine"  # "cosine", "plateau", "step", or null
+    patience: 5
+    factor: 0.5
+    min_lr: 0.00001
+  criterion: "mse"  # "mse", "mae", "huber"
+
+# Evaluation configuration
+evaluation:
+  metrics: ["mae", "rmse", "r2"]
+  save_predictions: true
+  evaluate_on_train: true
+  evaluate_on_val: true
+  evaluate_on_test: true
+
+# Baseline configurations
+baselines:
+  run: true
+  models:
+    - name: "mlp_baseline"
+      type: "mlp"
+      hidden_dims: [1024, 512, 256]
+      dropout: 0.2
+    - name: "stats_baseline"
+      type: "stats"
+      num_features: 20
+      hidden_dims: [256, 128, 64]
+      dropout: 0.2
+
+# Visualization configuration
+visualization:
+  create_history_plots: true
+  create_prediction_plots: true
+  create_error_plots: true
+  create_model_comparison: true
+  create_interactive_plots: true
+  create_property_correlation_plots: true
+  create_radar_charts: true

@@ -1,0 +1,7 @@
+**Title:** Adaptive Fairness-Aware Temporal Graph Neural Networks for Dynamic Social Networks  
+
+**Motivation:** Real-world social networks evolve rapidly, introducing temporal shifts in user behavior and societal biases. Static fairness methods fail to address dynamic discrimination patterns (e.g., in job recommendations or loan approvals), risking inequitable outcomes. Existing temporal graph models prioritize accuracy over fairness, leaving a critical gap in ethical AI for dynamic systems.  
+
+**Main Idea:** We propose a temporal GNN framework that dynamically adjusts fairness constraints as the graph evolves. The model employs adaptive reweighting of node interactions and adversarial training to minimize disparities across protected groups over time. A time-sensitive fairness regularizer penalizes biased predictions using a sliding window of recent graph snapshots, ensuring constraints reflect current data trends. Additionally, differential privacy is integrated into gradient updates to safeguard user privacy during model retraining. The architecture combines temporal attention to weight historical node features and a fairness discriminator that evolves alongside graph dynamics.  
+
+**Expected Outcomes & Impact:** The framework will maintain high accuracy while reducing bias drift in tasks like recommendation systems or fraud detection, validated on datasets like evolving LinkedIn networks or transaction graphs. This enables equitable decision-making in real-time applications, bridging the gap between temporal graph learning and responsible AI.

@@ -1,0 +1,10 @@
+**Title:**  
+**Cross-Domain Backdoor Defense via Trigger-Insensitive Representation Learning**  
+
+**Motivation:**  
+Current backdoor defenses exhibit limited generalization across attack types and domains (e.g., CV, NLP, FL), as they often target domain-specific triggers or poisoning mechanisms. With the rising stealthiness of cross-modal or hybrid backdoors (e.g., adversarial patches in autonomous vehicles, poisoned smart contracts in blockchain), there is an urgent need for a unified defense framework that ensures robustness without access to clean data, model weights, or attack knowledge. This is critical for real-world systems (e.g., medical diagnosis, IoT networks) where retraining and domain expertise are impractical.  
+
+**Main Idea:**  
+This work proposes a cross-domain defense framework that identifies and suppresses vulnerable semantic subspaces exploited by backdoors, regardless of trigger types. We address this as a representation learning problem: First, we analyze the activation patterns of neural networks across domains to identify low-dimensional manifolds unusually sensitive to small input perturbations—a common trait of backdoored models. Second, we train a self-supervised filter network to project inputs into a trigger-insensitive latent space by adversarially minimizing sensitivity to such manifolds. This filter is updated via score-based reinforcement learning, where a nuisance parameter penalizes deviations from native model predictions. Finally, we distill the filtered representations into the target model through a data-free knowledge distillation pipeline.  
+
+Experiments will benchmark the framework against state-of-the-art attacks (e.g., clean-label backdoors, physical-world triggers) in CV (CIFAR-10, autonomous driving), NLP (BERT-based sentiment analysis), and FL (cross-device text prediction). We aim to achieve ≥90% attack detection rates with <5% accuracy drop, while maintaining transparency and adaptability to unseen domains like reinforcement learning. This approach could establish foundational guidance for certifying AI systems against diverse backdoors in security-critical scenarios.

@@ -1,0 +1,5 @@
+**Title:** Synergistic Reasoning and Decision-Making via LLM-Guided Adaptive Planning
+
+**Motivation:** Open-world agents face dynamic environments and novel tasks requiring simultaneous reasoning (understanding goals, inferring states) and effective decision-making (planning actions). Current models often separate these, limiting adaptability. This research aims to unify reasoning and decision-making for robust performance in unseen scenarios.
+
+**Main Idea:** We propose an architecture where a Large Language Model (LLM) performs high-level reasoning to generate adaptive plans or policies, represented as structured programs or behavioral primitives. This symbolic plan guides a lower-level decision-making module (e.g., a model-based or model-free RL agent) responsible for execution in the environment. Crucially, feedback from the environment (execution errors, unexpected outcomes, novel states) is used to trigger the LLM to *re-reason* and *dynamically replan*, adapting the strategy mid-execution. This closed-loop system synergizes symbolic reasoning with situated action, enabling robust generalization and continuous learning in open-world settings.

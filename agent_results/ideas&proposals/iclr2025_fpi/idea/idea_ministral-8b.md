@@ -1,0 +1,7 @@
+### Title: Learning-Based Sampling Methods for Bayesian Inference in Molecular Dynamics Simulations
+
+### Motivation:
+Molecular dynamics (MD) simulations are crucial for understanding biological systems, but they are computationally expensive and often require sampling from complex, high-dimensional distributions. Traditional sampling methods, such as Monte Carlo, can be inefficient. This research aims to develop learning-based sampling methods that can accelerate and improve the accuracy of MD simulations by leveraging recent advances in machine learning.
+
+### Main Idea:
+This research proposes a novel approach to accelerate Bayesian inference in molecular dynamics simulations by learning a probabilistic sampler. The method involves training a neural network to approximate the posterior distribution of molecular configurations given observed data. The network is trained using a combination of variational inference and reinforcement learning to optimize the sampling process. The expected outcomes include significant reductions in computational time and improved accuracy in simulating molecular dynamics. This approach has the potential to revolutionize fields such as pharmaceuticals and materials science by enabling more efficient and accurate simulations. The research will also contribute to the broader understanding of the connections between sampling methods and physics, as well as the theoretical foundations of learning-based approaches to probabilistic inference.

@@ -1,0 +1,10 @@
+**Title:** **Cross-Modal Transformer for Multimodal Time Series Forecasting with Textual Context**  
+
+**Motivation:**  
+Time series data often coexists with rich exogenous information (e.g., clinical notes in healthcare, news articles in finance), yet most models focus solely on numerical signals. Ignoring textual context limits the ability to capture complex dependencies between modalities, leading to suboptimal predictions. This work addresses the challenge of integrating heterogeneous data sources, enabling models to leverage textual insights for improved time series forecasting in domains like healthcare and finance.  
+
+**Main Idea:**  
+We propose a **Cross-Modal Transformer (CMT)** that jointly processes time series and textual data through a dual-encoder architecture. The time series branch uses a patched Transformer to model temporal dynamics, while the text branch employs a pretrained language model (e.g., BERT) to extract contextual embeddings. A cross-attention module dynamically aligns textual features with relevant time steps, enabling the model to incorporate context (e.g., "patient reports chest pain" influencing cardiac vital sign forecasts). To address asynchronous modality frequencies, we introduce a temporal-aware contrastive loss to align multimodal embeddings in a shared space. The model is trained on a new benchmark combining public healthcare datasets (e.g., MIMIC-III) with clinical notes and physiological signals. We expect CMT to outperform unimodal baselines in forecasting tasks (e.g., sepsis onset prediction) while offering interpretability via attention visualizations. This work bridges the gap between modalities, unlocking practical applications where textual context critically informs temporal decision-making.  
+
+**Impact:**  
+CMT could set a foundation for multimodal time series analysis, enabling real-world systems to harness underutilized textual data for more accurate, context-aware predictions.

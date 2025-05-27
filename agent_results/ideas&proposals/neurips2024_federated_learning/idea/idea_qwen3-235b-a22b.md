@@ -1,0 +1,10 @@
+**Title:** Federated Prompt Learning with Foundation Models for Personalized Privacy-Preserving Adaptation  
+
+**Motivation:**  
+Personalization in federated learning (FL) remains challenging due to data heterogeneity, communication costs, and privacy risks. Foundation models (FMs) like large language models (LLMs) offer strong generalization but are costly to fine-tune for diverse clients. Existing FL methods struggle to balance personalization with efficiency, especially when adapting FMs to domain-specific tasks without sharing raw data. This work addresses these challenges by leveraging parameter-efficient adaptation techniques to enable privacy-preserving, client-specific models while maintaining collaboration benefits.  
+
+**Main Idea:**  
+We propose *Federated Prompt Learning* (FPL), where clients train lightweight, client-specific **prompt vectors** to adapt a shared FM instead of full model fine-tuning. Prompts—short learnable prefixes—condition the FM’s behavior on local data, minimizing communication overhead (only sharing prompts, not gradients or data). To handle heterogeneity, we design a hierarchical aggregation method: (1) Cluster clients by data distribution similarity using public metadata, (2) Perform cluster-specific prompt aggregation via contrastive learning to align prompts within groups, and (3) Update the global FM prompt using differentially private federated averaging. Clients retain personalized prompts while benefiting from collaborative training. We evaluate FPL on cross-silo NLP tasks (e.g., medical text classification) and computer vision, measuring accuracy, fairness, and communication efficiency. Expected outcomes include a 30–50% reduction in communication costs versus full-model FL, with comparable personalization performance. This approach democratizes access to FM adaptation for resource-constrained clients and ensures compliance with privacy regulations like GDPR.  
+
+**Impact:**  
+FPL enables scalable, private, and personalized AI solutions for healthcare, finance, and education, where data sensitivity and heterogeneity are critical barriers.

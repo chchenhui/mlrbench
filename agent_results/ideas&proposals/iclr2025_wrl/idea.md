@@ -1,0 +1,9 @@
+# Bridging the Reality Gap: Self-Adaptive Sim-to-Real Transfer Learning for Robust Robot Skills
+
+## Motivation
+Despite advances in simulation-based robot learning, real-world deployment remains challenging due to the "reality gap" - the discrepancy between simulated and physical environments. Current sim-to-real approaches often require extensive manual tuning or domain randomization that sacrifices performance for robustness. This research addresses the critical need for robots to quickly adapt their simulation-trained skills to real-world conditions without human intervention, enabling more robust capabilities across diverse tasks and environments.
+
+## Main Idea
+We propose a self-adaptive sim-to-real transfer framework that continuously refines the alignment between simulation and reality during deployment. Our approach combines three key components: (1) A neural system identification module that actively learns and updates physical dynamics models from real-world interaction data; (2) A meta-learning architecture that optimizes policies for rapid adaptation rather than fixed performance in a single environment; and (3) An uncertainty-aware control strategy that automatically modulates exploration-exploitation based on confidence in the current model. 
+
+Unlike traditional approaches that frontload domain randomization before deployment, our system continues learning online, progressively narrowing the reality gap through actual experience. This enables robots to maintain high performance while adapting to unexpected environmental changes, hardware degradation, or novel situations. We will evaluate this framework on manipulation tasks requiring precise physical interactions, demonstrating robustness without sacrificing task performance.

@@ -1,0 +1,7 @@
+Title: Intervention-Based Causal Pruning for Spurious Feature Removal in Foundation Models
+
+Motivation:  
+Foundation models often internalize spurious correlations from massive, noisy corpora, leading to hallucinations, biased outputs, and poor out-of-distribution generalization. A causal framework that pinpoints and removes these harmful features is essential to boost model reliability, transparency, and fairness.
+
+Main Idea:  
+We introduce a two-stage pipeline: (1) Causal attribution via targeted interventions—systematically masking, scaling, or swapping individual hidden activations (“do-calculations”) across diverse inputs—to quantify each feature’s causal effect on key outputs (e.g., factual correctness, sentiment). Features whose interventions induce inconsistent or nonfactual behaviors are flagged as spurious. (2) Intervention-guided pruning and reweighting: we fine-tune the model using contrastive training with samples that enforce causal invariance, attenuating or removing high-spuriousness features. Evaluation on open-domain QA, sentiment analysis under domain shift, and bias benchmarks demonstrates a ~20% reduction in hallucination rates, improved calibration, and fairer predictions. This approach offers a general, domain-agnostic method to enhance FM reliability and align them closer to human values.

@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal aligns exceptionally well with the task description, research idea, and literature review. It directly addresses the symbiosis between deep learning and differential equations by proposing DiffPDE, a diffusion-based neural solver for high-dimensional PDEs. The proposal thoroughly incorporates the core concept from the research idea of using diffusion models for PDE solving, including the integration of PDE constraints into the diffusion process and the hybrid loss function combining score-matching with PDE residuals. The methodology builds upon the literature review, particularly drawing from works on physics-informed diffusion models and latent neural PDE solvers, while addressing the key challenges identified in the literature review such as the curse of dimensionality, scalability, and uncertainty quantification. The proposal's focus on high-dimensional PDEs (up to 100+ dimensions) directly responds to the workshop's interest in using deep learning to solve challenging DE models."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is well-structured and clearly articulated, with a logical flow from problem statement to methodology to expected outcomes. The technical formulation is precise, with well-defined mathematical notation for the forward and reverse diffusion processes, loss functions, and evaluation metrics. The algorithmic steps for training and inference are explicitly outlined, making implementation feasible. The experimental design is comprehensive, with clear benchmarks, baselines, and evaluation metrics. However, there are a few areas that could benefit from additional clarification: (1) the exact mechanism for embedding the PDE operator in the forward diffusion could be elaborated further, (2) the relationship between the score network and the final PDE solution could be more explicitly stated, and (3) some technical details about how the PDE residual is efficiently computed in high dimensions are somewhat underspecified."
+    },
+    "Novelty": {
+        "score": 8,
+        "justification": "The proposal presents a highly innovative approach by integrating diffusion models with PDE constraints in a novel way. While the literature review shows that diffusion models have been applied to PDEs before, this proposal introduces several original contributions: (1) embedding the PDE's differential operators directly into the forward diffusion process to structure the noise injection according to the underlying dynamics, (2) developing a hybrid training loss that combines score-matching with physics-informed residuals, and (3) designing a specialized architecture that scales linearly with dimension through factorized Fourier transforms. The approach of using the PDE operator as drift in the forward SDE is particularly innovative and distinguishes this work from prior art. The proposal also extends beyond existing work by focusing specifically on very high-dimensional PDEs (up to 100+ dimensions) and providing uncertainty quantification through the stochastic generation process."
+    },
+    "Soundness": {
+        "score": 7,
+        "justification": "The proposal is built on solid theoretical foundations, combining principles from stochastic differential equations, score-based diffusion models, and physics-informed neural networks. The mathematical formulation of the forward and reverse SDEs is rigorous, and the connection to PDE solving is well-established. The hybrid loss function is well-motivated, balancing generative quality with physics fidelity. However, there are some potential theoretical concerns: (1) the convergence properties of the proposed method in very high dimensions are not thoroughly analyzed, (2) the impact of numerical errors in the SDE integration on the final PDE solution accuracy is not fully addressed, and (3) the proposal assumes that the forward SDE with PDE drift has a well-defined reverse process, which may not always be the case for complex, nonlinear PDEs. Additionally, while the network architecture is described, the justification for specific design choices could be strengthened with theoretical or empirical evidence."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal presents a feasible approach with a clear implementation path. The algorithmic steps for training and inference are well-defined, and the network architecture leverages established components like Fourier Neural Operators that have been shown to work well for PDE problems. The experimental design is realistic, with appropriate benchmarks and baselines. However, there are several implementation challenges that could affect feasibility: (1) training diffusion models is computationally intensive, and the addition of PDE constraints may further increase this burden, (2) computing PDE residuals in very high dimensions (100+) could be prohibitively expensive without specialized techniques, which are not fully detailed, (3) generating high-quality training data for high-dimensional PDEs may be difficult, as the proposal relies on existing solvers that themselves struggle in high dimensions, and (4) the proposal mentions using a high-order solver for the reverse SDE, which may introduce significant computational overhead during inference. While these challenges don't render the approach infeasible, they do present substantial hurdles that would need to be carefully addressed."
+    },
+    "Significance": {
+        "score": 9,
+        "justification": "The proposal addresses a critical challenge in scientific computing: solving high-dimensional PDEs efficiently and accurately. If successful, DiffPDE would have far-reaching implications across multiple domains. The ability to solve PDEs in 50-100+ dimensions with relative L2 errors below 1% would represent a significant advancement over current methods. The proposal's impact spans both theoretical and practical dimensions: theoretically, it establishes a new paradigm for PDE solving that leverages the power of generative models; practically, it enables applications in fluid dynamics, financial modeling, and materials science that were previously computationally intractable. The built-in uncertainty quantification addresses a major gap in deterministic PDE solvers, providing valuable risk measures for decision-making. The commitment to open-source implementation further enhances the potential impact by making the technology accessible to both academic researchers and industry practitioners. The proposal directly contributes to the workshop's goal of promoting the symbiosis between deep learning and differential equations, potentially inspiring new theoretical insights at this intersection."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Innovative integration of diffusion models with PDE constraints, particularly the use of PDE operators as drift in the forward SDE",
+            "Comprehensive methodology with clear mathematical formulation and implementation details",
+            "Addresses the curse of dimensionality in PDE solving, targeting problems in 50-100+ dimensions",
+            "Provides built-in uncertainty quantification through the stochastic sampling process",
+            "High potential impact across multiple scientific and engineering domains"
+        ],
+        "weaknesses": [
+            "Some theoretical aspects regarding convergence and error propagation in high dimensions need further development",
+            "Computational feasibility concerns for training and inference in very high dimensions",
+            "Reliance on existing solvers for training data generation, which themselves struggle in high dimensions",
+            "Some technical details about efficient computation of PDE residuals in high dimensions are underspecified"
+        ]
+    }
+}

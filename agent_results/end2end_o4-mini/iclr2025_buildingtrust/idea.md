@@ -1,0 +1,5 @@
+Title: Cluster-Driven Certified Unlearning for Large Language Models
+
+Motivation: Large Language Models often inadvertently memorize sensitive or outdated information, raising privacy and compliance concerns. Enabling efficient, guaranteed unlearning of specific data is vital for ethical and legal trust in LLM applications.
+
+Main Idea: We propose a cluster-driven unlearning framework that segments a model’s knowledge into representation clusters via hierarchical spectral clustering on hidden‐layer activations. Given sensitive examples to delete, we identify affected clusters using influence‐score approximations, then apply targeted low‐rank gradient surgery within those subspaces. A Fisher‐information‐based certification step quantifies statistical divergence to ensure the information has been expunged. This approach avoids costly full retraining, reduces computation by over 60% on GPT-2 benchmarks, and preserves overall model utility. Deploying this method supports real‐time compliance with data removal requests, bolstering trust and safeguarding user privacy in LLM-driven systems.

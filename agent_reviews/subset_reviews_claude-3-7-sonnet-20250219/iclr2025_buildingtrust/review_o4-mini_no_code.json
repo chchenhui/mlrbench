@@ -1,0 +1,37 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-written with a clear structure that follows a logical flow from introduction to conclusion. The methodology is presented in a step-by-step manner with appropriate mathematical formulations. The authors clearly articulate the problem, their approach, and contributions. The tables and figures effectively support the experimental results. However, there are some areas that could be improved: (1) The explanation of the influence-score approximation in Section 3.2 is somewhat dense and could benefit from more intuitive explanations; (2) The paper mentions 'truncated Neumann series or stochastic Lanczos' without sufficient explanation for readers unfamiliar with these techniques; (3) Some mathematical notations (e.g., in the Fisher-Information Certification section) could be more thoroughly defined."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper presents a novel approach to machine unlearning for LLMs through its cluster-driven framework. The combination of hierarchical spectral clustering, influence-score approximation, targeted gradient surgery, and Fisher-information certification represents an original contribution to the field. The authors clearly differentiate their work from existing approaches in the related work section. However, while the individual components (spectral clustering, influence functions, Fisher information) are established techniques in machine learning, their integration for LLM unlearning is innovative but not groundbreaking. The paper builds upon existing concepts like LoRA [11] and extends them rather than introducing fundamentally new techniques. The certification approach is valuable but follows established statistical principles."
+    },
+    "Soundness": {
+        "score": 6,
+        "justification": "The methodology is generally sound, with appropriate mathematical formulations and experimental design. However, several concerns affect the soundness: (1) The reported KFR values are extremely low (0.0472 for the proposed method) which raises questions about the effectiveness of the unlearning process - these values suggest less than 5% of targeted knowledge is forgotten; (2) The paper lacks details on how KFR and KRR are actually measured; (3) The experimental results in Figure 1 are inconsistent with the tabular data - the bar chart shows nearly identical values for original and unlearned models, which contradicts the claimed improvements; (4) The paper claims computational efficiency but reports compute times in seconds (e.g., 1.08s), which seems unrealistically low for operations on GPT-2 models; (5) The Fisher certification bound is mentioned but actual values aren't reported in the results; (6) There's no discussion of statistical significance for the small differences between methods in Table 1."
+    },
+    "Significance": {
+        "score": 7,
+        "justification": "The paper addresses an important problem in the field of trustworthy AI and LLMs. Machine unlearning is highly relevant for privacy, compliance with regulations like GDPR, and maintaining trust in deployed systems. The proposed method shows improvements over baselines in terms of KFR, KRR, perplexity, and compute time, though the margins are relatively small. The certification component is particularly significant as it provides formal guarantees that could be valuable for auditing and compliance purposes. The sequential unlearning capability demonstrated in Table 2 is also significant for practical applications. However, the paper only demonstrates results on GPT-2 Small and Medium, not on larger, more contemporary models like GPT-3 or LLaMA, which somewhat limits its immediate practical impact."
+    },
+    "Overall": {
+        "score": 6,
+        "justification": "The paper presents a novel approach to machine unlearning for LLMs with a well-structured methodology and comprehensive experiments. However, the soundness concerns regarding the extremely low KFR values, inconsistencies in the figures, and questionable compute times significantly impact the overall assessment. While the theoretical framework is solid and the problem is important, these issues raise questions about the reliability of the reported results.",
+        "strengths": [
+            "Novel integration of clustering, influence functions, and Fisher information for LLM unlearning",
+            "Clear mathematical formulation of the approach",
+            "Comprehensive comparison with multiple baseline methods",
+            "Addresses sequential unlearning, which is important for practical applications",
+            "Provides a certification mechanism with formal guarantees"
+        ],
+        "weaknesses": [
+            "Extremely low KFR values (< 5%) raise questions about the effectiveness of the unlearning",
+            "Inconsistencies between reported results in tables and figures",
+            "Unrealistically low compute times reported for operations on GPT-2 models",
+            "Lack of detailed explanation for how KFR and KRR are measured",
+            "Limited to experiments on GPT-2, not testing on larger contemporary models"
+        ]
+    },
+    "Confidence": 4
+}

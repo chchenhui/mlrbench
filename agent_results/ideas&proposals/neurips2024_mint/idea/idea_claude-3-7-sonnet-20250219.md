@@ -1,0 +1,7 @@
+# CAMIR: Causal Activation Mapping for Interpretable Representation Interventions
+
+## Motivation
+Foundation models often generate harmful or biased content without clear understanding of which internal mechanisms are responsible. Current interventions are primarily heuristic-based rather than targeting precise causal paths of problematic behaviors. This research addresses the critical need for precise, targeted interventions that can modify harmful behaviors while preserving beneficial model capabilities, enabling more ethical and controlled AI deployment.
+
+## Main Idea
+CAMIR proposes a novel three-stage framework for targeted model interventions. First, we develop causal discovery methods to identify activation pathways responsible for specific harmful outputs, using counterfactual analysis across diverse prompts to distinguish correlation from causation. Second, we create interpretable maps of these causal pathways, linking specific neuron activations to semantic concepts and behaviors. Finally, we design surgical intervention techniques that modify only the identified causal paths while preserving other functionalities. Our approach combines causal inference with activation steering and introduces a novel metric—Intervention Specificity Score—to quantify how precisely an intervention targets intended behaviors without side effects. CAMIR advances beyond current activation engineering methods by providing a principled causal framework that enables more transparent, controllable, and ethically aligned foundation models.

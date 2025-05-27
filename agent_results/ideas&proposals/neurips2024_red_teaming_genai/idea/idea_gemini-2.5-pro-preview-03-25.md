@@ -1,0 +1,5 @@
+**Title:** Adaptive Red Teaming via Reinforcement Learning for Dynamic Risk Discovery
+
+**Motivation:** Static red teaming methods and benchmarks quickly become obsolete as Generative AI models evolve and adversaries develop new attack strategies. Models might overfit to known tests, concealing latent harmful capabilities. A dynamic approach is needed for continuous and adaptive vulnerability discovery.
+
+**Main Idea:** We propose training a Reinforcement Learning (RL) agent to act as an adaptive red teamer. The RL agent interacts with the target GenAI model by generating prompts (actions). Based on the model's output (observed state), the agent receives a reward signal designed to encourage the discovery of harmful, biased, insecure, or undesirable content (e.g., using classifiers, keyword matching, or human-in-the-loop feedback). The RL agent learns complex, multi-turn interaction strategies to effectively probe the model, potentially uncovering novel failure modes missed by static test suites. This approach enables automated, continuous, and adaptive evaluation, leading to more robust risk identification and quantification.

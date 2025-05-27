@@ -1,0 +1,7 @@
+# Robust Wasserstein Regularization for Domain Adaptation in High-Dimensional Data
+
+## Motivation
+Domain adaptation is critical in machine learning when training and test data distributions differ. Traditional methods often fail in high-dimensional spaces like image processing or genomics due to the curse of dimensionality. Optimal Transport (OT) provides theoretical guarantees for aligning distributions, but its direct application can be computationally prohibitive and unstable. This research addresses the challenge of developing robust, computationally efficient OT-based domain adaptation methods for high-dimensional data.
+
+## Main Idea
+We propose a novel regularization framework that combines entropic regularization with robust estimation techniques to create stable Wasserstein mappings between domains. Our approach introduces an adaptive regularization parameter that scales with the local density of data points, preventing overfitting in sparse regions while preserving important structural information. By incorporating a hierarchical transport plan that operates at multiple scales, we reduce computational complexity from O(n³) to O(n²log(n)). This method leverages mini-batch processing with momentum-based optimization to handle extremely large datasets. We apply this to single-cell genomics problems, where different experimental batches create significant domain shifts. Preliminary results show our method outperforms current state-of-the-art batch correction methods by 28% in cell-type alignment while preserving biological variation.

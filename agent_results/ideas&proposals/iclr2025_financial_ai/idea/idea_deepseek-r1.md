@@ -1,0 +1,7 @@
+**Title:** Temporal Diffusion Models for Financial Time-Series Augmentation to Improve Forecasting Robustness  
+
+**Motivation:** Financial time-series data (e.g., stock prices, economic indicators) is often limited, privacy-constrained, or non-stationary, hindering the training of reliable forecasting models. Existing generative approaches like GANs struggle to preserve complex temporal dependencies and volatility patterns, leading to poor generalization in downstream tasks.  
+
+**Main Idea:** Develop a diffusion-based generative framework tailored for financial time-series. The model will integrate **attention mechanisms** to capture long-range dependencies and **stochastic volatility modules** to mimic market uncertainty. To ensure fidelity, we propose adversarial training with a discriminator that evaluates both pointwise accuracy and structural metrics (e.g., autocorrelation, volatility clusters). Generated synthetic data will augment training datasets for forecasting models (e.g., Transformers, N-BEATS). Experiments will compare forecast accuracy and risk-adjusted returns against models trained on real or GAN-generated data, using benchmarks like M4 Finance and proprietary trading datasets.  
+
+**Expected Impact:** This approach could enable robust financial predictions in data-scarce scenarios (e.g., emerging markets, rare events) and improve risk management by simulating plausible stress-test scenarios. Successful deployment would offer a privacy-preserving tool for institutions to enhance AI-driven strategies without exposing sensitive data.

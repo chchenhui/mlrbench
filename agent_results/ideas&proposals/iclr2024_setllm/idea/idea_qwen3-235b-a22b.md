@@ -1,0 +1,9 @@
+**Title:** Generative Adversarial Training for Robust Large Language Models  
+
+**Motivation:**  
+Adversarial attacks on LLMs, such as input perturbations or backdoor triggers, can manipulate outputs in safety-critical applications (e.g., healthcare, finance). Existing defenses often focus on reactive mitigation, leaving models vulnerable to novel, evolving attacks. Proactively enhancing robustness during training remains underexplored, especially for text-based adversarial examples. This work addresses the urgent need for scalable, adaptive defense mechanisms to ensure LLM reliability in adversarial environments.  
+
+**Main Idea:**  
+We propose a generative adversarial training framework where a *generator* model dynamically synthesizes diverse adversarial examples (e.g., paraphrased toxic inputs, logic-flip prompts) during training, while the *discriminator* (the LLM) learns to detect and resist them. The generator employs a hybrid approach: (1) leveraging reinforcement learning to evolve attack strategies based on model weaknesses, and (2) integrating semantic constraints to ensure grammatical and contextual plausibility. The LLM is then fine-tuned on this synthetic data, with an auxiliary loss function prioritizing robustness to high-risk attack patterns. We further introduce a "self-evolving" loop where the generator iteratively adapts to the LLM’s updated defenses. Experiments will evaluate robustness against state-of-the-art attacks (e.g., Greedy-Rank, BERT-Attack) and measure trade-offs in task accuracy. Success would enable LLMs to withstand adversarial inputs without sacrificing performance, directly advancing secure deployment in high-stakes domains.  
+
+**Word count:** 199

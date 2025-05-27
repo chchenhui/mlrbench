@@ -1,0 +1,34 @@
+{
+    "Clarity": {
+        "score": 7,
+        "justification": "The paper is generally well-written and the core idea of SpurGen is clearly articulated. The structure is logical. However, a key novel metric, the Invariance Gap (IG), lacks a clear definition for its components `x_ctrl` and `x_unc` (Section 4.2), making its interpretation and utility difficult to fully assess. Additionally, there's ambiguity in Section 4.1.1 regarding 'object shape' being a base characteristic for classes and also a spurious channel, which needs clarification. Minor issues include future-dated references (e.g., Hosseini et al., 2025 in Ref [2])."
+    },
+    "Novelty": {
+        "score": 8,
+        "justification": "The primary contribution, SpurGen, a synthetic multimodal benchmark generator with configurable and orthogonal spurious channels for images and text, is novel and addresses a clear gap, as existing benchmarks are often static or rely on natural data with limited control. The proposed Spurious Sensitivity Score (SSS) also appears to be a novel and intuitive metric for quantifying reliance on specific spurious features. While the concept of an Invariance Gap (IG) isn't entirely new, its specific formulation and application in this context could be novel if properly defined. The combination of these elements presents a significant step towards more controlled and systematic study of spurious correlations."
+    },
+    "Soundness": {
+        "score": 5,
+        "justification": "The conceptual design of the SpurGen generator has a significant ambiguity: Section 4.1.1 lists 'Object shape (e.g., circle, triangle, square)' both as 'Base objects' (implying they define the K classes) and as one of the 'Spurious channels'. This contradiction makes the data generation process for images unclear and is a flaw in the benchmark's description. The SSS metric appears soundly defined. However, the Invariance Gap (IG) metric is incompletely defined as `x_ctrl` and `x_unc` are not specified (Section 4.2), making its soundness and utility questionable. Furthermore, the experimental validation presented has several weaknesses: (1) The dataset size (N=300 total, 180 train samples as per Section 5) is extremely small for drawing robust conclusions in deep learning, especially for worst-group accuracy which is reported as 0 for both methods (Table 1), likely due to sparse data in some groups. (2) Training for only 3 epochs (Section 5) is very short, and models might be severely undertrained. (3) The model architecture ('Two-layer MLP' for image data, Section 5) is underspecified regarding image preprocessing or feature extraction, making it hard to judge its appropriateness for image data. These issues undermine the reliability of the reported findings and the demonstration of SpurGen's capabilities. While the provided figures (e.g., Figure 1, Figure 2) are internally consistent with the data in Table 1, the methodological flaws in both the benchmark description and experimental setup are substantial."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The paper addresses the critical and timely problem of spurious correlations in machine learning. A tool like SpurGen, if well-implemented, clarified, and made extensible as promised (Section 8), could be highly significant by providing researchers with a controlled, synthetic environment to develop and test robust models across modalities. This aligns perfectly with the workshop's call for new benchmarks. The proposed metrics, particularly SSS, could also become valuable tools if the benchmark itself is sound. The plan to release the SpurGen codebase and data generator further enhances its potential impact. Despite the current experimental limitations, the potential of the SpurGen framework itself is substantial for advancing research in this area."
+    },
+    "Overall": {
+        "score": 5,
+        "strengths": [
+            "Proposes SpurGen, a novel and needed synthetic multimodal benchmark generator with configurable spurious channels, addressing limitations of existing benchmarks.",
+            "Introduces potentially useful new metrics like the Spurious Sensitivity Score (SSS) for quantifying reliance on specific spurious features.",
+            "Addresses a significant problem in ML and aligns well with the workshop's objectives of developing new benchmarks.",
+            "Plans to release code and the data generator, which would foster reproducibility and wider adoption by the research community."
+        ],
+        "weaknesses": [
+            "Significant soundness issues: ambiguous definition of the image generation process regarding 'object shape' as both a class-defining feature and a spurious channel (Section 4.1.1), and an incompletely defined Invariance Gap (IG) metric (Section 4.2).",
+            "The experimental validation is weak due to an extremely small dataset size (N=300), very short training duration (3 epochs), and an underspecified model for image data (Section 5).",
+            "The reported worst-group accuracy of 0.0 for all methods (Table 1), likely an artifact of the small dataset, provides limited insight into the comparative robustness of methods on this benchmark.",
+            "Clarity of the Invariance Gap (IG) metric is insufficient for full evaluation and use."
+        ]
+    },
+    "Confidence": 4
+}

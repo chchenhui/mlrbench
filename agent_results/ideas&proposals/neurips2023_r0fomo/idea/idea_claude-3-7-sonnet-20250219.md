@@ -1,0 +1,7 @@
+# RobustPrompt: Self-Diagnosing Prompt Design for Enhanced Few-Shot Robustness
+
+## Motivation
+Few-shot learning in foundation models often fails when prompts encounter unexpected inputs or distribution shifts, leading to unpredictable outputs and potential harmful responses. Current approaches lack intrinsic mechanisms to assess their own confidence or detect when they're operating outside their reliable decision boundaries. This research addresses a critical gap in making few-shot learning more robust by enabling models to recognize when they might fail and adjust accordingly.
+
+## Main Idea
+RobustPrompt introduces a meta-prompt framework that augments few-shot examples with self-diagnostic capabilities. The approach creates a two-stage prompt architecture: the first stage contains traditional task examples, while the second includes explicit boundary conditions and failure indicators. During inference, the model first attempts to solve the task, then automatically evaluates its own solution against these boundary conditions. The system dynamically adjusts its confidence or triggers fallback mechanisms when potential failures are detected. By integrating counterfactual reasoning techniques, RobustPrompt guides the model to explicitly reason about edge cases within the prompt itself. This framework requires no model modifications and can be adopted across any foundation model that supports in-context learning, effectively creating guardrails that improve robustness while maintaining performance on in-distribution queries.

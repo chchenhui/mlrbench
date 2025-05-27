@@ -1,0 +1,7 @@
+# Dynamic Memory Allocation for Multi-Modal Reasoning in LLMs
+
+## Motivation
+As large language models expand into multi-modal environments, they struggle with efficiently allocating computational resources across diverse data types. Current approaches treat all modalities with similar weighting mechanisms, leading to resource inefficiencies when processing complex scenes with varying information density across modalities. This research addresses the critical need for dynamic resource management in multi-modal reasoning tasks, where processing visual, textual, and auditory information simultaneously requires adaptable computational strategies.
+
+## Main Idea
+We propose a novel adaptive attention mechanism that dynamically allocates computational resources across modalities based on task requirements and information content. Our approach introduces "Modal Resource Gates" (MRGs) that function as learnable controllers determining how much processing power should be dedicated to each modality during different reasoning phases. The system includes three key components: (1) a modality importance estimator that evaluates information density across inputs, (2) cross-modal reasoning pathways that efficiently share information between modalities, and (3) a task-aware resource scheduler that optimizes token usage. We will evaluate this approach on complex reasoning tasks requiring integration of visual scene understanding, textual instructions, and planning capabilities, measuring both accuracy and computational efficiency against fixed-allocation baselines.

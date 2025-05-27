@@ -1,0 +1,41 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the workshop's goal of repositioning heavy-tailed behaviors from 'surprising phenomena' to 'engineered features' in machine learning. The HTGA framework precisely implements the core idea of leveraging heavy-tailed stochastic gradients for improved generalization rather than suppressing them. The proposal thoroughly incorporates insights from the literature review, citing relevant works like Raj et al. (2023) and Hübler et al. (2024) while addressing key challenges identified in the review such as optimization stability and generalization behavior. The methodology, theoretical analysis, and experimental design are all coherently structured to investigate how heavy-tailed gradient distributions can be beneficially leveraged, which is the central theme across all provided materials."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is very well-articulated with a logical structure that flows from introduction to methodology to expected outcomes. The research objectives are clearly defined with four specific aims. The methodology section provides detailed mathematical formulations for each component of HTGA (tail-index estimator, amplification controller, and adaptive update rule), making the technical approach transparent and reproducible. The theoretical analysis connecting to α-stable Lévy processes is well-explained, and the experimental design is comprehensive with clear baselines, metrics, and protocols. The only minor areas that could benefit from additional clarity are: (1) more explicit discussion of how the weight function w_i^(t) affects the theoretical guarantees, and (2) slightly more detail on the implementation of the exponential moving average for the tail index estimation. Overall, the proposal is highly understandable with minimal ambiguity."
+    },
+    "Novelty": {
+        "score": 8,
+        "justification": "The proposal presents a notably original approach to optimization in deep learning. While heavy-tailed gradient distributions have been observed and analyzed in prior work (as cited in the literature review), HTGA introduces several innovative elements: (1) the real-time estimation and adaptive control of the tail index during training, (2) the amplification rather than suppression of heavy-tailed characteristics when beneficial, and (3) the rank-based weighting scheme for gradient coordinates. The theoretical framing using α-stable Lévy processes to model the dynamics is also a fresh perspective. The proposal clearly distinguishes itself from prior work like gradient clipping methods, NSGD, and TailOPT by embracing heavy tails as beneficial rather than problematic. While it builds upon existing concepts of heavy-tailed analysis in optimization, the combination and application of these ideas into a cohesive, adaptive optimization framework represents a significant advancement beyond incremental improvements."
+    },
+    "Soundness": {
+        "score": 7,
+        "justification": "The proposal is generally sound and built on solid theoretical foundations. The mathematical formulations for tail-index estimation, amplification control, and the adaptive update rule are well-defined and appear technically correct. The connection to stochastic differential equations driven by α-stable Lévy processes provides a rigorous framework for analysis. The expected exit time derivation offers a plausible mechanism to explain the exploration-exploitation trade-off. However, there are some areas where additional rigor would strengthen the proposal: (1) the convergence guarantees could be more precisely stated with explicit conditions on the learning rate schedule and amplification factor bounds, (2) the relationship between the empirical tail index and the theoretical α-stable process could be more formally established, and (3) the proposal could benefit from more detailed discussion of potential failure modes or edge cases where the approach might not work as expected. Despite these minor gaps, the overall methodology is well-justified and the theoretical framework is coherent."
+    },
+    "Feasibility": {
+        "score": 8,
+        "justification": "The proposal presents a highly feasible research plan that can be implemented with current technology and methods. The components of HTGA (tail-index estimation, amplification control, and adaptive updates) are all computationally tractable and can be integrated into existing optimization frameworks like PyTorch. The Hill estimator for tail-index calculation is a well-established statistical method that can be efficiently implemented. The experimental design is realistic, using standard benchmarks (CIFAR, ImageNet, Penn Treebank) and architectures (ResNet, Transformer-LM) that are widely available. The hyperparameter search space is reasonably constrained, and the ablation studies are well-designed to isolate the effects of different components. The proposal also acknowledges implementation challenges by including mechanisms like clipping γ_t to ensure numerical stability. The only moderate challenge might be the computational resources required for the full experimental protocol, especially for the larger models and datasets, but this is manageable with standard GPU resources mentioned in the proposal."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses an important problem in deep learning optimization and has the potential for significant impact. If successful, HTGA would provide a novel optimizer that improves generalization performance by 1-3% on classification tasks and 5-10 points on language modeling perplexity, which would be meaningful improvements in these well-established benchmarks. Beyond the immediate performance gains, the theoretical contributions would advance our understanding of the relationship between heavy-tailed gradient noise and generalization, potentially shifting the paradigm in optimization algorithm design. The proposal also promises practical impact through a public library implementation that would allow practitioners to easily adopt these techniques. The work bridges theory and practice in a way that could influence both communities. The significance is further enhanced by the proposal's alignment with the growing interest in understanding non-Gaussian phenomena in machine learning, as highlighted in the task description and literature review. The main limitation preventing a higher score is that the expected improvements, while meaningful, may not be transformative enough to fundamentally change how the field approaches optimization."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Novel approach that reframes heavy-tailed gradient noise as beneficial rather than problematic",
+            "Well-developed mathematical framework with clear connections to stochastic processes theory",
+            "Comprehensive experimental design with appropriate baselines and evaluation metrics",
+            "Strong alignment with current research directions in optimization and generalization",
+            "Practical implementation details that make the approach accessible to practitioners"
+        ],
+        "weaknesses": [
+            "Some theoretical aspects could benefit from more rigorous formalization, particularly regarding convergence guarantees",
+            "Limited discussion of potential failure modes or scenarios where the approach might not work well",
+            "The expected performance improvements, while significant, may not be revolutionary enough to transform the field"
+        ]
+    }
+}

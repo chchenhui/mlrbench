@@ -1,0 +1,37 @@
+{
+    "Consistency": {
+        "score": 10,
+        "justification": "The idea is perfectly aligned with the task description. The task focuses on differentiable relaxations of discrete operations, explicitly mentioning 'top-k' as an example. The research idea proposes exactly that: a differentiable Top-K operator using Optimal Transport to enable gradient-based optimization for adaptive sparse computation, which involves discrete selection. This directly addresses the core theme and scope of the workshop."
+    },
+    "Clarity": {
+        "score": 9,
+        "justification": "The idea is crystal clear and well-defined. It clearly states the motivation (need for differentiable Top-K for adaptive sparsity), the core technical proposal (using OT with Sinkhorn), the mechanism (mapping K slots to N items via OT), and the intended benefit (end-to-end learning, potentially smoother gradients). The concept is articulated concisely with minimal ambiguity, making it immediately understandable."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The idea has notable originality. While differentiable Top-K and the use of Optimal Transport for differentiable algorithms are existing research areas, applying OT specifically to formulate a Top-K operator for adaptive computation in large models (like MoEs/Transformers) offers a fresh perspective. It combines known techniques (OT, Sinkhorn, Top-K relaxation) in a specific, potentially advantageous way for this application, distinguishing it from more common approaches like Gumbel-Softmax or sparsemax for Top-K."
+    },
+    "Feasibility": {
+        "score": 8,
+        "justification": "The idea is largely feasible. Optimal Transport solvers, especially the Sinkhorn algorithm for entropic regularization, are well-studied and have efficient implementations available in standard libraries (e.g., POT) that integrate with deep learning frameworks. Implementing the OT-TopK layer and backpropagating through Sinkhorn iterations is practical with current automatic differentiation tools. Potential challenges include the computational cost of OT compared to simpler methods (though manageable, especially on GPUs) and tuning the regularization parameter, but these are generally solvable implementation details."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The idea is significant and has clear impact potential. Adaptive sparsity is a critical technique for improving the efficiency of large-scale models. The discrete nature of Top-K selection is a known bottleneck for optimizing sparsity mechanisms. Developing a more principled and potentially better-performing differentiable Top-K operator (like the proposed OT-TopK) could lead to more effective training of sparse models, resulting in substantial computational savings and enabling larger, more powerful models. It addresses an important, practical problem in modern ML."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Excellent alignment with the workshop's theme (differentiable relaxations for discrete operations).",
+            "Clear and well-articulated problem statement and proposed solution.",
+            "Novel application of Optimal Transport to the Top-K problem for adaptive computation.",
+            "High feasibility using existing OT solvers and deep learning frameworks.",
+            "Addresses a significant problem (computational efficiency of large models) with high potential impact."
+        ],
+        "weaknesses": [
+            "Novelty relies on combining existing concepts; requires empirical validation against strong baselines (e.g., Gumbel-TopK, sparsemax).",
+            "Potential computational overhead of OT compared to simpler relaxations needs careful evaluation.",
+            "The claim of 'smoother gradients' or superior optimization performance needs empirical proof."
+        ]
+    }
+}

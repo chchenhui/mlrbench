@@ -1,0 +1,41 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal aligns exceptionally well with the task description, research idea, and literature review. It directly addresses the 'fact verification (e.g. hallucinated generation)' topic from the workshop call, focusing on improving LLM trustworthiness through proactive hallucination detection. The methodology builds upon the internal confidence calibration approach outlined in the research idea, and thoroughly incorporates insights from the literature review, citing relevant works like InternalInspector, MIND, and PRISM. The proposal extends these works by developing a supervised fine-tuning framework with contrastive learning objectives, addressing the identified gap of integrating hallucination detection directly into the decoding process rather than relying on post-hoc methods."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is well-structured and clearly articulated. The research objectives are explicitly stated, and the methodology is presented in a logical sequence with appropriate mathematical formulations. The fusion mechanism for combining layer-wise representations, the confidence head architecture, and the multi-task training objectives are all precisely defined. The experimental design includes specific benchmarks, baselines, and evaluation metrics. However, there are a few minor areas that could benefit from additional clarification: (1) the exact mechanism of the Fusion module could be more explicitly defined rather than providing examples, and (2) more details on how the factuality labels z_{i,t} are determined during data preparation would strengthen the clarity."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal demonstrates notable originality by combining several existing approaches in a novel way. The integration of supervised confidence calibration with contrastive learning specifically for hallucination detection is innovative. The proposal's key novelty lies in its approach to proactively flag hallucinations during generation by directly fine-tuning the model's internal confidence signals, rather than relying on post-hoc verification or external systems. However, it builds significantly on existing methods like InternalInspector and MIND, adapting their approaches rather than introducing entirely new concepts. The contrastive calibration loss and the integration of confidence signals into the decoding process represent incremental but meaningful innovations over prior work."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal is technically sound and well-grounded in established methods. The mathematical formulations for the fusion mechanism, confidence head, and training objectives are correctly presented and follow from established machine learning principles. The multi-task learning approach combining generation loss with confidence calibration and contrastive losses is theoretically justified. The experimental design includes appropriate benchmarks, baselines, and evaluation metrics that align with the research objectives. The ablation studies are well-designed to isolate the contributions of different components. The proposal could be strengthened by providing more theoretical justification for why the specific contrastive loss formulation would lead to better calibration of confidence scores with factuality, but overall, the technical approach is rigorous and well-founded."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal presents a feasible approach with current technology and resources, though it does involve some implementation challenges. The data preparation process is well-defined and achievable, requiring 200K examples which is reasonable for fine-tuning. The model architecture builds on existing transformer-based LLMs with the addition of a confidence head, which is straightforward to implement. The training objectives use standard loss functions. However, there are some feasibility concerns: (1) creating high-quality factuality annotations at scale may be challenging and resource-intensive, (2) the computational requirements for fine-tuning large models with the proposed multi-task objective could be substantial, and (3) ensuring that the confidence calibration generalizes across domains and different types of hallucinations may require significant experimentation and refinement."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a critical problem in LLM deployment - hallucination detection - which is essential for building trustworthy AI systems. The potential impact is substantial, as a successful implementation would enable LLMs to proactively signal uncertainty rather than presenting all outputs as equally valid, increasing user trust and safety in high-stakes domains like healthcare, law, and science. The approach could significantly reduce reliance on expensive external fact-checking pipelines or human reviewers. The expected outcomes include substantial improvements in hallucination detection performance (15% relative F1 improvement) and calibration error reduction (30% relative to baselines), with minimal inference latency overhead (under 10%). These improvements would represent meaningful progress toward more reliable and transparent LLMs, though they may not completely solve the hallucination problem."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Addresses a critical problem in LLM trustworthiness with a practical approach to proactive hallucination detection",
+            "Well-integrated with existing literature while offering meaningful innovations in confidence calibration",
+            "Technically sound methodology with clear mathematical formulations and comprehensive experimental design",
+            "Potential for significant real-world impact in improving LLM reliability with minimal inference overhead"
+        ],
+        "weaknesses": [
+            "Data preparation process may be challenging and resource-intensive to create high-quality factuality annotations at scale",
+            "Some implementation details (like the exact Fusion mechanism) could be more explicitly defined",
+            "Cross-domain generalization remains a challenge, despite the proposal's attempts to address it",
+            "Builds incrementally on existing approaches rather than introducing fundamentally new concepts"
+        ]
+    }
+}

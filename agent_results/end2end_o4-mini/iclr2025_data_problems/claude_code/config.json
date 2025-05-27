@@ -1,0 +1,109 @@
+{
+  "experiment_name": "gradient_informed_fingerprinting",
+  "base_dir": ".",
+  "data_dir": "data",
+  "model_dir": "models",
+  "results_dir": "results",
+  
+  "data": {
+    "dataset_name": "wikitext",
+    "subset_name": "wikitext-103-v1",
+    "text_column": "text",
+    "max_samples": 5000,
+    "tokenizer_name": "bert-base-uncased",
+    "max_length": 512,
+    "train_ratio": 0.8,
+    "val_ratio": 0.1,
+    "test_ratio": 0.1,
+    "seed": 42,
+    "use_synthetic": false,
+    "synthetic_samples": 1000
+  },
+  
+  "embeddings": {
+    "model_name": "sentence-transformers/all-mpnet-base-v2",
+    "pooling_strategy": "mean"
+  },
+  
+  "clustering": {
+    "n_clusters": 100,
+    "random_state": 42,
+    "algorithm": "kmeans",
+    "subsample_size": 10000
+  },
+  
+  "probe": {
+    "hidden_dim": 256,
+    "num_layers": 2,
+    "dropout": 0.1,
+    "activation": "relu"
+  },
+  
+  "training": {
+    "batch_size": 32,
+    "num_epochs": 10,
+    "optimizer": "AdamW",
+    "learning_rate": 0.001,
+    "weight_decay": 0.00001,
+    "early_stopping_patience": 3,
+    "load_pretrained": false
+  },
+  
+  "fingerprints": {
+    "type": "combined",
+    "projection_dim": 128,
+    "batch_size": 64
+  },
+  
+  "indexing": {
+    "index_type": "hnsw",
+    "metric": "l2",
+    "use_gpu": false,
+    "batch_size": 10000,
+    "index_params": {
+      "M": 16,
+      "efConstruction": 200,
+      "efSearch": 128
+    }
+  },
+  
+  "influence": {
+    "damping": 0.01,
+    "scale": 1.0,
+    "lissa_iterations": 10,
+    "lissa_samples": 10,
+    "lissa_depth": 1000,
+    "batch_size": 32,
+    "matrix_free": true
+  },
+  
+  "attribution": {
+    "use_influence": true,
+    "top_k": 10,
+    "k_values": [1, 3, 5, 10],
+    "num_test_samples": 100
+  },
+  
+  "baselines": {
+    "enabled": ["trace"],
+    "trace_encoder": "sentence-transformers/all-mpnet-base-v2",
+    "trace_temperature": 0.1,
+    "trace_index_type": "hnsw",
+    "trace_margin": 0.5,
+    "trace_train": true,
+    "trace_batch_size": 16,
+    "trace_epochs": 5,
+    "trace_lr": 0.0001,
+    "trak_projection_dim": 128,
+    "trak_num_examples": 1000,
+    "trak_fit": true,
+    "trak_batch_size": 32
+  },
+  
+  "run_ablations": true,
+  "ablations": {
+    "fingerprint_type": true,
+    "projection_dimension": true,
+    "num_test_samples": 50
+  }
+}

@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 8,
+        "justification": "The proposal is well-aligned with the task description, focusing on practical FL challenges like fine-tuning foundation models, scalability, heterogeneity, and privacy. It directly implements the research idea of using PEFT in FL with adaptive allocation and aggregation. It also builds upon and cites relevant works from the literature review (SLoRA, FeDeRA, FedPEAT), addressing key challenges identified therein, such as resource constraints, heterogeneity, and communication efficiency. The objectives and significance directly map to the workshop's themes."
+    },
+    "Clarity": {
+        "score": 7,
+        "justification": "The proposal is mostly clear and well-structured. The background, objectives, and significance are clearly stated. The methodology section outlines the core components (PEFT techniques, dynamic allocation, aggregation protocol) logically. However, some areas could be more precise: the exact mechanism for determining budget score weights (w_C, w_M, w_B), the clustering method for clients, and the specifics of how WLRA handles potentially different PEFT module types/ranks across clients could be elaborated. The theoretical analysis section is brief and lacks specific derivations for the proposed adaptive method."
+    },
+    "Novelty": {
+        "score": 5,
+        "justification": "The proposal has some novel aspects, primarily the dynamic allocation of PEFT modules based on explicit client device profiles (computation, memory, bandwidth) and the attempt to tailor aggregation. However, the core concept of applying PEFT to FL is not new, as evidenced by the literature review (SLoRA, FeDeRA, FedPEAT, FedP^2EFT, Sun et al. 2022). A significant weakness is the proposed name 'FedPEFT', which is identical to a 2022 paper by Sun et al. exploring a similar concept. This suggests either insufficient literature review positioning or a lack of clear differentiation. While the specific mechanism for resource-aware adaptation might differ, the proposal needs to articulate its unique contributions more strongly against existing personalized/adaptive PEFT-FL methods like FedP^2EFT and the original FedPEFT."
+    },
+    "Soundness": {
+        "score": 6,
+        "justification": "The proposal is somewhat sound, leveraging established techniques like LoRA, adapters, and federated averaging principles. However, there are weaknesses. The dynamic allocation based on a simple weighted 'budget score' lacks strong theoretical justification or empirical validation for the weighting scheme. The proposed aggregation method, Weighted Low-Rank Averaging (WLRA), is essentially standard weighted averaging, which might be suboptimal for aggregating structured low-rank updates, potentially losing important structural information, especially when clients use different ranks or PEFT types. More sophisticated aggregation methods tailored for low-rank matrices might be needed. The convergence analysis mentioned is standard and needs specific adaptation and proof for the proposed heterogeneous and adaptive setting. The privacy claims based on parameter freezing/sparsity need more rigorous analysis or connection to established privacy techniques (e.g., differential privacy)."
+    },
+    "Feasibility": {
+        "score": 8,
+        "justification": "The proposal appears largely feasible. It plans to use standard FL frameworks (PySyft, Flower) and common datasets adapted for FL. Simulating device heterogeneity (varying compute, memory, bandwidth profiles) is achievable in experimental setups. The core PEFT techniques (LoRA, adapters) are well-understood and implementable. The main challenges lie in effectively implementing and tuning the dynamic allocation mechanism and potentially developing more robust aggregation strategies than simple averaging, but these seem like solvable engineering and research problems within the scope of a project."
+    },
+    "Significance": {
+        "score": 9,
+        "justification": "The proposal addresses a highly significant problem: enabling the use of large foundation models in resource-constrained, privacy-sensitive federated learning settings. Successfully reducing communication/computation overhead via PEFT while handling device heterogeneity would be a major practical advancement. It directly tackles key bottlenecks hindering the deployment of FMs on edge devices, aligning perfectly with the workshop's goal of bridging theory and practice. The potential impact on real-world applications (mobile health, edge AI) is substantial."
+    },
+    "OverallAssessment": {
+        "score": 7,
+        "strengths": [
+            "Addresses a highly significant and timely problem (FL for FMs).",
+            "Focuses on practical challenges like heterogeneity and resource constraints.",
+            "Proposes a concrete methodology leveraging PEFT.",
+            "Plan includes relevant baselines and metrics for evaluation.",
+            "Good alignment with the workshop theme and task description."
+        ],
+        "weaknesses": [
+            "Novelty is limited by existing work, particularly the naming conflict with Sun et al. (2022) which needs urgent clarification/differentiation.",
+            "The proposed aggregation method (WLRA) may be too simplistic for heterogeneous low-rank updates.",
+            "The soundness of the dynamic allocation mechanism (budget score) and the theoretical analysis needs strengthening.",
+            "Clarity could be improved regarding specific implementation details of the adaptive components."
+        ]
+    }
+}

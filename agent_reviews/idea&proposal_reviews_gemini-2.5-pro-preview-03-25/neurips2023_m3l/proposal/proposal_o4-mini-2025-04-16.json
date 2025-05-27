@@ -1,0 +1,41 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the core theme of the task ('Mathematics of Modern Machine Learning', bridging theory and practice) by focusing on 'Reconciling Optimization Theory with Deep Learning Practice', specifically the Edge of Stability (EoS) phenomenon and continuous approximations (SDEs). It meticulously follows the research idea, elaborating on the hybrid theoretical-empirical approach, SDE modeling, adaptive algorithm design (EoS-SGD), and large-scale validation. Furthermore, it explicitly builds upon the cited literature (Cohen et al., Arora et al. on EoS; Wang & Sirignano, Lugosi & Nualart on continuous approximations) and aims to tackle the key challenges identified in the review, such as understanding EoS dynamics, designing adaptive algorithms, and bridging theory/practice."
+    },
+    "Clarity": {
+        "score": 9,
+        "justification": "The proposal is crystal clear and very well-defined. The background, research objectives, methodology, expected outcomes, and timeline are articulated concisely and logically. The mathematical formulations (SDE, stability condition, EoS-SGD update) are presented clearly, and the pseudocode for the proposed algorithm enhances understanding. The experimental plan is detailed, specifying datasets, models, baselines, metrics, and infrastructure. The structure is easy to follow, making the entire research plan immediately understandable with minimal ambiguity."
+    },
+    "Novelty": {
+        "score": 8,
+        "justification": "The proposal demonstrates notable originality and innovation. While building on existing work on EoS (empirical observation and initial analysis) and continuous-time approximations of SGD, it proposes a novel synthesis. Specifically, the derivation of an analytical EoS boundary condition explicitly incorporating noise effects ( \\\\eta\\\\,\\\\lambda_{\\\\max} \\\\approx 2 + c\\\\,\\\\sqrt{\\\\eta\\\\,\\\\sigma^2(\\\\theta^*)} ) via SDE analysis, and the design of an adaptive optimizer (EoS-SGD) that *actively tracks* this theoretically derived boundary using online curvature and noise estimates, represent a significant step beyond prior work. This contrasts with standard adaptive methods and offers a fresh perspective on controlling large-step-size dynamics, clearly distinguishing it from the cited literature."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal is sound and mostly rigorous. It is grounded in solid theoretical concepts (SDEs, stability theory, optimization). The proposed methodology, including SDE modeling, stability analysis using stochastic averaging/Floquet theory, and the design of EoS-SGD leveraging Hessian eigenvalue and noise estimation, is technically well-founded. The use of power iteration/Lanczos for eigenvalue estimation and EMA for noise variance is standard and appropriate. However, rigorously deriving the precise stability boundary (including the constant 'c') and proving convergence guarantees for the proposed adaptive algorithm in the complex non-convex setting of deep learning, especially near the stability edge, represents a significant theoretical challenge. The accuracy of the SDE approximation for large step sizes also requires careful justification. Technical formulations appear correct."
+    },
+    "Feasibility": {
+        "score": 8,
+        "justification": "The proposal is largely feasible. The required computational resources (multi-GPU nodes) and software tools (PyTorch, CUDA) are standard for large-scale deep learning research. The implementation steps for EoS-SGD (Hessian-vector products, eigenvalue estimation, noise tracking) are technically achievable, building on existing libraries and techniques. The experimental plan involving standard benchmarks (ImageNet, WMT, BERT) is well-established. The 24-month timeline with clear milestones appears realistic for the scope of work. Potential risks include the difficulty of the theoretical derivations and the possibility that the practical speedups might be less than the ambitious 2-3x target or require extensive tuning, but these are acceptable research risks rather than fundamental feasibility issues."
+    },
+    "Significance": {
+        "score": 9,
+        "justification": "The proposal is highly significant and impactful. It addresses a critical and timely problem in deep learning: the lack of theoretical understanding and principled control over optimization dynamics (specifically EoS) when training large models with large learning rates. A successful outcome—a validated theoretical framework for EoS and an effective adaptive optimizer (EoS-SGD)—would represent a major advancement. The potential impact includes substantial reductions in training time and computational cost (energy savings) for state-of-the-art models, democratizing access to large-scale training, reducing the environmental footprint of AI, and providing a foundation for future research on optimization theory and practice."
+    },
+    "OverallAssessment": {
+        "score": 9,
+        "strengths": [
+            "Strong alignment with the workshop's goals of bridging deep learning theory and practice.",
+            "Clear articulation of objectives, methodology, and expected outcomes.",
+            "Novel approach combining SDE analysis and adaptive optimization to actively control EoS dynamics.",
+            "Sound theoretical foundation and feasible experimental plan.",
+            "High potential significance for accelerating large-scale model training and reducing costs."
+        ],
+        "weaknesses": [
+            "Theoretical derivations (stability boundary, convergence proofs) are challenging and their success is not guaranteed.",
+            "Achieving the claimed 2-3x speedup consistently across diverse tasks might be optimistic.",
+            "Practical robustness of online estimation for curvature and noise needs careful validation."
+        ]
+    }
+}

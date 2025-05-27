@@ -1,0 +1,5 @@
+**Title:** Active Synthesis: Targeted Synthetic Data Generation Guided by Model Uncertainty
+
+**Motivation:** Simply adding large amounts of generic synthetic data may not be efficient or effective. Real data, though limited, reveals a model's specific weaknesses. This research aims to leverage model uncertainty identified on real data to guide the generation of targeted synthetic data, improving learning efficiency and addressing critical knowledge gaps.
+
+**Main Idea:** We propose an active learning-inspired framework where a model is initially trained on available real data. Its areas of high uncertainty (e.g., identified via ensemble variance or Bayesian methods) are used to prompt a conditional generative model (e.g., large language model, diffusion model). This generator synthesizes specific data points directly addressing these identified weaknesses or edge cases. The model is then retrained on a mix of the original real data and the newly generated, targeted synthetic data. We expect this active synthesis loop to yield better model performance and robustness with less data compared to using only real data or adding randomly generated synthetic data.

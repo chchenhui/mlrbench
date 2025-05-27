@@ -1,0 +1,7 @@
+1. **Title**: "Spectral Alignment of Neural Representations via Shared Invariant Subspaces"  
+
+2. **Motivation**:  
+The spontaneous emergence of similar representations across diverse neural models suggests fundamental invariances in learning systems. However, practical methods to exploit these similarities for model reuse remain limited. This research aims to bridge this gap by identifying and leveraging invariant subspaces that are consistently learned across architectures.  
+
+3. **Main Idea**:  
+We propose a spectral analysis framework to identify shared invariant subspaces in neural representations by examining the eigenvectors of the covariance matrix of model activations. By training models with a dual objective—maximizing task performance while aligning their top eigenvectors with a reference model—we can enforce convergence to a common representation subspace. The method will be validated by stitching vision and language models without cross-modal training data, achieving performance comparable to end-to-end training. This approach will provide both theoretical insights into the geometry of neural representations and practical tools for model compositionality, enabling applications like zero-shot model merging and cross-architecture transfer learning. The expected outcome is a unified framework for aligning representations across biological and artificial systems, reducing reliance on task-specific fine-tuning and fostering interoperability in heterogeneous model ecosystems.

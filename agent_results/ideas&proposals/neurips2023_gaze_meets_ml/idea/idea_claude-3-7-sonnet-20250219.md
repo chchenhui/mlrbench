@@ -1,0 +1,9 @@
+# GazeAlign: Aligning Attention Mechanisms with Human Gaze for More Human-like Vision Models
+
+## Motivation
+Deep learning vision models use attention mechanisms that often differ from human visual attention patterns. This misalignment can lead to models that make decisions using different cues than humans, resulting in unexpected behaviors and reduced interpretability. By creating vision models that attend to images more like humans do, we can develop AI systems that are more predictable, trustworthy, and aligned with human values. This research bridges the gap between computational attention mechanisms and human gaze patterns to improve human-AI interaction and create more human-like vision systems.
+
+## Main Idea
+GazeAlign introduces a novel training framework that incorporates human eye-gaze data to explicitly align deep learning attention mechanisms with human visual attention. The approach combines three key components: (1) A large-scale dataset pairing images with human gaze heatmaps during various visual tasks; (2) A contrastive learning objective that encourages model attention maps to match human gaze patterns while maintaining task performance; and (3) An evaluation protocol measuring attention alignment alongside task accuracy. 
+
+Rather than simply using gaze data as supervision, GazeAlign modifies the internal attention mechanisms of vision transformers to mimic human gaze allocation priorities. This creates vision models that not only perform well on benchmark tasks but also arrive at decisions through similar visual reasoning paths as humans, improving interpretability and enabling better human-AI collaboration in critical applications like medical imaging and autonomous driving.

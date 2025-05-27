@@ -1,0 +1,8 @@
+**Title:**  
+Robust Inverse Problem Solving via Hybrid Physics-Deep Learning with Uncertainty Quantification  
+
+**Motivation:**  
+Current deep learning (DL) methods for inverse problems assume precise forward models and simplified distortions, limiting real-world applicability where system models are partially unknown. Addressing this gap is critical for deployment in fields like medical imaging or seismology, where model misspecification can lead to unreliable results.  
+
+**Main Idea:**  
+We propose a hybrid framework integrating known physics-based components with neural networks that explicitly quantify uncertainty in missing model parameters. The architecture combines a physics-driven decoder for the known forward model (e.g., Fourier transforms in MRI) and a Bayesian neural network (BNN) to estimate residual uncertainties (e.g., sensor noise, tissue variations). The BNN is trained via variational inference to map incomplete system data into probabilistic corrections, enabling adaptive reconstruction. We evaluate on multi-coil MRI and limited-view CT tasks, where forward models are partially approximated. Expected outcomes include improved robustness to model mismatches and uncertainty-aware reconstructions, validated via metrics like PSNR and calibrated confidence intervals. This approach bridges trustworthiness gaps in DL-based inverse problem solvers, advancing deployment in safety-critical applications.

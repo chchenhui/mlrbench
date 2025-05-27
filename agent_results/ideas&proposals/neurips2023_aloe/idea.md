@@ -1,0 +1,7 @@
+Title: Self-Generating Adaptive Curricula for Open-Ended Reinforcement Learning
+
+Motivation:  
+Open-ended learning agents stagnate once fixed tasks are mastered. Crafting curricula by hand is laborious and may miss emergent challenges that drive continual skill growth. Automating task design using the agent’s own capabilities can sustain an endless learning loop, promoting generalization and adaptability in real-world settings.
+
+Main Idea:  
+Leverage a large language model (LLM) as a meta-controller that generates new task specifications conditioned on the agent’s current policy performance and failure modes. At each iteration, the agent logs trajectories and identifies behaviors it cannot yet solve. The LLM processes these “skill gaps” and outputs procedurally defined tasks—ranging from simple variations to novel compound objectives—which are instantiated in a simulator or via scripted environments. A quality-diversity filter retains high-impact, diverse tasks to prevent collapse. This closed loop yields an ever-evolving curriculum: the agent continually tackles fresh challenges, emergent capabilities are tracked via online ODD-score metrics (Out-of-Distribution Difficulty), and sim2real transfer improves as the curriculum approximates real-world complexity.

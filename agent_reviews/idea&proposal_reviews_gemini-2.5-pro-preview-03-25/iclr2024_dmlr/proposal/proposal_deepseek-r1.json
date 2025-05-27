@@ -1,0 +1,40 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the core theme of data-centric ML for multi-domain foundation models, focusing on model-assisted dataset construction, data quality, efficiency, and ethical considerations (bias mitigation via domain coverage) – all key topics mentioned in the task description. The proposed UMC method directly implements the research idea, utilizing ensemble uncertainty and MABs for dynamic allocation. It effectively integrates concepts and challenges highlighted in the literature review, such as the importance of data quality (Zha et al., 2023a, 2023b), human-in-the-loop systems (Saveliev et al., 2025), uncertainty management, and the exploration/exploitation trade-off. The proposal explicitly mentions multi-domain aspects beyond standard vision/language (geospatial, tabular) and references relevant benchmarks like DataPerf, fitting the workshop's scope perfectly."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is mostly clear and well-defined. The objectives are explicitly stated, and the methodology is broken down into logical stages with supporting mathematical formulations for key concepts like uncertainty and loss functions. The experimental design is well-structured, outlining datasets, baselines, metrics, and validation methods. The overall structure is logical and easy to follow. Minor ambiguities exist, such as the precise definition of the 'domain affinity score' and the 'DomainNovelty' metric used in the MAB reward function, and specifics on how the initial ensemble models are selected or trained. However, these do not significantly detract from the overall understanding of the proposed approach."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal demonstrates notable originality. While individual components like uncertainty quantification (entropy, disagreement), active learning, ensemble methods, clustering (UMAP+K-means), and multi-armed bandits for allocation exist in the literature, the specific synthesis within the UMC framework appears novel. Key innovative aspects include: (1) the combined use of predictive uncertainty and model disagreement specifically for multi-domain sample prioritization, (2) the clustering of high-uncertainty samples to identify diverse regions for annotation, and (3) the use of a contextual MAB with a reward function explicitly balancing sample uncertainty ('exploitation') and domain novelty ('exploration') to dynamically allocate annotation budget across these clusters for multi-domain foundation models. This integrated approach tailored to multi-domain curation distinguishes it from standard active learning or simpler model-assisted pipelines."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal is sound and mostly rigorous. It builds upon well-established machine learning concepts: ensemble methods for uncertainty, standard uncertainty metrics (entropy, KL divergence), dimensionality reduction and clustering (UMAP, K-means), multi-armed bandits (Thompson Sampling), and knowledge distillation. The proposed methodology is logical, and the experimental design is comprehensive, including relevant baselines, multi-domain datasets, diverse evaluation metrics (efficiency, performance, coverage, robustness), and plans for statistical validation and ablation studies. Minor gaps include the lack of detail on selecting/training the initial domain specialist ensemble and the precise formulation of the 'DomainNovelty' metric. However, the core technical approach is well-justified and theoretically grounded."
+    },
+    "Feasibility": {
+        "score": 8,
+        "justification": "The proposal is largely feasible with standard ML research resources. It relies on existing algorithms and techniques (ensembles, UMAP, K-means, MABs). Accessing multi-domain datasets and compute resources for training/inference is standard practice in foundation model research. Human annotation is required, but the proposal's goal is precisely to optimize this resource. The main challenges lie in the engineering effort needed to integrate the different components into a cohesive pipeline (especially the interactive interface) and potentially the computational cost of running the ensemble and retraining loops. However, these challenges are typical for this scale of research and do not represent fundamental roadblocks. The plan is realistic with manageable risks."
+    },
+    "Significance": {
+        "score": 9,
+        "justification": "The proposal is highly significant and impactful. It addresses a critical bottleneck in the development of robust and versatile foundation models: the efficient curation of large-scale, high-quality, multi-domain datasets. Successfully reducing annotation costs by 30-50% while improving model robustness and domain coverage would be a major contribution to data-centric AI. The focus on multi-domain adaptability and mitigating bias through domain novelty aligns with pressing needs in the field. The potential development of an open-source framework (UMC) could benefit the wider research community, complementing existing benchmarks like DataPerf. The research directly tackles key challenges outlined in the task description and literature, positioning it to make substantial advancements."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Strong alignment with the task description, research idea, and literature (high Consistency).",
+            "Addresses a highly significant and timely problem in data-centric AI (high Significance).",
+            "Proposes a novel integration of uncertainty, clustering, and MABs for multi-domain curation (good Novelty).",
+            "Methodology is technically sound and based on established principles (good Soundness).",
+            "Clear objectives and a well-defined, feasible experimental plan (good Clarity & Feasibility)."
+        ],
+        "weaknesses": [
+            "Some minor details in the methodology could be specified more precisely (e.g., domain novelty metric, ensemble selection).",
+            "Implementation requires significant engineering effort to integrate all components."
+        ]
+    }
+}

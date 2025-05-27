@@ -1,0 +1,8 @@
+**Title:** LLM-Driven Discovery and Mitigation of Unknown Spurious Correlations
+
+**Motivation:** Current debiasing methods often require pre-defined knowledge of spurious attributes, which is not always available or scalable to discover manually. This research aims to automate the identification of *unknown* spurious correlations by leveraging the advanced reasoning and pattern recognition capabilities of Large Language Models (LLMs), enhancing model robustness in real-world scenarios where biases are subtle or unanticipated.
+
+**Main Idea:** We propose an interactive framework where LLMs assist in uncovering and mitigating unknown spurious features.
+1.  **Error-Driven Hypothesis Generation:** An initial task model is trained. Clusters of its confident errors on a diverse dataset are identified. Representative samples from these error clusters (e.g., images/text) are fed to an LLM, prompted to describe common, potentially non-causal patterns exclusive to these errors.
+2.  **Hypothesis Validation and Robustification:** The LLM-generated hypotheses about potential spurious attributes are presented to a human expert for validation or refinement. Validated hypotheses then guide targeted interventions, such as generating counterfactual training data that breaks the spurious link, strategically re-weighting samples, or designing specific auxiliary tasks for the model to learn disentangled representations. The model is then retrained with these interventions.
+Expected Outcome: Improved out-of-distribution generalization by addressing previously unidentified spurious correlations, leading to more reliable and trustworthy AI systems.

@@ -1,0 +1,7 @@
+Title: ContractGPT: Formal Specification-Guided LLM Code Synthesis
+
+Motivation:  
+LLM-driven code generation accelerates development but often fails to meet precise functional requirements, leading to hidden bugs and maintenance costs. Embedding formal specifications into the generation loop can deliver stronger correctness guarantees without sacrificing the adaptability of generative AI.
+
+Main Idea:  
+We propose a closed-loop architecture where developers supply function-level pre-/post-conditions in a lightweight DSL. An LLM ingests this specification and emits candidate implementations annotated with inferred contracts. A static analyzer extracts the code’s logical assertions and invokes an SMT solver to verify alignment with the original spec. Failed proofs yield counterexamples that are converted into natural-language feedback and appended to the next LLM prompt. This iterative “spec–generate–verify–refine” cycle continues until the SMT solver validates the candidate. We will evaluate on a suite of algorithmic and systems-level benchmarks (e.g., sorting, file I/O), measure bug rates, synthesis time, and specification complexity. By integrating formal methods into LLM workflows, ContractGPT aims to bridge probabilistic generation and correctness-by-construction, improving trustworthiness in both popular and low-resource programming languages.

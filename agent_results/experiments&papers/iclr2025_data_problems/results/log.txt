@@ -1,0 +1,350 @@
+2025-05-07 18:36:44,910 - influence_space - INFO - Starting InfluenceSpace Pipeline at 2025-05-07 18:36:44
+2025-05-07 18:36:44,910 - influence_space - INFO - Arguments: Namespace(output_dir='../output', seed=42, log_file='../log.txt', debug=True, max_train_samples=100, max_val_samples=20, max_test_samples=20, batch_size=32, num_workers=4, encoder_model='openai/clip-vit-base-patch32', n_clusters=5, rank=10, samples_per_cluster=5, embed_dim=256, target_size_ratio=0.8, harmful_threshold=-0.001, beneficial_threshold=0.01, max_weight=5.0, num_epochs=2, learning_rate=0.001, weight_decay=1e-05, skip_stage=[], load_saved=False, save_checkpoints=False, visualize=True)
+2025-05-07 18:36:44,911 - influence_space - INFO - Using device: cuda
+2025-05-07 18:36:44,911 - influence_space - INFO - === Stage 1: Cross-modal Embedding and Clustering ===
+2025-05-07 18:36:44,911 - influence_space - INFO - Loading dataset with max 100 samples...
+2025-05-07 18:36:44,912 - influence_space - INFO - Loading COCO train dataset...
+2025-05-07 18:37:30,138 - influence_space - INFO - Loaded 100 samples from train dataset
+2025-05-07 18:37:30,139 - influence_space - INFO - Loading COCO val dataset...
+2025-05-07 18:37:35,086 - influence_space - INFO - Loaded 20 samples from val dataset
+2025-05-07 18:37:35,087 - influence_space - INFO - Loading CLIP model openai/clip-vit-base-patch32 on cuda...
+2025-05-07 18:38:37,177 - influence_space - INFO - Using transformers CLIP model
+2025-05-07 18:38:37,177 - influence_space - INFO - Computing embeddings for all samples...
+2025-05-07 18:38:37,463 - influence_space - ERROR - Error in InfluenceSpace Pipeline: The image to be converted to a PIL image contains values outside the range [0, 1], got [-1.1778709888458252, 0.8622223734855652] which cannot be converted to uint8.
+2025-05-07 18:38:37,468 - influence_space - ERROR - Traceback (most recent call last):
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_data_problems/claude_code/main.py", line 847, in main
+    cluster_assignments, clusters, embedder, train_dataset = run_stage1(args, logger, device, args.output_dir)
+                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_data_problems/claude_code/main.py", line 152, in run_stage1
+    cluster_assignments, clusters, embedder = run_embedding_clustering(
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_data_problems/claude_code/embedding_clustering.py", line 249, in run_embedding_clustering
+    image_embeddings, text_embeddings, concatenated_embeddings, indices = embedder.compute_embeddings(dataloader)
+                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_data_problems/claude_code/embedding_clustering.py", line 121, in compute_embeddings
+    image_embeddings = self.encode_images(images)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_data_problems/claude_code/embedding_clustering.py", line 61, in encode_images
+    inputs = self.processor(images=images, return_tensors="pt", padding=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/site-packages/transformers/models/clip/processing_clip.py", line 109, in __call__
+    image_features = self.image_processor(images, return_tensors=return_tensors, **image_processor_kwargs)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/site-packages/transformers/image_processing_utils.py", line 44, in __call__
+    return self.preprocess(images, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/site-packages/transformers/models/clip/image_processing_clip.py", line 327, in preprocess
+    image = self.resize(image=image, size=size, resample=resample, input_data_format=input_data_format)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/site-packages/transformers/models/clip/image_processing_clip.py", line 193, in resize
+    return resize(
+           ^^^^^^^
+  File "/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/site-packages/transformers/image_transforms.py", line 368, in resize
+    do_rescale = _rescale_for_pil_conversion(image)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/site-packages/transformers/image_transforms.py", line 150, in _rescale_for_pil_conversion
+    raise ValueError(
+ValueError: The image to be converted to a PIL image contains values outside the range [0, 1], got [-1.1778709888458252, 0.8622223734855652] which cannot be converted to uint8.
+
+2025-05-07 18:39:13,944 - influence_space - INFO - Starting InfluenceSpace Pipeline at 2025-05-07 18:39:13
+2025-05-07 18:39:13,944 - influence_space - INFO - Arguments: Namespace(output_dir='../output', seed=42, log_file='../log.txt', debug=True, max_train_samples=100, max_val_samples=20, max_test_samples=20, batch_size=32, num_workers=4, encoder_model='openai/clip-vit-base-patch32', n_clusters=5, rank=10, samples_per_cluster=5, embed_dim=256, target_size_ratio=0.8, harmful_threshold=-0.001, beneficial_threshold=0.01, max_weight=5.0, num_epochs=2, learning_rate=0.001, weight_decay=1e-05, skip_stage=[], load_saved=False, save_checkpoints=False, visualize=True)
+2025-05-07 18:39:13,945 - influence_space - INFO - Using device: cuda
+2025-05-07 18:39:13,945 - influence_space - INFO - === Stage 1: Cross-modal Embedding and Clustering ===
+2025-05-07 18:39:13,945 - influence_space - INFO - Loading dataset with max 100 samples...
+2025-05-07 18:39:13,945 - influence_space - INFO - Loading COCO train dataset...
+2025-05-07 18:39:21,577 - influence_space - INFO - Loaded 100 samples from train dataset
+2025-05-07 18:39:21,578 - influence_space - INFO - Loading COCO val dataset...
+2025-05-07 18:39:25,993 - influence_space - INFO - Loaded 20 samples from val dataset
+2025-05-07 18:39:25,994 - influence_space - INFO - Loading CLIP model openai/clip-vit-base-patch32 on cuda...
+2025-05-07 18:39:29,714 - influence_space - INFO - Using transformers CLIP model
+2025-05-07 18:39:29,714 - influence_space - INFO - Computing embeddings for all samples...
+2025-05-07 18:39:29,948 - influence_space - ERROR - Error encoding images: name 'Image' is not defined
+2025-05-07 18:39:30,606 - influence_space - ERROR - Error encoding images: name 'Image' is not defined
+2025-05-07 18:39:30,623 - influence_space - ERROR - Error encoding images: name 'Image' is not defined
+2025-05-07 18:39:30,637 - influence_space - ERROR - Error encoding images: name 'Image' is not defined
+2025-05-07 18:39:30,681 - influence_space - INFO - Computed embeddings for 100 samples
+2025-05-07 18:39:30,681 - influence_space - INFO - Clustering 100 samples into 5 clusters...
+2025-05-07 18:39:30,928 - influence_space - INFO - Cluster sizes: min=1, max=47, avg=20.00
+2025-05-07 18:39:30,928 - influence_space - INFO - Computing CLIP scores for image-caption pairs...
+2025-05-07 18:39:31,138 - influence_space - ERROR - Error encoding images: name 'Image' is not defined
+2025-05-07 18:39:31,169 - influence_space - ERROR - Error encoding images: name 'Image' is not defined
+2025-05-07 18:39:31,207 - influence_space - ERROR - Error encoding images: name 'Image' is not defined
+2025-05-07 18:39:31,223 - influence_space - ERROR - Error encoding images: name 'Image' is not defined
+2025-05-07 18:39:31,402 - influence_space - INFO - === Stage 2: Influence Score Estimation ===
+2025-05-07 18:39:31,402 - influence_space - INFO - Loading precomputed embeddings...
+2025-05-07 18:39:31,407 - influence_space - INFO - Training model for influence estimation...
+2025-05-07 18:39:31,739 - influence_space - INFO - Epoch: 1, Batch: [3/3], Loss: 3.2695
+2025-05-07 18:39:31,780 - influence_space - INFO - Epoch: 1, Average Loss: 3.4140
+2025-05-07 18:39:31,781 - influence_space - INFO - Epoch 1: Train Loss = 3.4140
+2025-05-07 18:39:31,903 - influence_space - INFO - Epoch: 2, Batch: [3/3], Loss: 3.0086
+2025-05-07 18:39:31,945 - influence_space - INFO - Epoch: 2, Average Loss: 3.1982
+2025-05-07 18:39:31,945 - influence_space - INFO - Epoch 2: Train Loss = 3.1982
+2025-05-07 18:39:32,067 - influence_space - INFO - Epoch: 3, Batch: [3/3], Loss: 2.4913
+2025-05-07 18:39:32,110 - influence_space - INFO - Epoch: 3, Average Loss: 2.8283
+2025-05-07 18:39:32,111 - influence_space - INFO - Epoch 3: Train Loss = 2.8283
+2025-05-07 18:39:32,236 - influence_space - INFO - Epoch: 4, Batch: [3/3], Loss: 1.4047
+2025-05-07 18:39:32,278 - influence_space - INFO - Epoch: 4, Average Loss: 1.9383
+2025-05-07 18:39:32,278 - influence_space - INFO - Epoch 4: Train Loss = 1.9383
+2025-05-07 18:39:32,401 - influence_space - INFO - Epoch: 5, Batch: [3/3], Loss: 0.2254
+2025-05-07 18:39:32,439 - influence_space - INFO - Epoch: 5, Average Loss: 0.5401
+2025-05-07 18:39:32,440 - influence_space - INFO - Epoch 5: Train Loss = 0.5401
+2025-05-07 18:39:32,440 - influence_space - INFO - Computing gradients for 5 clusters...
+2025-05-07 18:39:32,633 - influence_space - INFO - Computed gradients for 4 clusters
+2025-05-07 18:39:32,793 - influence_space - INFO - Computed validation gradient from 10 samples
+2025-05-07 18:39:32,794 - influence_space - INFO - Computing top 10 eigenpairs of the Hessian...
+2025-05-07 18:39:36,726 - influence_space - INFO - Computed top 10 eigenvalues: [46.09016036987305, 42.14162826538086, 37.040096282958984, 34.675025939941406, 30.92824935913086, 27.586753845214844, 22.944612503051758, 19.479713439941406, 17.757020950317383, 11.807544708251953]
+2025-05-07 18:39:36,729 - influence_space - INFO - Computing influence scores...
+2025-05-07 18:39:36,740 - influence_space - INFO - Computed influence scores for 4 clusters
+2025-05-07 18:39:37,666 - influence_space - INFO - === Stage 3: Data Curation (Pruning and Reweighting) ===
+2025-05-07 18:39:37,666 - influence_space - INFO - Categorized clusters: 0 harmful, 4 neutral, 0 beneficial
+2025-05-07 18:39:37,830 - influence_space - INFO - Optimizing cluster weights...
+2025-05-07 18:39:37,834 - influence_space - INFO - Optimized weights for 4 clusters
+2025-05-07 18:39:37,834 - influence_space - INFO - Applying curation strategy...
+2025-05-07 18:39:37,834 - influence_space - INFO - Created curated dataset with 100 samples from 5 clusters
+2025-05-07 18:39:38,037 - influence_space - INFO - === Running Baseline Methods ===
+2025-05-07 18:39:38,037 - influence_space - INFO - Running random sampling baseline...
+2025-05-07 18:39:38,037 - influence_space - INFO - Creating random sampling baseline with 80 samples...
+2025-05-07 18:39:38,037 - influence_space - INFO - Running CLIP score filtering baseline...
+2025-05-07 18:39:38,038 - influence_space - INFO - Creating CLIP score filtering baseline with 80 samples...
+2025-05-07 18:39:38,038 - influence_space - INFO - === Running Evaluation ===
+2025-05-07 18:39:38,038 - influence_space - INFO - Loading COCO test dataset...
+2025-05-07 18:39:43,085 - influence_space - WARNING - Failed to load conceptual_captions: Unknown split "test". Should be one of ['train', 'validation'].
+2025-05-07 18:39:43,379 - influence_space - WARNING - Failed to load COCO dataset: Dataset 'Multimodal-Fatima/COCO_2014' doesn't exist on the Hub or cannot be accessed.
+2025-05-07 18:39:43,379 - influence_space - WARNING - Creating dummy dataset for testing
+2025-05-07 18:39:43,381 - influence_space - INFO - Loaded 20 samples from test dataset
+2025-05-07 18:39:43,382 - influence_space - INFO - Loading precomputed embeddings...
+2025-05-07 18:39:43,384 - influence_space - INFO - Processing InfluenceSpace...
+2025-05-07 18:39:43,385 - influence_space - INFO - Processing Random Sampling...
+2025-05-07 18:39:43,386 - influence_space - INFO - Processing CLIP Score Filtering...
+2025-05-07 18:39:43,388 - influence_space - INFO - Evaluating InfluenceSpace method...
+2025-05-07 18:39:43,388 - influence_space - INFO - Training model on cuda for 2 epochs
+2025-05-07 18:39:43,551 - influence_space - INFO - Epoch: 1, Batch: [3/3], Loss: 3.2507
+2025-05-07 18:39:43,595 - influence_space - INFO - Epoch: 1, Average Loss: 3.4006
+2025-05-07 18:39:43,748 - influence_space - INFO - Epoch 1: Train Loss = 3.4006, Val Loss = 2.3264, Val Recall@1 = 20.00%, Val Recall@5 = 40.00%
+2025-05-07 18:39:43,757 - influence_space - INFO - Saved best model to ../output/evaluation/InfluenceSpace/best_model.pt
+2025-05-07 18:39:43,884 - influence_space - INFO - Epoch: 2, Batch: [3/3], Loss: 2.9808
+2025-05-07 18:39:43,927 - influence_space - INFO - Epoch: 2, Average Loss: 3.1697
+2025-05-07 18:39:44,098 - influence_space - INFO - Epoch 2: Train Loss = 3.1697, Val Loss = 2.3223, Val Recall@1 = 25.00%, Val Recall@5 = 40.00%
+2025-05-07 18:39:44,107 - influence_space - INFO - Saved best model to ../output/evaluation/InfluenceSpace/best_model.pt
+2025-05-07 18:39:44,265 - influence_space - INFO - Test Recall@1 = 65.00%, Test Recall@5 = 87.50%, Test Recall@10 = 92.50%
+2025-05-07 18:39:44,498 - influence_space - INFO - Evaluating Random Sampling method...
+2025-05-07 18:39:44,498 - influence_space - INFO - Training model on cuda for 2 epochs
+2025-05-07 18:39:44,635 - influence_space - INFO - Epoch: 1, Batch: [3/3], Loss: 2.0847
+2025-05-07 18:39:44,681 - influence_space - INFO - Epoch: 1, Average Loss: 3.0151
+2025-05-07 18:39:44,836 - influence_space - INFO - Epoch 1: Train Loss = 3.0151, Val Loss = 2.0973, Val Recall@1 = 12.50%, Val Recall@5 = 62.50%
+2025-05-07 18:39:44,844 - influence_space - INFO - Saved best model to ../output/evaluation/Random Sampling/best_model.pt
+2025-05-07 18:39:44,972 - influence_space - INFO - Epoch: 2, Batch: [3/3], Loss: 1.8335
+2025-05-07 18:39:45,015 - influence_space - INFO - Epoch: 2, Average Loss: 2.7872
+2025-05-07 18:39:45,168 - influence_space - INFO - Epoch 2: Train Loss = 2.7872, Val Loss = 2.0999, Val Recall@1 = 12.50%, Val Recall@5 = 62.50%
+2025-05-07 18:39:45,322 - influence_space - INFO - Test Recall@1 = 57.50%, Test Recall@5 = 72.50%, Test Recall@10 = 82.50%
+2025-05-07 18:39:45,539 - influence_space - INFO - Evaluating CLIP Score Filtering method...
+2025-05-07 18:39:45,539 - influence_space - INFO - Training model on cuda for 2 epochs
+2025-05-07 18:39:45,674 - influence_space - INFO - Epoch: 1, Batch: [3/3], Loss: 2.0972
+2025-05-07 18:39:45,720 - influence_space - INFO - Epoch: 1, Average Loss: 3.0174
+2025-05-07 18:39:45,877 - influence_space - INFO - Epoch 1: Train Loss = 3.0174, Val Loss = 2.0736, Val Recall@1 = 12.50%, Val Recall@5 = 75.00%
+2025-05-07 18:39:45,885 - influence_space - INFO - Saved best model to ../output/evaluation/CLIP Score Filtering/best_model.pt
+2025-05-07 18:39:46,021 - influence_space - INFO - Epoch: 2, Batch: [3/3], Loss: 1.8375
+2025-05-07 18:39:46,064 - influence_space - INFO - Epoch: 2, Average Loss: 2.7804
+2025-05-07 18:39:46,216 - influence_space - INFO - Epoch 2: Train Loss = 2.7804, Val Loss = 2.0711, Val Recall@1 = 12.50%, Val Recall@5 = 68.75%
+2025-05-07 18:39:46,371 - influence_space - INFO - Test Recall@1 = 72.50%, Test Recall@5 = 90.00%, Test Recall@10 = 97.50%
+2025-05-07 18:39:46,586 - influence_space - INFO - Evaluating Full Dataset method...
+2025-05-07 18:39:46,586 - influence_space - INFO - Training model on cuda for 2 epochs
+2025-05-07 18:39:46,749 - influence_space - INFO - Epoch: 1, Batch: [3/3], Loss: 3.2729
+2025-05-07 18:39:46,794 - influence_space - INFO - Epoch: 1, Average Loss: 3.4110
+2025-05-07 18:39:46,955 - influence_space - INFO - Epoch 1: Train Loss = 3.4110, Val Loss = 2.3515, Val Recall@1 = 5.00%, Val Recall@5 = 35.00%
+2025-05-07 18:39:46,963 - influence_space - INFO - Saved best model to ../output/evaluation/Full Dataset/best_model.pt
+2025-05-07 18:39:47,090 - influence_space - INFO - Epoch: 2, Batch: [3/3], Loss: 2.9791
+2025-05-07 18:39:47,132 - influence_space - INFO - Epoch: 2, Average Loss: 3.1806
+2025-05-07 18:39:47,284 - influence_space - INFO - Epoch 2: Train Loss = 3.1806, Val Loss = 2.3644, Val Recall@1 = 5.00%, Val Recall@5 = 25.00%
+2025-05-07 18:39:47,438 - influence_space - INFO - Test Recall@1 = 77.50%, Test Recall@5 = 92.50%, Test Recall@10 = 92.50%
+2025-05-07 18:39:47,674 - influence_space - INFO - Comparing curation methods...
+2025-05-07 18:39:47,949 - influence_space - INFO - Computing efficiency metrics...
+2025-05-07 18:39:48,205 - influence_space - INFO - === Generating Results Summary ===
+2025-05-07 18:39:50,081 - influence_space - ERROR - Error in InfluenceSpace Pipeline: '../output/results/efficiency_comparison.png' and '../output/results/efficiency_comparison.png' are the same file
+2025-05-07 18:39:50,082 - influence_space - ERROR - Traceback (most recent call last):
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_data_problems/claude_code/main.py", line 910, in main
+    generate_results_summary(args, logger, args.output_dir)
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_data_problems/claude_code/main.py", line 810, in generate_results_summary
+    shutil.copy2(figure_file, os.path.join(results_dir, os.path.basename(figure_file)))
+  File "/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/shutil.py", line 475, in copy2
+    copyfile(src, dst, follow_symlinks=follow_symlinks)
+  File "/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/shutil.py", line 240, in copyfile
+    raise SameFileError("{!r} and {!r} are the same file".format(src, dst))
+shutil.SameFileError: '../output/results/efficiency_comparison.png' and '../output/results/efficiency_comparison.png' are the same file
+
+2025-05-07 18:40:41,184 - influence_space - INFO - Starting InfluenceSpace Pipeline at 2025-05-07 18:40:41
+2025-05-07 18:40:41,184 - influence_space - INFO - Arguments: Namespace(output_dir='../output', seed=42, log_file='../log.txt', debug=True, max_train_samples=100, max_val_samples=20, max_test_samples=20, batch_size=32, num_workers=4, encoder_model='openai/clip-vit-base-patch32', n_clusters=5, rank=10, samples_per_cluster=5, embed_dim=256, target_size_ratio=0.8, harmful_threshold=-0.001, beneficial_threshold=0.01, max_weight=5.0, num_epochs=2, learning_rate=0.001, weight_decay=1e-05, skip_stage=[], load_saved=False, save_checkpoints=False, visualize=True)
+2025-05-07 18:40:41,185 - influence_space - INFO - Using device: cuda
+2025-05-07 18:40:41,185 - influence_space - INFO - === Stage 1: Cross-modal Embedding and Clustering ===
+2025-05-07 18:40:41,185 - influence_space - INFO - Loading dataset with max 100 samples...
+2025-05-07 18:40:41,185 - influence_space - INFO - Loading COCO train dataset...
+2025-05-07 18:40:48,650 - influence_space - INFO - Loaded 100 samples from train dataset
+2025-05-07 18:40:48,650 - influence_space - INFO - Loading COCO val dataset...
+2025-05-07 18:40:53,192 - influence_space - INFO - Loaded 20 samples from val dataset
+2025-05-07 18:40:53,193 - influence_space - INFO - Loading CLIP model openai/clip-vit-base-patch32 on cuda...
+2025-05-07 18:40:56,823 - influence_space - INFO - Using transformers CLIP model
+2025-05-07 18:40:56,823 - influence_space - INFO - Computing embeddings for all samples...
+2025-05-07 18:40:58,227 - influence_space - INFO - Computed embeddings for 100 samples
+2025-05-07 18:40:58,228 - influence_space - INFO - Clustering 100 samples into 5 clusters...
+2025-05-07 18:40:58,474 - influence_space - INFO - Cluster sizes: min=2, max=36, avg=20.00
+2025-05-07 18:40:58,474 - influence_space - INFO - Computing CLIP scores for image-caption pairs...
+2025-05-07 18:40:59,286 - influence_space - INFO - === Stage 2: Influence Score Estimation ===
+2025-05-07 18:40:59,286 - influence_space - INFO - Loading precomputed embeddings...
+2025-05-07 18:40:59,292 - influence_space - INFO - Training model for influence estimation...
+2025-05-07 18:40:59,631 - influence_space - INFO - Epoch: 1, Batch: [3/3], Loss: 3.2594
+2025-05-07 18:40:59,672 - influence_space - INFO - Epoch: 1, Average Loss: 3.4007
+2025-05-07 18:40:59,672 - influence_space - INFO - Epoch 1: Train Loss = 3.4007
+2025-05-07 18:40:59,794 - influence_space - INFO - Epoch: 2, Batch: [3/3], Loss: 3.2058
+2025-05-07 18:40:59,837 - influence_space - INFO - Epoch: 2, Average Loss: 3.3573
+2025-05-07 18:40:59,837 - influence_space - INFO - Epoch 2: Train Loss = 3.3573
+2025-05-07 18:40:59,962 - influence_space - INFO - Epoch: 3, Batch: [3/3], Loss: 3.0354
+2025-05-07 18:41:00,006 - influence_space - INFO - Epoch: 3, Average Loss: 3.2392
+2025-05-07 18:41:00,006 - influence_space - INFO - Epoch 3: Train Loss = 3.2392
+2025-05-07 18:41:00,130 - influence_space - INFO - Epoch: 4, Batch: [3/3], Loss: 2.6566
+2025-05-07 18:41:00,171 - influence_space - INFO - Epoch: 4, Average Loss: 2.9223
+2025-05-07 18:41:00,171 - influence_space - INFO - Epoch 4: Train Loss = 2.9223
+2025-05-07 18:41:00,296 - influence_space - INFO - Epoch: 5, Batch: [3/3], Loss: 1.8654
+2025-05-07 18:41:00,340 - influence_space - INFO - Epoch: 5, Average Loss: 2.1950
+2025-05-07 18:41:00,340 - influence_space - INFO - Epoch 5: Train Loss = 2.1950
+2025-05-07 18:41:00,340 - influence_space - INFO - Computing gradients for 5 clusters...
+2025-05-07 18:41:00,542 - influence_space - INFO - Computed gradients for 5 clusters
+2025-05-07 18:41:00,698 - influence_space - INFO - Computed validation gradient from 10 samples
+2025-05-07 18:41:00,699 - influence_space - INFO - Computing top 10 eigenpairs of the Hessian...
+2025-05-07 18:41:04,566 - influence_space - INFO - Computed top 10 eigenvalues: [362.6405334472656, 333.9002380371094, 281.9118347167969, 248.64337158203125, 164.5067901611328, 128.59481811523438, 114.93585205078125, 102.56669616699219, 83.71772766113281, 73.41744232177734]
+2025-05-07 18:41:04,569 - influence_space - INFO - Computing influence scores...
+2025-05-07 18:41:04,581 - influence_space - INFO - Computed influence scores for 5 clusters
+2025-05-07 18:41:05,242 - influence_space - INFO - === Stage 3: Data Curation (Pruning and Reweighting) ===
+2025-05-07 18:41:05,242 - influence_space - INFO - Categorized clusters: 2 harmful, 1 neutral, 2 beneficial
+2025-05-07 18:41:05,404 - influence_space - INFO - Optimizing cluster weights...
+2025-05-07 18:41:05,407 - influence_space - INFO - Optimized weights for 3 clusters
+2025-05-07 18:41:05,408 - influence_space - INFO - Applying curation strategy...
+2025-05-07 18:41:05,408 - influence_space - ERROR - Error in InfluenceSpace Pipeline: index 71 is out of bounds for axis 0 with size 71
+2025-05-07 18:41:05,409 - influence_space - ERROR - Traceback (most recent call last):
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_data_problems/claude_code/main.py", line 884, in main
+    curated_dataloader, curated_indices, sample_weights = run_stage3(
+                                                          ^^^^^^^^^^^
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_data_problems/claude_code/main.py", line 305, in run_stage3
+    curated_dataloader, curated_indices, sample_weights = run_curation(
+                                                          ^^^^^^^^^^^^^
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_data_problems/claude_code/curation.py", line 384, in run_curation
+    curated_dataloader, curated_indices, sample_weights = apply_curation(
+                                                          ^^^^^^^^^^^^^^^
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_data_problems/claude_code/curation.py", line 286, in apply_curation
+    curated_dataloader = get_dataloader_from_indices(
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/chenhui/mlr-bench/claude_exp2/iclr2025_data_problems/claude_code/data_loader.py", line 305, in get_dataloader_from_indices
+    subset_weights = weights_np[indices]
+                     ~~~~~~~~~~^^^^^^^^^
+IndexError: index 71 is out of bounds for axis 0 with size 71
+
+2025-05-07 18:41:34,792 - influence_space - INFO - Starting InfluenceSpace Pipeline at 2025-05-07 18:41:34
+2025-05-07 18:41:34,792 - influence_space - INFO - Arguments: Namespace(output_dir='../output', seed=42, log_file='../log.txt', debug=True, max_train_samples=100, max_val_samples=20, max_test_samples=20, batch_size=32, num_workers=4, encoder_model='openai/clip-vit-base-patch32', n_clusters=5, rank=10, samples_per_cluster=5, embed_dim=256, target_size_ratio=0.8, harmful_threshold=-0.001, beneficial_threshold=0.01, max_weight=5.0, num_epochs=2, learning_rate=0.001, weight_decay=1e-05, skip_stage=[], load_saved=False, save_checkpoints=False, visualize=True)
+2025-05-07 18:41:34,793 - influence_space - INFO - Using device: cuda
+2025-05-07 18:41:34,793 - influence_space - INFO - === Stage 1: Cross-modal Embedding and Clustering ===
+2025-05-07 18:41:34,793 - influence_space - INFO - Loading dataset with max 100 samples...
+2025-05-07 18:41:34,793 - influence_space - INFO - Loading COCO train dataset...
+2025-05-07 18:41:42,338 - influence_space - INFO - Loaded 100 samples from train dataset
+2025-05-07 18:41:42,339 - influence_space - INFO - Loading COCO val dataset...
+2025-05-07 18:41:46,840 - influence_space - INFO - Loaded 20 samples from val dataset
+2025-05-07 18:41:46,841 - influence_space - INFO - Loading CLIP model openai/clip-vit-base-patch32 on cuda...
+2025-05-07 18:41:50,426 - influence_space - INFO - Using transformers CLIP model
+2025-05-07 18:41:50,426 - influence_space - INFO - Computing embeddings for all samples...
+2025-05-07 18:41:51,702 - influence_space - INFO - Computed embeddings for 100 samples
+2025-05-07 18:41:51,702 - influence_space - INFO - Clustering 100 samples into 5 clusters...
+2025-05-07 18:41:51,953 - influence_space - INFO - Cluster sizes: min=2, max=36, avg=20.00
+2025-05-07 18:41:51,953 - influence_space - INFO - Computing CLIP scores for image-caption pairs...
+2025-05-07 18:41:52,742 - influence_space - INFO - === Stage 2: Influence Score Estimation ===
+2025-05-07 18:41:52,743 - influence_space - INFO - Loading precomputed embeddings...
+2025-05-07 18:41:52,748 - influence_space - INFO - Training model for influence estimation...
+2025-05-07 18:41:53,066 - influence_space - INFO - Epoch: 1, Batch: [3/3], Loss: 3.2594
+2025-05-07 18:41:53,105 - influence_space - INFO - Epoch: 1, Average Loss: 3.4007
+2025-05-07 18:41:53,105 - influence_space - INFO - Epoch 1: Train Loss = 3.4007
+2025-05-07 18:41:53,226 - influence_space - INFO - Epoch: 2, Batch: [3/3], Loss: 3.2058
+2025-05-07 18:41:53,267 - influence_space - INFO - Epoch: 2, Average Loss: 3.3573
+2025-05-07 18:41:53,268 - influence_space - INFO - Epoch 2: Train Loss = 3.3573
+2025-05-07 18:41:53,391 - influence_space - INFO - Epoch: 3, Batch: [3/3], Loss: 3.0354
+2025-05-07 18:41:53,436 - influence_space - INFO - Epoch: 3, Average Loss: 3.2392
+2025-05-07 18:41:53,436 - influence_space - INFO - Epoch 3: Train Loss = 3.2392
+2025-05-07 18:41:53,556 - influence_space - INFO - Epoch: 4, Batch: [3/3], Loss: 2.6566
+2025-05-07 18:41:53,599 - influence_space - INFO - Epoch: 4, Average Loss: 2.9223
+2025-05-07 18:41:53,600 - influence_space - INFO - Epoch 4: Train Loss = 2.9223
+2025-05-07 18:41:53,721 - influence_space - INFO - Epoch: 5, Batch: [3/3], Loss: 1.8654
+2025-05-07 18:41:53,762 - influence_space - INFO - Epoch: 5, Average Loss: 2.1950
+2025-05-07 18:41:53,762 - influence_space - INFO - Epoch 5: Train Loss = 2.1950
+2025-05-07 18:41:53,763 - influence_space - INFO - Computing gradients for 5 clusters...
+2025-05-07 18:41:53,958 - influence_space - INFO - Computed gradients for 5 clusters
+2025-05-07 18:41:54,114 - influence_space - INFO - Computed validation gradient from 10 samples
+2025-05-07 18:41:54,115 - influence_space - INFO - Computing top 10 eigenpairs of the Hessian...
+2025-05-07 18:41:57,937 - influence_space - INFO - Computed top 10 eigenvalues: [362.6405334472656, 333.9002380371094, 281.9118347167969, 248.64337158203125, 164.5067901611328, 128.59481811523438, 114.93585205078125, 102.56669616699219, 83.71772766113281, 73.41744232177734]
+2025-05-07 18:41:57,941 - influence_space - INFO - Computing influence scores...
+2025-05-07 18:41:57,955 - influence_space - INFO - Computed influence scores for 5 clusters
+2025-05-07 18:41:58,614 - influence_space - INFO - === Stage 3: Data Curation (Pruning and Reweighting) ===
+2025-05-07 18:41:58,614 - influence_space - INFO - Categorized clusters: 2 harmful, 1 neutral, 2 beneficial
+2025-05-07 18:41:58,770 - influence_space - INFO - Optimizing cluster weights...
+2025-05-07 18:41:58,774 - influence_space - INFO - Optimized weights for 3 clusters
+2025-05-07 18:41:58,774 - influence_space - INFO - Applying curation strategy...
+2025-05-07 18:41:58,774 - influence_space - WARNING - Weights array size (71) is smaller than max index (99). Using default weights.
+2025-05-07 18:41:58,775 - influence_space - INFO - Created curated dataset with 71 samples from 3 clusters
+2025-05-07 18:41:58,974 - influence_space - INFO - === Running Baseline Methods ===
+2025-05-07 18:41:58,974 - influence_space - INFO - Running random sampling baseline...
+2025-05-07 18:41:58,974 - influence_space - INFO - Creating random sampling baseline with 80 samples...
+2025-05-07 18:41:58,975 - influence_space - INFO - Running CLIP score filtering baseline...
+2025-05-07 18:41:58,975 - influence_space - INFO - Creating CLIP score filtering baseline with 80 samples...
+2025-05-07 18:41:58,975 - influence_space - INFO - === Running Evaluation ===
+2025-05-07 18:41:58,975 - influence_space - INFO - Loading COCO test dataset...
+2025-05-07 18:42:04,672 - influence_space - WARNING - Failed to load conceptual_captions: Unknown split "test". Should be one of ['train', 'validation'].
+2025-05-07 18:42:04,915 - influence_space - WARNING - Failed to load COCO dataset: Dataset 'Multimodal-Fatima/COCO_2014' doesn't exist on the Hub or cannot be accessed.
+2025-05-07 18:42:04,915 - influence_space - WARNING - Creating dummy dataset for testing
+2025-05-07 18:42:04,917 - influence_space - INFO - Loaded 20 samples from test dataset
+2025-05-07 18:42:04,918 - influence_space - INFO - Loading precomputed embeddings...
+2025-05-07 18:42:04,919 - influence_space - INFO - Processing InfluenceSpace...
+2025-05-07 18:42:04,925 - influence_space - INFO - Processing Random Sampling...
+2025-05-07 18:42:04,929 - influence_space - INFO - Processing CLIP Score Filtering...
+2025-05-07 18:42:04,931 - influence_space - INFO - Evaluating InfluenceSpace method...
+2025-05-07 18:42:04,931 - influence_space - INFO - Training model on cuda for 2 epochs
+2025-05-07 18:42:05,069 - influence_space - INFO - Epoch: 1, Batch: [2/2], Loss: 3.4685
+2025-05-07 18:42:05,113 - influence_space - INFO - Epoch: 1, Average Loss: 3.4717
+2025-05-07 18:42:05,263 - influence_space - INFO - Epoch 1: Train Loss = 3.4717, Val Loss = 1.9622, Val Recall@1 = 14.29%, Val Recall@5 = 64.29%
+2025-05-07 18:42:05,274 - influence_space - INFO - Saved best model to ../output/evaluation/InfluenceSpace/best_model.pt
+2025-05-07 18:42:05,395 - influence_space - INFO - Epoch: 2, Batch: [2/2], Loss: 3.4444
+2025-05-07 18:42:05,437 - influence_space - INFO - Epoch: 2, Average Loss: 3.4430
+2025-05-07 18:42:05,587 - influence_space - INFO - Epoch 2: Train Loss = 3.4430, Val Loss = 1.9646, Val Recall@1 = 21.43%, Val Recall@5 = 57.14%
+2025-05-07 18:42:05,596 - influence_space - INFO - Saved best model to ../output/evaluation/InfluenceSpace/best_model.pt
+2025-05-07 18:42:05,748 - influence_space - INFO - Test Recall@1 = 10.00%, Test Recall@5 = 47.50%, Test Recall@10 = 67.50%
+2025-05-07 18:42:05,970 - influence_space - INFO - Evaluating Random Sampling method...
+2025-05-07 18:42:05,970 - influence_space - INFO - Training model on cuda for 2 epochs
+2025-05-07 18:42:06,104 - influence_space - INFO - Epoch: 1, Batch: [3/3], Loss: 2.0831
+2025-05-07 18:42:06,149 - influence_space - INFO - Epoch: 1, Average Loss: 3.0122
+2025-05-07 18:42:06,301 - influence_space - INFO - Epoch 1: Train Loss = 3.0122, Val Loss = 2.0972, Val Recall@1 = 12.50%, Val Recall@5 = 56.25%
+2025-05-07 18:42:06,310 - influence_space - INFO - Saved best model to ../output/evaluation/Random Sampling/best_model.pt
+2025-05-07 18:42:06,437 - influence_space - INFO - Epoch: 2, Batch: [3/3], Loss: 2.0689
+2025-05-07 18:42:06,483 - influence_space - INFO - Epoch: 2, Average Loss: 2.9801
+2025-05-07 18:42:06,634 - influence_space - INFO - Epoch 2: Train Loss = 2.9801, Val Loss = 2.0977, Val Recall@1 = 18.75%, Val Recall@5 = 43.75%
+2025-05-07 18:42:06,643 - influence_space - INFO - Saved best model to ../output/evaluation/Random Sampling/best_model.pt
+2025-05-07 18:42:06,798 - influence_space - INFO - Test Recall@1 = 30.00%, Test Recall@5 = 67.50%, Test Recall@10 = 85.00%
+2025-05-07 18:42:07,006 - influence_space - INFO - Evaluating CLIP Score Filtering method...
+2025-05-07 18:42:07,006 - influence_space - INFO - Training model on cuda for 2 epochs
+2025-05-07 18:42:07,140 - influence_space - INFO - Epoch: 1, Batch: [3/3], Loss: 2.0854
+2025-05-07 18:42:07,183 - influence_space - INFO - Epoch: 1, Average Loss: 3.0087
+2025-05-07 18:42:07,343 - influence_space - INFO - Epoch 1: Train Loss = 3.0087, Val Loss = 2.0933, Val Recall@1 = 6.25%, Val Recall@5 = 56.25%
+2025-05-07 18:42:07,352 - influence_space - INFO - Saved best model to ../output/evaluation/CLIP Score Filtering/best_model.pt
+2025-05-07 18:42:07,478 - influence_space - INFO - Epoch: 2, Batch: [3/3], Loss: 2.0235
+2025-05-07 18:42:07,522 - influence_space - INFO - Epoch: 2, Average Loss: 2.9612
+2025-05-07 18:42:07,674 - influence_space - INFO - Epoch 2: Train Loss = 2.9612, Val Loss = 2.1113, Val Recall@1 = 12.50%, Val Recall@5 = 62.50%
+2025-05-07 18:42:07,683 - influence_space - INFO - Saved best model to ../output/evaluation/CLIP Score Filtering/best_model.pt
+2025-05-07 18:42:07,836 - influence_space - INFO - Test Recall@1 = 15.00%, Test Recall@5 = 65.00%, Test Recall@10 = 75.00%
+2025-05-07 18:42:08,047 - influence_space - INFO - Evaluating Full Dataset method...
+2025-05-07 18:42:08,047 - influence_space - INFO - Training model on cuda for 2 epochs
+2025-05-07 18:42:08,180 - influence_space - INFO - Epoch: 1, Batch: [3/3], Loss: 3.2617
+2025-05-07 18:42:08,226 - influence_space - INFO - Epoch: 1, Average Loss: 3.4027
+2025-05-07 18:42:08,377 - influence_space - INFO - Epoch 1: Train Loss = 3.4027, Val Loss = 2.3118, Val Recall@1 = 10.00%, Val Recall@5 = 55.00%
+2025-05-07 18:42:08,386 - influence_space - INFO - Saved best model to ../output/evaluation/Full Dataset/best_model.pt
+2025-05-07 18:42:08,513 - influence_space - INFO - Epoch: 2, Batch: [3/3], Loss: 3.2001
+2025-05-07 18:42:08,558 - influence_space - INFO - Epoch: 2, Average Loss: 3.3570
+2025-05-07 18:42:08,704 - influence_space - INFO - Epoch 2: Train Loss = 3.3570, Val Loss = 2.3117, Val Recall@1 = 10.00%, Val Recall@5 = 50.00%
+2025-05-07 18:42:08,857 - influence_space - INFO - Test Recall@1 = 32.50%, Test Recall@5 = 72.50%, Test Recall@10 = 87.50%
+2025-05-07 18:42:09,074 - influence_space - INFO - Comparing curation methods...
+2025-05-07 18:42:09,347 - influence_space - INFO - Computing efficiency metrics...
+2025-05-07 18:42:09,596 - influence_space - INFO - === Generating Results Summary ===
+2025-05-07 18:42:11,420 - influence_space - INFO - Results summary and figures saved in ../output/results
+2025-05-07 18:42:11,421 - influence_space - INFO - InfluenceSpace Pipeline completed successfully at 2025-05-07 18:42:11

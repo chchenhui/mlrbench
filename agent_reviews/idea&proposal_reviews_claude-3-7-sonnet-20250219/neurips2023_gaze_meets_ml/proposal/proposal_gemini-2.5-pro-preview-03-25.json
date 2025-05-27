@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the workshop's focus on gaze-assisted machine learning in medical imaging, specifically using eye-tracking data to guide feature learning. The GazeCon framework builds upon the self-supervised contrastive learning approach mentioned in the original idea, using radiologists' gaze patterns to prioritize clinically relevant regions. The proposal thoroughly incorporates insights from the literature review, citing all four papers and addressing the five key challenges identified. It extends beyond existing approaches like McGIP [1] and FocusContrast [2] by proposing a novel regional contrastive objective that more directly influences feature learning at a patch level, rather than just defining instance pairs or guiding augmentation."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is very well-structured and articulated with clear sections covering background, research gap, objectives, methodology, and expected outcomes. The technical approach is explained in detail, including mathematical formulations of the loss functions and step-by-step algorithmic procedures. The distinction between standard instance-level contrastive learning and the novel gaze-guided regional contrastive learning is well-defined. The experimental design and evaluation metrics are thoroughly described. However, there are a few areas that could benefit from further clarification, such as the exact mechanism for extracting regional features from the encoder and more details on how the gaze density maps would be aligned with image patches during training. Additionally, some of the mathematical notation could be more consistently defined throughout the proposal."
+    },
+    "Novelty": {
+        "score": 8,
+        "justification": "The GazeCon framework presents a novel approach to incorporating gaze data into self-supervised learning for medical imaging. While existing works like McGIP [1] use gaze similarity to define positive pairs and FocusContrast [2] uses gaze to guide augmentation, GazeCon introduces a fundamentally different mechanism: a regional contrastive objective that directly influences the feature learning process at a patch level. This approach of contrasting high-gaze vs. low-gaze regions within the same image represents a significant innovation. The proposal also extends beyond prior work by focusing on interpretability alignment between model attention and expert gaze. However, it does build upon established contrastive learning techniques (e.g., InfoNCE loss), and some components like gaze density map creation follow standard approaches, which is why it doesn't receive the highest novelty score."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal demonstrates strong technical rigor and is built on solid theoretical foundations. The contrastive learning framework is well-established in the literature, and the extension to incorporate gaze-guided regional contrasting is logically developed. The mathematical formulations of the loss functions are correct, and the algorithmic steps are clearly defined. The experimental design includes appropriate baselines, evaluation metrics, and ablation studies to validate the approach. The proposal also thoughtfully addresses the challenges identified in the literature review. However, there are some potential theoretical concerns that could be more thoroughly addressed, such as the impact of noisy or inconsistent gaze data on the learning process, and whether forcing alignment with gaze patterns might sometimes be detrimental if experts occasionally look at irrelevant regions. Additionally, the proposal could benefit from more discussion of potential failure modes and their mitigations."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal presents a feasible approach that builds upon established contrastive learning frameworks and publicly available datasets like REFLACX. The implementation leverages standard deep learning libraries and techniques that are well-documented in the literature. The authors acknowledge data availability challenges and propose reasonable solutions, such as using existing public datasets and investigating the impact of data quantity in ablation studies. However, there are some practical challenges that may affect feasibility: (1) The computational complexity of computing regional embeddings and the gaze-guided loss for many patches per image could be substantial; (2) The availability of sufficient high-quality gaze data aligned with medical images remains a limitation; (3) The proposal requires careful implementation of the regional feature extraction and gaze alignment, which could be technically challenging. These factors reduce the feasibility score from excellent to good."
+    },
+    "Significance": {
+        "score": 9,
+        "justification": "The proposed GazeCon framework addresses a critical challenge in medical AI: developing models that focus on clinically relevant features without extensive manual annotations. By leveraging radiologists' gaze patterns as weak supervision, the approach could significantly reduce the annotation burden while improving model performance and interpretability. This aligns perfectly with the workshop's goal of bridging human cognition and AI. The potential impacts are substantial: (1) More accurate and trustworthy medical AI systems that align with expert reasoning; (2) Enhanced interpretability that could facilitate clinical adoption; (3) A novel paradigm for incorporating human cognitive signals into self-supervised learning that could extend beyond medical imaging; (4) Addressing the data efficiency challenge in healthcare AI. The proposal also thoughtfully considers ethical implications related to privacy and bias, further enhancing its significance."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Novel integration of expert gaze data into the core representation learning process via a regional contrastive objective",
+            "Comprehensive methodology with clear mathematical formulations and algorithmic steps",
+            "Thoughtful experimental design with appropriate baselines and evaluation metrics",
+            "Strong potential impact on reducing annotation burden while improving model performance and interpretability in medical AI",
+            "Direct alignment with the workshop's focus on gaze-assisted machine learning"
+        ],
+        "weaknesses": [
+            "Some implementation details regarding regional feature extraction and gaze-patch alignment could be further clarified",
+            "Limited discussion of potential failure modes and their mitigations",
+            "Computational complexity of the regional contrastive approach may present practical challenges",
+            "Dependence on the availability and quality of eye-tracking data, which remains a limitation in the field"
+        ]
+    }
+}

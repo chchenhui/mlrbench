@@ -1,0 +1,43 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the gap between theory and practice in deep learning optimization, focusing specifically on the Edge-of-Stability phenomenon and curvature-aware optimization - both explicitly mentioned in the task description. The proposal builds upon the literature review's key papers, particularly those on EoS (Cohen et al. 2021, Iordan et al. 2023), bifurcation theory (Song & Yun 2023), PDE analogies (Sun et al. 2022), and implicit bias frameworks (Arora et al. 2022). The methodology incorporates stochastic Lanczos iterations for Hessian approximation, addressing the computational overhead challenge identified in the literature review. The proposal also acknowledges and builds upon recent work like ADLER and Hi-DLR mentioned in the literature review."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is well-structured and clearly articulated. The research objectives are explicitly stated, and the methodology is presented in a logical sequence with detailed explanations of the curvature probing mechanism, adaptive hyperparameter scheduling, and theoretical analysis. The pseudocode for the training loop provides a concrete implementation plan. Mathematical formulations are precise and well-defined, with clear notation. The experimental design section outlines specific datasets, baselines, metrics, and ablation studies. However, there are a few areas that could benefit from additional clarity: (1) the exact relationship between the spectral gap and momentum adjustment could be more thoroughly explained, (2) some of the theoretical claims in Proposition 2 about implicit regularization could be more rigorously formulated, and (3) the connection between the proposed method and existing adaptive optimizers could be more explicitly differentiated."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal offers a novel approach to optimization by dynamically incorporating curvature information through periodic Hessian probing. While individual components like Lanczos iterations for Hessian approximation and adaptive learning rates are not new, the integration of these techniques into a cohesive optimizer that specifically targets the Edge-of-Stability phenomenon represents a fresh perspective. The dynamic adjustment of multiple hyperparameters (learning rate, momentum, weight decay) based on spectral metrics is innovative. However, the approach shares similarities with existing methods like ADLER and Hi-DLR mentioned in the literature review, which also use Hessian information to adapt learning rates. The proposal acknowledges these connections but could more clearly articulate its unique contributions beyond these existing approaches. The theoretical analysis connecting curvature-aware updates to implicit regularization offers some novel insights, but builds upon existing frameworks rather than introducing fundamentally new concepts."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal demonstrates strong technical foundations and rigor. The mathematical formulations for curvature probing via stochastic Lanczos iterations and the adaptive hyperparameter scheduling are well-defined and theoretically grounded. The convergence analysis under mild non-smoothness assumptions is particularly valuable, addressing a key challenge identified in the literature review. The proposition on convergence to stationarity provides a concrete theoretical guarantee with a proof sketch that follows established optimization theory principles. The experimental design is comprehensive, with appropriate baselines, metrics, and ablation studies to validate the approach. However, there are some aspects that could be strengthened: (1) the analysis of the implicit regularization effect (Proposition 2) is somewhat speculative and could benefit from more rigorous formulation, (2) the assumptions about the Lipschitz properties of the loss function might be too restrictive for deep neural networks in practice, and (3) the theoretical connection between spectral gap and generalization could be more thoroughly developed."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal presents a feasible approach with careful consideration of computational overhead. The use of stochastic Lanczos iterations with parameters m=20 and Tc=100 is designed to keep the additional computational cost under 5%, which is practical for real-world implementation. The method integrates with standard optimizers like SGD with momentum, making it compatible with existing training pipelines. The experimental domains include standard benchmarks in vision and language tasks, with widely used architectures, ensuring reproducibility. However, there are some feasibility concerns: (1) computing even approximate Hessian information for very large models (e.g., GPT-2) might be more challenging than estimated, (2) the sensitivity of the method to hyperparameters like ρ_ref might require careful tuning, potentially offsetting some of the benefits, and (3) the implementation details for distributed training scenarios are not fully elaborated. Overall, the approach is implementable with current technology and methods, though it may require some refinement and optimization for the largest models."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses an important problem in deep learning optimization - bridging the gap between theoretical understanding of the Edge-of-Stability phenomenon and practical optimizer design. If successful, DCAO could provide significant benefits: (1) improved training stability and convergence speed, (2) better generalization performance, and (3) a concrete demonstration of how theoretical insights can inform practical algorithm development. The potential for 10-20% reduction in training epochs and 0.5-1.0% improvement in test accuracy would be meaningful advances in the field. The approach also has broader implications for understanding the role of curvature in optimization dynamics and implicit regularization. The parameter-efficient training aspect through dynamic freezing of directions associated with low eigenvalues could be particularly valuable for large-scale models. However, the significance is somewhat tempered by the incremental nature of the improvements and the fact that the approach builds upon existing methods rather than introducing a transformative new paradigm."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "justification": "The proposal presents a well-conceived, technically sound approach to bridging theory and practice in deep learning optimization. It directly addresses the task requirements, builds thoughtfully on the literature, and offers a feasible implementation with potential for meaningful impact. The integration of curvature information into practical optimizers with theoretical guarantees represents a valuable contribution to the field.",
+        "strengths": [
+            "Strong alignment with the task of bridging theory and practice in deep learning optimization",
+            "Technically sound approach with well-defined mathematical formulations",
+            "Careful consideration of computational feasibility with bounded overhead",
+            "Comprehensive experimental design with appropriate baselines and metrics",
+            "Theoretical analysis providing convergence guarantees under non-smooth conditions"
+        ],
+        "weaknesses": [
+            "Some overlap with existing approaches like ADLER and Hi-DLR that could be more clearly differentiated",
+            "Theoretical analysis of implicit regularization (Proposition 2) lacks rigorous formulation",
+            "Potential challenges in scaling to very large models not fully addressed",
+            "Sensitivity to reference hyperparameters may require careful tuning"
+        ]
+    }
+}

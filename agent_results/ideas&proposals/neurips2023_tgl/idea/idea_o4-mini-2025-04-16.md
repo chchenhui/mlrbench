@@ -1,0 +1,7 @@
+Title: HyTECL – Hyperbolic Temporal Contrastive Learning for Dynamic Graphs
+
+Motivation:  
+Real-world temporal graphs (e.g., social, financial, biological) often exhibit latent hierarchical or tree-like structures whose dynamics are poorly modeled in Euclidean space. Existing temporal GNNs struggle to capture both hierarchy and evolving patterns, limiting performance in forecasting and anomaly detection tasks. Embedding time-aware representations in hyperbolic space can better reflect underlying hierarchies, but integration with temporal learning remains underexplored.
+
+Main Idea:  
+We propose HyTECL, a novel framework combining hyperbolic graph neural networks with contrastive temporal learning. At each time step, node features and edge updates are embedded via a Hyperbolic Graph Convolutional Layer using exponential and logarithmic maps. To model dynamics, we generate two temporally shifted graph views via augmentations (e.g., time-aware edge masking, subgraph sampling) and optimize a contrastive loss that aligns positive pairs (same node across views) while pushing apart negatives (different nodes or distant timestamps). A temporal memory module aggregates past hyperbolic embeddings to capture long-range dependencies. We evaluate HyTECL on dynamic knowledge graph forecasting and fraud detection benchmarks, anticipating significant gains in accuracy, robustness, and hierarchy preservation. This approach paves the way for scalable, hierarchy-aware temporal graph learning.

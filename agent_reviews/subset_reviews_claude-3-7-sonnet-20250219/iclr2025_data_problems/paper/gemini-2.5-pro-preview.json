@@ -1,0 +1,33 @@
+{
+    "Consistency": {
+        "score": 7,
+        "justification": "The paper demonstrates good consistency between the research idea, proposal, and implementation. The core concept of a hierarchical influence-driven curation pipeline for multi-modal foundation models is maintained throughout. The methodology follows the two-stage approach outlined in the research idea: first clustering data using cross-modal embeddings, then computing influence scores for pruning/reweighting. However, there are some inconsistencies between the proposal and experimental results. The proposal suggested using K≈10^3 clusters, but the experiment used only K=5, which is a significant deviation that likely impacted performance. The proposal anticipated minimal performance degradation (≤1%), but the experimental results show a substantial drop in retrieval metrics (e.g., Recall@1 of 10.00 vs. 32.50 for the full dataset). The paper acknowledges this discrepancy in the analysis section, which helps maintain overall consistency in the narrative."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-structured and clearly written, following a logical progression from introduction to conclusion. The methodology is explained in detail with appropriate mathematical formulations that help readers understand the technical approach. The two-stage pipeline (clustering followed by influence estimation) is articulated clearly, and the experimental setup is well-defined. Figures and tables are effectively used to present results. The analysis section provides a thoughtful discussion of the results, including potential reasons for performance discrepancies. The paper uses consistent terminology throughout and defines technical concepts before using them. The only minor clarity issues are in the experimental results section, where some metrics like 'Relative Training Time' showing 0.00 for all methods could benefit from more explanation, and the relationship between the embedding dimensions mentioned in the methodology (2d) versus the experiment (256) could be clarified."
+    },
+    "Completeness": {
+        "score": 7,
+        "justification": "The paper covers most essential components expected in a research paper on this topic. It provides a comprehensive introduction, detailed methodology, experimental setup, results, analysis, and conclusion. The literature review effectively situates the work within the field of data curation for foundation models. The methodology section is particularly thorough, explaining each stage of the pipeline with mathematical formulations. However, there are some gaps in completeness. The experimental results section is somewhat limited compared to what was proposed - only one dataset (MS COCO subset) was used rather than the three proposed (including Visual Genome and Conceptual Captions). The fairness improvements mentioned in the results are stated qualitatively without quantitative metrics, despite the proposal mentioning specific fairness metrics like performance gap Δ. Additionally, the ablation studies mentioned in the experimental results are described only briefly without detailed results, limiting the depth of analysis on parameter sensitivity."
+    },
+    "Soundness": {
+        "score": 6,
+        "justification": "The paper presents a theoretically sound approach to data curation based on established concepts like influence functions and clustering. The mathematical formulations for influence estimation using low-rank Hessian approximations are well-grounded in prior work. However, there are several issues with the experimental validation that affect soundness. First, the significant performance drop in retrieval metrics (Recall@1 of 10.00 for InfluenceSpace vs. 30.00 for Random Sampling) contradicts the claim that the method maintains competitive performance. Second, the use of only 5 clusters instead of the proposed 10^3 raises questions about whether the method was properly implemented as designed. Third, the fairness improvements are claimed without quantitative evidence. Fourth, the 'Relative Training Time' metric showing 0.00 for all methods suggests measurement issues. The paper acknowledges some of these limitations in the analysis section, which is commendable, but the experimental validation doesn't fully support the theoretical claims made in the proposal."
+    },
+    "OverallAssessment": {
+        "score": 7,
+        "strengths": [
+            "Presents a novel and theoretically well-grounded approach to multi-modal data curation using influence functions",
+            "Provides a detailed mathematical framework for cluster-level influence estimation that extends previous work",
+            "Clearly acknowledges limitations and discusses potential reasons for performance discrepancies",
+            "Addresses an important problem in the field of foundation models that aligns well with the workshop themes"
+        ],
+        "weaknesses": [
+            "Experimental implementation deviates significantly from the proposed methodology (K=5 vs K≈10^3)",
+            "Performance results contradict the anticipated minimal degradation, with InfluenceSpace underperforming random sampling",
+            "Limited experimental validation on only one dataset instead of the three proposed",
+            "Fairness improvements are claimed without quantitative evidence"
+        ]
+    }
+}

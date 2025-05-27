@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal demonstrates excellent alignment with the task description, research idea, and literature review. It directly addresses the workshop's focus on improving reliability, truthfulness, and error detection/correction in LLMs. The proposed ISC-RAR framework implements the core components outlined in the research idea: an internal confidence scorer and a retrieval-augmented corrector working in an iterative process. The proposal also acknowledges and builds upon the literature review, citing relevant works like Han et al. (2024) and Moskvoretskii et al. (2025), while addressing the key challenges identified in the literature review such as error detection accuracy, computational overhead, and balancing correction with generative capabilities. The methodology section provides a comprehensive implementation plan that aligns perfectly with the original idea."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is very well-structured and articulated with clear sections covering background, objectives, methodology, and expected outcomes. The algorithmic steps of the ISC-RAR framework are presented with mathematical formalism that makes the process easy to understand. The experimental design is thoroughly explained with specific datasets, baselines, and evaluation metrics. However, there are a few areas that could benefit from additional clarity: (1) the exact implementation details of the Internal Confidence Scorer could be more specific about how the different signals (token uncertainty, attention patterns) will be combined; (2) the relationship between the confidence threshold θ and its calibration could be elaborated; and (3) some technical details about handling the integration of corrected spans into the original text to maintain coherence could be further explained. Despite these minor points, the overall proposal is highly comprehensible and logically structured."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal offers notable originality by combining several existing concepts into a novel framework. The integration of internal confidence scoring with retrieval-augmented generation in an iterative loop represents a fresh approach to self-correction. While individual components like retrieval-augmented generation and self-correction have been explored separately in the literature (as noted in the references to Han et al. and Moskvoretskii et al.), their combination and the specific implementation of the confidence scorer using both token probabilities and attention patterns is innovative. The proposal also introduces novel aspects in the evaluation methodology, particularly in measuring the trade-offs between trustworthiness and computational costs. However, it builds significantly on existing methods rather than proposing fundamentally new algorithms, which limits its novelty score. The approach is an evolution of existing techniques rather than a revolutionary new paradigm."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal demonstrates strong technical soundness with well-justified methodological choices. The mathematical formulation of the ISC-RAR framework is rigorous and builds on established principles in NLP and machine learning. The confidence scoring mechanism is grounded in uncertainty quantification techniques like negative log-likelihood and entropy, which have theoretical foundations. The retrieval component leverages proven dense retrieval methods. The experimental design is comprehensive, with appropriate baselines, datasets, and evaluation metrics that align with standard practices in the field. The ablation studies are well-designed to isolate the contributions of different components. However, there are some assumptions that could benefit from further justification: (1) the assumption that internal model states correlate with factual accuracy; (2) the effectiveness of the proposed query formulation approach for retrieval; and (3) the potential impact of error propagation through iterations. Despite these minor concerns, the overall approach is technically sound and well-reasoned."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal presents a feasible research plan that could be implemented with current technology and resources. The use of existing pre-trained LLMs, established benchmarks like TruthfulQA and FEVER, and standard retrieval techniques makes the core implementation practical. The iterative nature of the framework is computationally intensive but manageable with modern GPU resources. However, several challenges affect feasibility: (1) accessing internal model states for confidence scoring may be difficult with some black-box LLMs; (2) the computational overhead of multiple iterations could be substantial for large models or long texts; (3) the quality of the knowledge base significantly impacts performance, requiring careful curation; and (4) the human evaluation component for factual accuracy assessment requires significant resources. The proposal acknowledges these challenges and includes reasonable mitigation strategies, such as potentially using smaller, fine-tunable models and setting iteration limits. Overall, the research is implementable but would require substantial computational resources and careful engineering."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses a critical problem in LLM deployment: the lack of trustworthiness due to hallucinations and factual errors. This issue is particularly important in high-stakes domains like healthcare, finance, and legal services, where incorrect information can have serious consequences. The expected 30-50% reduction in error rates would represent a substantial improvement in LLM reliability. The framework's ability to autonomously detect and correct errors without human intervention addresses the scalability limitations of current approaches. The research also contributes to the broader goal of developing self-improving AI systems. The findings regarding the relationship between internal model states and output reliability could inform future LLM architectures. The proposal's impact extends beyond academic contributions to practical applications, potentially enabling safer deployment of LLMs in critical domains. While not completely transformative of the field, the significance is high due to the pressing nature of the problem and the practical utility of the solution."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Excellent alignment with the workshop's focus on building trust in LLMs through improved reliability and error correction",
+            "Well-structured methodology with clear algorithmic steps and comprehensive evaluation plan",
+            "Addresses a critical real-world problem with significant practical implications",
+            "Innovative combination of confidence scoring and retrieval-augmented generation in an iterative framework",
+            "Balanced consideration of both performance improvements and computational trade-offs"
+        ],
+        "weaknesses": [
+            "Some implementation details of the confidence scorer could be more specific, particularly regarding the integration of different signals",
+            "Potential computational overhead of the iterative approach may limit practical deployment in some scenarios",
+            "Relies on assumptions about the correlation between internal model states and factual accuracy that need further validation",
+            "The approach builds on existing techniques rather than proposing fundamentally new algorithms"
+        ]
+    }
+}

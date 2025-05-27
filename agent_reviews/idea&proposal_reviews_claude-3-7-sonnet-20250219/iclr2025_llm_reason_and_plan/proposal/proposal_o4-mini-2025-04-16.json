@@ -1,0 +1,42 @@
+{
+    "Consistency": {
+        "score": 9,
+        "justification": "The proposal aligns exceptionally well with the task description, research idea, and literature review. It directly addresses the workshop's focus on 'Inference Time Scaling for Complex Reasoning Tasks' by proposing the Adaptive Inference Planner (AIP) that dynamically allocates computational resources based on task difficulty. The proposal builds upon the literature review, particularly extending concepts from AdaPlanner (Sun et al., 2023), Dynamic Planning with LLM (Dagan et al., 2023), and AdaLLaVA (Xu et al., 2025). The methodology clearly implements the core idea of adaptive computation for efficient LLM planning, with a reinforcement learning approach that balances task performance and computational cost. The proposal also addresses benchmarking concerns mentioned in the workshop topics by including a comprehensive evaluation plan across multiple reasoning domains."
+    },
+    "Clarity": {
+        "score": 8,
+        "justification": "The proposal is well-structured and clearly articulated. The research objectives, methodology, and expected outcomes are presented in a logical flow. The technical formulations are precise, with mathematical notation properly defining the state representation, difficulty prediction, resource allocation, and reward function. The algorithmic steps are laid out in a step-by-step manner that is easy to follow. The experimental design includes well-defined baselines, metrics, and ablation studies. However, there are a few areas that could benefit from additional clarification: (1) the exact mechanism for how the meta-reasoner integrates with the LLM architecture could be more detailed, (2) the training procedure for the difficulty predictor function f_θ could be more explicitly described, and (3) some of the referenced works (e.g., Xu et al., 2025) appear to be from the future, which creates some confusion."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposal demonstrates notable originality by integrating meta-reasoning with LLM inference for dynamic resource allocation in planning tasks. While adaptive computation and meta-reasoning concepts exist in the literature, the proposal innovates by: (1) creating an end-to-end framework specifically for planning that dynamically adjusts multiple computational parameters (chain-of-thought depth, beam width, tool invocation) based on predicted difficulty, (2) formulating the problem as a reinforcement learning task with a joint reward balancing performance and cost, and (3) applying this approach across diverse planning domains. However, it shares conceptual similarities with AdaPlanner and AdaLLaVA, and the core idea of adaptive computation is not entirely new. The proposal extends and combines existing approaches rather than introducing a fundamentally new paradigm."
+    },
+    "Soundness": {
+        "score": 8,
+        "justification": "The proposal demonstrates strong technical foundations and rigor. The problem formulation is mathematically precise, with clear definitions of the state representation, difficulty prediction function, resource allocation policy, and reward structure. The reinforcement learning approach is well-justified for optimizing the performance-efficiency tradeoff. The experimental design includes appropriate baselines, metrics, and statistical analysis plans. The methodology builds logically on established techniques in RL (specifically PPO) and LLM inference. However, there are some aspects that could benefit from additional theoretical justification: (1) the choice of hidden embedding h_t as the sole input to the difficulty predictor might be limiting, as it may not capture all relevant uncertainty information, (2) the proposal could more thoroughly address potential challenges in training the meta-reasoner alongside or separate from the LLM, and (3) the theoretical guarantees or convergence properties of the proposed algorithm are not discussed."
+    },
+    "Feasibility": {
+        "score": 7,
+        "justification": "The proposal is largely feasible with existing technology and methods, though it presents some implementation challenges. The core components—LLMs, reinforcement learning algorithms (PPO), and the benchmarking environments (ALFWorld, MiniWoB++, GSM8K)—are all established and available. The timeline is reasonable, with appropriate milestones spread across 12 months. However, several practical challenges may require significant effort: (1) integrating the meta-reasoner with LLM inference in a computationally efficient manner could be complex, especially if modifying the attention mechanism or internal LLM states, (2) training the RL policy might require substantial computational resources and careful hyperparameter tuning to balance the performance-efficiency tradeoff, (3) the proposal doesn't fully address how to handle potential instability in RL training when the underlying LLM and meta-reasoner interact, and (4) generalizing the meta-reasoner across diverse domains without retraining from scratch, as claimed in the expected outcomes, may prove more difficult than anticipated."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The proposal addresses an important problem in LLM inference efficiency and planning capabilities, with potential for significant impact. If successful, the Adaptive Inference Planner could: (1) substantially reduce computational costs (20-50% as claimed) while maintaining performance, which has major implications for deploying LLMs in resource-constrained environments, (2) improve performance on complex planning tasks by allocating resources more intelligently, (3) provide a general framework that could be extended to other domains beyond those tested, and (4) offer interpretability benefits through the difficulty predictions. The work directly addresses the workshop's focus on scaling inference for complex reasoning tasks and could influence how future LLM systems approach resource allocation. The potential applications in robotics, edge devices, and real-time systems further enhance its significance. However, the impact might be somewhat limited by the need to integrate this approach with proprietary LLM architectures for widespread adoption."
+    },
+    "OverallAssessment": {
+        "score": 8,
+        "strengths": [
+            "Well-formulated mathematical framework for adaptive inference with clear technical definitions",
+            "Comprehensive experimental design with appropriate baselines, metrics, and ablation studies",
+            "Addresses a significant problem in LLM inference efficiency with potential for substantial impact",
+            "Integrates concepts from multiple research areas (RL, meta-reasoning, planning) in a coherent framework",
+            "Practical timeline with clear milestones and deliverables"
+        ],
+        "weaknesses": [
+            "Some implementation details regarding the integration of the meta-reasoner with LLM architecture could be more specific",
+            "The generalization claim across diverse domains without retraining may be overly optimistic",
+            "Limited discussion of potential challenges in training stability when the meta-reasoner and LLM interact",
+            "The novelty is incremental rather than transformative, building primarily on existing adaptive computation concepts"
+        ]
+    }
+}

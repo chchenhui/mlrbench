@@ -1,0 +1,9 @@
+**Title:** Equivariant World Models for Sample-Efficient Robotic Learning  
+
+**Motivation:** Robotic systems must operate in environments with inherent geometric structure (e.g., rotational symmetry in manipulation or translational symmetry in navigation). Current world models, which predict environment dynamics and rewards, often fail to exploit these symmetries, leading to high sample complexity and poor generalization. Encoding geometric priors into such models could dramatically improve data efficiency and adaptability to unseen spatial configurations.  
+
+**Main Idea:** We propose a framework for building **equivariant world models** that explicitly respect environmental symmetries (e.g., SE(2) or SE(3) groups) through group-equivariant neural networks. The model will predict next-state transitions and rewards while preserving equivariance to transformations like rotations or translations. For example, equivariant convolutional layers or steerable kernels will enforce symmetry constraints in visual inputs and physical dynamics. We will train the model using reinforcement learning in simulation, leveraging symmetry-aware data augmentation, and validate it on real robots performing tasks like object manipulation or navigation.  
+
+**Expected Outcomes:** This approach should reduce training data requirements and improve generalization to symmetric variations (e.g., rotated objects or shifted goals). Benchmarks against non-equivariant baselines will quantify gains in sample efficiency and robustness.  
+
+**Impact:** Successful implementation would enable robots to rapidly adapt to geometric variations in the real world, advancing applications in unstructured environments like homes or warehouses. This bridges geometric deep learning with embodied AI, aligning with the workshop’s focus on symmetry-aware neural representations.
