@@ -100,7 +100,7 @@ python mlrbench/evals/review_idea.py
 
 ## 📄 Citation
 Please cite our paper if you find our work helpful:
-```
+```bibtex
 @article{chen2025mlrbench,
       title={MLR-Bench: Evaluating AI Agents on Open-Ended Machine Learning Research}, 
       author={Chen, Hui and Xiong, Miao and Lu, Yujie and Han, Wei and Deng, Ailin and He, Yufei and Wu, Jiaying and Li, Yibo and Liu, Yue and Hooi, Bryan},
