@@ -61,7 +61,7 @@ export OPENROUTER_API_KEY="your-openrouter-api-key-here"
 
 ## 🚀 MLR Agent
 
-If you want to run our agent in an end-to-end manner, please create ```your_task_folder``` and put ```your_task``` containing a ```task.md``` in it:
+If you want to run our agent in an end-to-end manner, please create ```your_task_folder``` and put ```your_task``` containing a ```task.md``` inside. Note that our agent will sequentially complete all tasks in ```your_task_folder```. Therefore, if you only need to complete one task, please place only that task in ```your_task_folder```.
 
 ```
 .
