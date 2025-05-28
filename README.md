@@ -66,10 +66,10 @@ If you want to run our agent in an end-to-end manner, please create ```your_task
 ```
 .
 └── <your_task_folder>
-    ├── <your_task1>
-    │      └── task.md
-    └── <your_task2>
-           └── task.md
+        ├── <your_task1>
+        │      └── task.md
+        └── <your_task2>
+               └── task.md
 ```
 Then, run the following command:
 ```bash
@@ -95,7 +95,10 @@ python mlrbench/evals/overall_review.py
 ```
 For stepwise evaluation, please run
 ```bash
-python mlrbench/evals/review_idea.py
+python mlrbench/evals/review_idea.py # review your idea
+python mlrbench/evals/review_proposal.py # review your proposal
+python mlrbench/evals/review_experiments.py # review your experimental results
+python mlrbench/evals/review_writeup.py # review your writing
 ```
 ## Acknowledgement
 Implementation of (multimodal) LLM engine in our codebase is inspired by the [VisionAgent](https://github.com/landing-ai/vision-agent.git) project. We are grateful for their pioneering efforts.
