@@ -49,6 +49,7 @@ AVAILABLE_LLMS = {
     "meta-llama/llama-4-scout",
     "google/gemini-2.5-pro-exp-03-25",
     "google/gemini-2.5-pro-preview-03-25",
+    "google/gemini-2.5-pro-preview-05-06",
     "google/gemini-2.5-pro-preview",
     "google/gemini-2.5-flash-preview",
     "google/gemini-2.5-flash-preview:thinking",
