@@ -27,6 +27,7 @@ AVAILABLE_LMMS = {
     # OpenRouter models
     "OpenRouter":[
     "google/gemini-2.5-pro-preview",
+    "google/gemini-2.5-pro-preview-05-06",
     "openai/codex-mini",
     ],
 }
