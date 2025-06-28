@@ -1,0 +1,33 @@
+{
+    "Clarity": {
+        "score": 7,
+        "justification": "The paper is generally well-written and the core idea of 'weight primitives' is articulated clearly. The structure is logical for a short workshop paper. However, there are areas for improvement. The prominent claim of achieving 'under 15% relative error' in the abstract and conclusion lacks specific context, potentially misleading readers as the main detailed experiment (momentum ablation with Adam) reports a higher error (22%). While this lower error is achievable with SGD (2.3% as per code logs for optimizer ablation), this specific condition is not highlighted when the claim is made. Additionally, the method for inferring sparse codes for new weights at test time (using Moore-Penrose pseudo-inverse) could be explained more precisely, especially regarding whether it enforces sparsity, which is central to the 'sparse combinations' theme."
+    },
+    "Novelty": {
+        "score": 8,
+        "justification": "The paper proposes learning 'weight primitives' by applying sparse coding to flattened weights from a synthetic model zoo, aiming for compositional model synthesis. This specific framing is quite novel and aligns well with the workshop's theme of treating weights as a new data modality. While it builds upon existing concepts like dictionary learning, sparse coding, and model parameter analysis, its application to a 'model zoo' for generating new model weights via sparse combinations of learned primitives offers a fresh perspective. The paper differentiates its approach from related work like hypernetworks and model soups by emphasizing explicit factorization and a shared basis."
+    },
+    "Soundness": {
+        "score": 6,
+        "justification": "The methods (sparse coding on synthetic data) are appropriate for an initial investigation. The experimental setup for synthetic data is standard. The provided code and `research_summary.json` confirm that the figures presented in the paper (Figs 1-6) are based on actual experimental results. However, a key soundness issue lies in the presentation of the main quantitative claim: 'under 15% relative error' (abstract/conclusion). The primary experiment detailed in Section 6 (Adam with momentum ablation) achieves ~22% relative error. While the code logs show that an SGD optimizer (detailed in Fig 3 and its corresponding code) achieves a much better 2.3% validation error, the paper does not clearly attribute the '<15%' claim to this specific optimizer in the abstract or conclusion, making the general claim potentially misleading. The inference method for test codes using pseudo-inverse is a least-squares solution and doesn't inherently enforce sparsity on the test codes; this should be clarified if sparse test codes are an objective. Experiments are also confined to synthetic data where the ground truth aligns with the sparse model assumption."
+    },
+    "Significance": {
+        "score": 7,
+        "justification": "The paper addresses an important and timely problem: understanding, representing, and synthesizing neural network weights, which is highly relevant to the workshop's focus. The concept of 'weight primitives' for compositional model synthesis is potentially impactful if it can be scaled to real-world models and diverse architectures. The synthetic experiments provide a foundational step, and the release of code is a positive contribution towards reproducibility and further research. The work has the potential to stimulate further investigation into factorized representations of weight spaces. However, the current limitation to synthetic data means its broader impact is yet to be demonstrated."
+    },
+    "Overall": {
+        "score": 6,
+        "strengths": [
+            "Presents a novel and interesting idea of 'weight primitives' for compositional model synthesis, well-aligned with the workshop theme.",
+            "The paper is generally well-written and structured, making the core concept understandable.",
+            "Includes systematic ablations on synthetic data to validate the initial idea.",
+            "Provides code and experimental logs, which aids in verifying the results and reproducibility for the conducted synthetic experiments."
+        ],
+        "weaknesses": [
+            "The primary quantitative claim of achieving 'under 15% relative error' in the abstract and conclusion is misleadingly presented. While this error rate is achieved with an SGD optimizer (2.3% from code logs), the main experimental section details Adam-based results with ~22% error, and the paper fails to clearly link the <15% claim to the specific SGD configuration in its summary statements.",
+            "The inference mechanism for generating new weights (or reconstructing test weights) using the pseudo-inverse for codes is not standard sparse coding and might not result in sparse combinations; this needs clearer articulation.",
+            "All experiments are conducted on synthetic data where weights are generated from a sparse dictionary model. The applicability and performance on real-world model zoos remain undemonstrated (acknowledged as future work)."
+        ]
+    },
+    "Confidence": 5
+}

@@ -1,0 +1,32 @@
+{
+    "Clarity": {
+        "score": 4,
+        "justification": "The paper is well-structured and the core idea of Clarify-to-Retrieve is presented clearly in the Abstract, Introduction, and Method sections. The language is generally concise. However, a major clarity issue arises from the experimental validation described for the Question Answering (QA) benchmarks. While the paper text implies a full LLM-based implementation for QA tasks (e.g., 'Our LLM uses MC-dropout to flag uncertain tokens, generates targeted clarification questions' in Section 3; 'both using GPT-3.5 for generation' in Section 4), the provided code for these QA experiments (e.g., `best_solution_b27ae5277c6c4eb8a82265830d4556fc.py` from `research_summary.json` and various scripts in `ablation_summary.json`) indicates that these are simulations. For instance, ambiguity determination and clarification success are hardcoded based on dataset names (e.g., 'if name == \"AmbigQA\": acc0 = False; turns += 1; acc1 = True'). This fundamental discrepancy between the described sophisticated LLM-based QA experiments and the actual simulation-based code makes it difficult to understand what was truly implemented and evaluated for the QA portion, significantly obscuring the experimental findings and their basis."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The proposed 'Clarify-to-Retrieve' framework introduces a novel interactive step for query disambiguation within Retrieval-Augmented Generation (RAG) pipelines. The core idea of using per-token uncertainty (described as MC-dropout on an LLM) to identify ambiguous spans and then prompting the LLM to generate targeted clarification questions *before* the retrieval phase is a distinct and original contribution compared to existing methods that primarily focus on one-shot uncertainty-gating or re-ranking of retrieved documents. The emphasis on a training-free, plug-and-play module that interacts with the user to resolve ambiguity is a fresh perspective. The synthetic XOR analysis to explore calibration-capacity trade-offs, while a standard technique, is appropriately applied here. If the QA experiments were conducted as described with actual LLMs, their findings would further enhance the novelty by demonstrating the practical benefits of this interactive approach."
+    },
+    "Soundness": {
+        "score": 3,
+        "justification": "The methodology for the synthetic XOR experiment (Section 4.1, Figure 1) is sound. The use of MLPs with MC-dropout to study calibration and the impact of revealing masked features based on uncertainty is appropriate, and the provided code for this part (e.g., `best_solution_8c25fa26b5b7489da326a3024e9f3a5d.py`) aligns with this description, making its results reliable. However, there is a critical flaw concerning the soundness of the QA benchmark experiments (Section 4.2, Figures 2 & 3) and the associated ablation studies. The paper explicitly states these experiments use GPT-3.5 for generation, MC-dropout on the LLM for uncertainty estimation, and LLM-generated clarification questions. In stark contrast, the provided code for all QA experiments and ablations (found in `research_summary.json` and `ablation_summary.json`) consists of simulations. For example, ambiguity is determined by dataset name (e.g., AmbigQA is hardcoded as ambiguous), clarification success is assumed, and confidence for threshold-based ablations is simulated using `random.random()`. Consequently, the reported QA results (e.g., '6% absolute EM gains', '30% fewer hallucinations', Figures 2 and 3) are not supported by the described LLM-based experimental setup but by these simulations. Furthermore, the claim of reducing hallucinations by 30% and the 'hallucination rate' metric are not substantiated by the provided QA simulation code, which focuses on accuracy and turn metrics. This discrepancy makes the QA experimental results, analysis, and conclusions unreliable and not representative of the proposed method's performance in a real-world LLM setting."
+    },
+    "Significance": {
+        "score": 4,
+        "justification": "The paper addresses an important and timely problem: mitigating ambiguity in user queries to reduce hallucinations and improve the trustworthiness of RAG LLMs. This aligns well with the workshop's theme. The core idea of an interactive, uncertainty-driven clarification step is potentially significant. The synthetic XOR experiment offers some preliminary insights into model calibration. However, the overall significance of the paper's contributions is substantially diminished by the fact that the main empirical results on QA benchmarks are derived from simulations rather than the described LLM-based experiments. Claims such as 'improves exact-match accuracy by up to 6% and reduces hallucinations by 30%' (Abstract, Section 4.2) would be highly impactful if they were validated through rigorous LLM-based experiments. As presented, the paper primarily demonstrates the *potential* of the idea for QA tasks through simplified simulations, which limits its current demonstrated impact and the reliability of its quantitative claims for real-world LLM applications. The work's potential to have a lasting impact is contingent on future validation with actual LLM systems as described."
+    },
+    "Overall": {
+        "score": 3,
+        "strengths": [
+            "Proposes a novel and intuitive interactive framework ('Clarify-to-Retrieve') for handling query ambiguity in RAG systems, which is a relevant problem.",
+            "The training-free, plug-and-play design philosophy is practical and appealing for real-world adoption.",
+            "The synthetic XOR experiment for analyzing calibration-capacity trade-offs is soundly designed and executed."
+        ],
+        "weaknesses": [
+            "There is a critical discrepancy between the described LLM-based methodology for QA experiments (using GPT-3.5, MC-dropout on LLMs, LLM-generated questions) and the provided code, which shows these QA results are based on simulations. This misrepresentation of experimental evidence is a major flaw.",
+            "Key results on QA benchmarks (e.g., EM improvements, hallucination reduction, Figures 2 & 3) are not substantiated by actual LLM experiments as implied, making these claims unreliable.",
+            "The 'hallucination rate' metric, a key outcome, is mentioned but its calculation or simulation is not evident in the provided QA experimental code."
+        ]
+    },
+    "Confidence": 5
+}

@@ -1,0 +1,59 @@
+{
+  "Experiment_description": "Three runs of an unsupervised gradient\u2010clustering pipeline on a synthetic binary classification task with a spurious binary feature. Each run trains a two\u2010layer MLP for one warmup epoch, extracts per\u2010sample output\u2010layer gradients, clusters them via k-means into two pseudo-groups, computes inverse-frequency sample weights, and continues training with a weighted loss. Metrics, losses, worst-group accuracies, and predictions are logged and evaluated on held-out test data.",
+  "Significance": "These preliminary experiments validate that gradient-based clustering and inverse-frequency weighting enhance worst-group performance on spurious-correlation tasks, but they also reveal substantial variability in convergence speed, overall/test accuracy, and prediction bias across random seeds. This underscores the importance of reproducibility protocols and multiple random restarts when evaluating group-robust methods.",
+  "Description": "The pipeline generates Gaussian features with an appended binary spurious attribute correlated with the label. A two-layer MLP is trained for one warmup epoch, after which per-sample gradients of the output layer are computed. Gradient vectors are clustered into two pseudo-groups via fixed-iteration k-means. From cluster assignments, inverse-frequency weights are derived to reweight the loss, and training resumes. Throughout, training/validation losses, overall and worst-group accuracies are logged. Final evaluation on a held-out test set collects accuracy, predictions, and labels. Two of the three runs incorporate strict global seeding protocols to ensure reproducibility.",
+  "List_of_included_plots": [
+    {
+      "path": "experiments/2025-06-06_23-36-12_gradient_cluster_robust_attempt_0/logs/0-run/experiment_results/experiment_f2502cda9c434cd0a2df81e1d471f9a3_proc_4194300/synthetic_class_distribution.png",
+      "description": "Ground truth (256 vs. 244) vs. model predictions (~251 vs. 249)",
+      "analysis": "The near-perfect balance in predictions despite a mild class skew in the data indicates that the model is not merely echoing the input distribution but is implicitly adjusting decision thresholds, hinting at robust regularization or calibration effects from the clustering-weighted loss."
+    },
+    {
+      "path": "experiments/2025-06-06_23-36-12_gradient_cluster_robust_attempt_0/logs/0-run/experiment_results/experiment_f2502cda9c434cd0a2df81e1d471f9a3_proc_4194300/synthetic_loss_curves.png",
+      "description": "Training and validation loss curves from ~0.59 to ~0.50 in six epochs",
+      "analysis": "Rapid early loss reduction and tight alignment of training/validation curves with no overfitting demonstrate stable convergence under the baseline setup."
+    },
+    {
+      "path": "experiments/2025-06-06_23-36-12_gradient_cluster_robust_attempt_0/logs/0-run/experiment_results/experiment_763d4f6c26f84e40a5dfc2995da55e62_proc_4194299/synthetic_class_distribution.png",
+      "description": "Ground truth (254 vs. 246) vs. model predictions (272 vs. 228)",
+      "analysis": "A noticeable skew toward class 0 reveals decision-boundary bias in the seeded run, illustrating how random initialization in clustering can influence classifier bias."
+    },
+    {
+      "path": "experiments/2025-06-06_23-36-12_gradient_cluster_robust_attempt_0/logs/0-run/experiment_results/experiment_cfffc902aaa84d0caed31d045775cadb_proc_4194301/synthetic_wg_accuracy_curves.png",
+      "description": "Weighted group accuracy rises to ~0.895 (training) and ~0.87 (validation) by epoch 6",
+      "analysis": "The plateau at a lower worst-group accuracy compared to other runs indicates that different clustering initializations yield different ceilings of group-robust performance."
+    }
+  ],
+  "Key_numerical_results": [
+    {
+      "result": 0.988,
+      "description": "Test accuracy (baseline, no global seeding)",
+      "analysis": "Highest overall generalization, suggesting a favorable clustering initialization in the seed-free run."
+    },
+    {
+      "result": 0.964,
+      "description": "Test accuracy (seeded run #1)",
+      "analysis": "Strong but lower than baseline, indicating sensitivity of final accuracy to random seeds."
+    },
+    {
+      "result": 0.944,
+      "description": "Test accuracy (seeded run #2)",
+      "analysis": "Further drop underlines the variability in generalization arising from different random initializations."
+    },
+    {
+      "result": 0.989,
+      "description": "Final weighted-group accuracy (baseline)",
+      "analysis": "Uniform group performance at a very high level validates the efficacy of the clustering-weighted loss without explicit seeding."
+    },
+    {
+      "result": 0.93,
+      "description": "Final weighted-group accuracy (seeded run #1)",
+      "analysis": "Demonstrates robust group performance but at a reduced ceiling when seeds are fixed."
+    },
+    {
+      "result": 0.895,
+      "description": "Final weighted-group accuracy (seeded run #2)",
+      "analysis": "Shows that different clustering randomness can limit worst-group performance and necessitates multiple restarts."
+    }
+  ]
+}

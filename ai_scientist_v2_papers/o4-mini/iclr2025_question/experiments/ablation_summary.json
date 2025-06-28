@@ -1,0 +1,1423 @@
+[
+  {
+    "overall_plan": "Ablation name: Head-Only Fine-Tuning.\nBelow is a single\u2010file Python script implementing the head\u2010only fine\u2010tuning ablation: all BERT encoder parameters are frozen and only the final classification head is trained. It records per\u2010epoch train/validation losses, vote\u2010 and KL\u2010based detection metrics, final predictions, and ground truth in a nested dict under `\"head_only\"`, and saves everything to `working/experiment_data.npy`.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "training loss",
+            "lower_is_better": true,
+            "description": "Final training loss",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.683,
+                "best_value": 0.683
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.6736,
+                "best_value": 0.6736
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.6807,
+                "best_value": 0.6807
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Final validation loss",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.6846,
+                "best_value": 0.6846
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.6693,
+                "best_value": 0.6693
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.6797,
+                "best_value": 0.6797
+              }
+            ]
+          },
+          {
+            "metric_name": "detection AUC (vote)",
+            "lower_is_better": false,
+            "description": "Detection AUC using vote method",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.5145,
+                "best_value": 0.5145
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.5314,
+                "best_value": 0.5314
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.5218,
+                "best_value": 0.5218
+              }
+            ]
+          },
+          {
+            "metric_name": "detection DES (vote)",
+            "lower_is_better": true,
+            "description": "Detection DES using vote method",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.0857,
+                "best_value": 0.0857
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.0886,
+                "best_value": 0.0886
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.087,
+                "best_value": 0.087
+              }
+            ]
+          },
+          {
+            "metric_name": "detection AUC (KL)",
+            "lower_is_better": false,
+            "description": "Detection AUC using KL method",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.5176,
+                "best_value": 0.5176
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.5257,
+                "best_value": 0.5257
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.5111,
+                "best_value": 0.5111
+              }
+            ]
+          },
+          {
+            "metric_name": "detection DES (KL)",
+            "lower_is_better": true,
+            "description": "Detection DES using KL method",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.0863,
+                "best_value": 0.0863
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.0876,
+                "best_value": 0.0876
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.0852,
+                "best_value": 0.0852
+              }
+            ]
+          },
+          {
+            "metric_name": "test accuracy",
+            "lower_is_better": false,
+            "description": "Test set accuracy",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.534,
+                "best_value": 0.534
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.612,
+                "best_value": 0.612
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.586,
+                "best_value": 0.586
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os\nimport random, re\nimport nltk\nimport torch\nimport numpy as np\nimport torch.nn.functional as F\nfrom nltk.corpus import wordnet\nfrom datasets import load_dataset\nfrom torch.utils.data import DataLoader, TensorDataset\nfrom transformers import BertTokenizerFast, BertForSequenceClassification\nfrom torch.optim import Adam\nfrom sklearn.metrics import roc_auc_score\n\n# setup\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\nnltk.download(\"wordnet\", quiet=True)\n\n\ndef generate_paraphrases(text, K):\n    words = text.split()\n    paras = []\n    for _ in range(K):\n        new = words.copy()\n        for idx in random.sample(range(len(words)), min(2, len(words))):\n            w = re.sub(r\"\\W+\", \"\", words[idx])\n            syns = wordnet.synsets(w)\n            lemmas = {\n                l.name().replace(\"_\", \" \")\n                for s in syns\n                for l in s.lemmas()\n                if l.name().lower() != w.lower()\n            }\n            if lemmas:\n                new[idx] = random.choice(list(lemmas))\n        paras.append(\" \".join(new))\n    return paras\n\n\ndatasets_info = {\n    \"sst2\": (\"glue\", \"sst2\", \"sentence\", \"label\"),\n    \"yelp_polarity\": (\"yelp_polarity\", None, \"text\", \"label\"),\n    \"imdb\": (\"imdb\", None, \"text\", \"label\"),\n}\n\n# hyperparams\ntrain_size, val_size = 5000, 500\nK, epochs, bs, lr = 5, 5, 32, 2e-5\n\ntokenizer = BertTokenizerFast.from_pretrained(\"bert-base-uncased\")\nexperiment_data = {\"head_only\": {}}\n\nfor name, (ds, sub, text_col, label_col) in datasets_info.items():\n    # load slices\n    ds_train = (\n        load_dataset(ds, sub, split=\"train\") if sub else load_dataset(ds, split=\"train\")\n    )\n    ds_val = load_dataset(ds, sub, split=\"validation\" if sub else \"test\")\n    ds_train = ds_train.shuffle(42).select(range(train_size))\n    ds_val = ds_val.shuffle(42).select(range(val_size))\n    texts_train, labels_train = ds_train[text_col], ds_train[label_col]\n    texts_val, labels_val = ds_val[text_col], ds_val[label_col]\n    paras = {i: generate_paraphrases(t, K) for i, t in enumerate(texts_val)}\n\n    # tokenize\n    tr_enc = tokenizer(texts_train, truncation=True, padding=True, return_tensors=\"pt\")\n    va_enc = tokenizer(texts_val, truncation=True, padding=True, return_tensors=\"pt\")\n    train_ds = TensorDataset(\n        tr_enc[\"input_ids\"], tr_enc[\"attention_mask\"], torch.tensor(labels_train)\n    )\n    val_ds = TensorDataset(\n        va_enc[\"input_ids\"], va_enc[\"attention_mask\"], torch.tensor(labels_val)\n    )\n    tr_loader = DataLoader(train_ds, batch_size=bs, shuffle=True)\n    va_loader = DataLoader(val_ds, batch_size=bs)\n\n    # model init + freeze BERT encoder\n    model = BertForSequenceClassification.from_pretrained(\n        \"bert-base-uncased\", num_labels=2\n    ).to(device)\n    for param in model.bert.parameters():\n        param.requires_grad = False\n    optimizer = Adam(model.classifier.parameters(), lr=lr)\n\n    # prepare storage\n    experiment_data[\"head_only\"][name] = {\n        \"losses\": {\"train\": [], \"val\": []},\n        \"metrics\": {\"detection\": []},\n        \"predictions\": [],\n        \"ground_truth\": labels_val,\n    }\n\n    # training loop\n    for epoch in range(1, epochs + 1):\n        model.train()\n        train_losses = []\n        for ids, mask, labels in tr_loader:\n            ids, mask, labels = ids.to(device), mask.to(device), labels.to(device)\n            optimizer.zero_grad()\n            out = model(input_ids=ids, attention_mask=mask, labels=labels)\n            out.loss.backward()\n            optimizer.step()\n            train_losses.append(out.loss.item())\n        experiment_data[\"head_only\"][name][\"losses\"][\"train\"].append(\n            {\"epoch\": epoch, \"loss\": float(np.mean(train_losses))}\n        )\n\n        model.eval()\n        val_losses = []\n        with torch.no_grad():\n            for ids, mask, labels in va_loader:\n                ids, mask, labels = ids.to(device), mask.to(device), labels.to(device)\n                out = model(input_ids=ids, attention_mask=mask, labels=labels)\n                val_losses.append(out.loss.item())\n        val_loss = float(np.mean(val_losses))\n        experiment_data[\"head_only\"][name][\"losses\"][\"val\"].append(\n            {\"epoch\": epoch, \"loss\": val_loss}\n        )\n        print(f\"{name} Epoch {epoch}: val_loss={val_loss:.4f}\")\n\n        # detection metrics\n        uncs_vote, uncs_kl, errs = [], [], []\n        for i, txt in enumerate(texts_val):\n            probs, preds = [], []\n            for variant in [txt] + paras[i]:\n                enc = tokenizer(\n                    variant, return_tensors=\"pt\", truncation=True, padding=True\n                ).to(device)\n                with torch.no_grad():\n                    logits = model(**enc).logits\n                p = torch.softmax(logits, dim=-1).squeeze(0).cpu()\n                probs.append(p)\n                preds.append(int(p.argmax().item()))\n            maj = max(set(preds), key=preds.count)\n            uncs_vote.append(1 - preds.count(maj) / len(preds))\n            kl_vals = []\n            for a in range(len(probs)):\n                for b in range(a + 1, len(probs)):\n                    P, Q = probs[a], probs[b]\n                    kl1 = F.kl_div(Q.log(), P, reduction=\"sum\").item()\n                    kl2 = F.kl_div(P.log(), Q, reduction=\"sum\").item()\n                    kl_vals.append(0.5 * (kl1 + kl2))\n            uncs_kl.append(float(np.mean(kl_vals)))\n            errs.append(int(preds[0] != int(labels_val[i])))\n        try:\n            auc_v = roc_auc_score(errs, uncs_vote)\n        except:\n            auc_v = 0.5\n        try:\n            auc_k = roc_auc_score(errs, uncs_kl)\n        except:\n            auc_k = 0.5\n        des_v = auc_v / (K + 1)\n        des_k = auc_k / (K + 1)\n        experiment_data[\"head_only\"][name][\"metrics\"][\"detection\"].append(\n            {\n                \"epoch\": epoch,\n                \"auc_vote\": auc_v,\n                \"DES_vote\": des_v,\n                \"auc_kl\": auc_k,\n                \"DES_kl\": des_k,\n            }\n        )\n        print(\n            f\"  AUC_vote={auc_v:.4f}, DES_vote={des_v:.4f}, AUC_kl={auc_k:.4f}, DES_kl={des_k:.4f}\"\n        )\n\n    # final predictions\n    preds = []\n    model.eval()\n    with torch.no_grad():\n        for ids, mask, _ in va_loader:\n            ids, mask = ids.to(device), mask.to(device)\n            logits = model(input_ids=ids, attention_mask=mask).logits\n            preds.extend(torch.argmax(logits, -1).cpu().tolist())\n    experiment_data[\"head_only\"][name][\"predictions\"] = preds\n\n# save\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n    experiment_data = {}\n\nfor ds_name, ds_data in experiment_data.get(\"head_only\", {}).items():\n    # Loss curves\n    try:\n        losses = ds_data[\"losses\"]\n        epochs = [e[\"epoch\"] for e in losses[\"train\"]]\n        train_l = [e[\"loss\"] for e in losses[\"train\"]]\n        val_l = [e[\"loss\"] for e in losses[\"val\"]]\n        plt.figure()\n        plt.plot(epochs, train_l, label=\"Train Loss\")\n        plt.plot(epochs, val_l, label=\"Val Loss\")\n        plt.xlabel(\"Epoch\")\n        plt.ylabel(\"Loss\")\n        plt.title(f\"{ds_name} Loss Curves\\nHead Only\")\n        plt.legend()\n        plt.savefig(os.path.join(working_dir, f\"{ds_name}_head_only_loss_curves.png\"))\n        plt.close()\n    except Exception as e:\n        print(f\"Error creating loss plot for {ds_name}: {e}\")\n        plt.close()\n\n    # Detection AUC curves\n    try:\n        metrics = ds_data[\"metrics\"][\"detection\"]\n        epochs = [m[\"epoch\"] for m in metrics]\n        auc_vote = [m[\"auc_vote\"] for m in metrics]\n        auc_kl = [m[\"auc_kl\"] for m in metrics]\n        plt.figure()\n        plt.plot(epochs, auc_vote, label=\"AUC Vote\")\n        plt.plot(epochs, auc_kl, label=\"AUC KL\")\n        plt.xlabel(\"Epoch\")\n        plt.ylabel(\"AUC\")\n        plt.title(f\"{ds_name} Detection AUC Curves\\nHead Only\")\n        plt.legend()\n        plt.savefig(os.path.join(working_dir, f\"{ds_name}_head_only_detection_auc.png\"))\n        plt.close()\n    except Exception as e:\n        print(f\"Error creating detection AUC plot for {ds_name}: {e}\")\n        plt.close()\n\n    # Detection DES curves\n    try:\n        des_vote = [m[\"DES_vote\"] for m in metrics]\n        des_kl = [m[\"DES_kl\"] for m in metrics]\n        plt.figure()\n        plt.plot(epochs, des_vote, label=\"DES Vote\")\n        plt.plot(epochs, des_kl, label=\"DES KL\")\n        plt.xlabel(\"Epoch\")\n        plt.ylabel(\"Detection Score (normalized)\")\n        plt.title(f\"{ds_name} Detection DES Curves\\nHead Only\")\n        plt.legend()\n        plt.savefig(os.path.join(working_dir, f\"{ds_name}_head_only_detection_des.png\"))\n        plt.close()\n    except Exception as e:\n        print(f\"Error creating detection DES plot for {ds_name}: {e}\")\n        plt.close()\n",
+    "plot_plan": "We load the saved experiment data and iterate over each dataset under the \u201chead_only\u201d setting. For each dataset we extract the training and validation losses per epoch and plot them together with clear axis labels and a title indicating the dataset name and \u201cHead Only.\u201d Next we pull the detection metrics (AUC for voting and KL) over epochs and plot both curves in one figure. Then we plot the normalized detection scores (DES_vote and DES_kl) versus epochs in a separate figure. Each of these plotting steps is wrapped in a try-except block that prints any errors, always closes the figure, and saves the plot to the working directory with a descriptive filename. All plotting uses basic matplotlib and only existing data from the .npy file.",
+    "plot_analyses": [
+      {
+        "analysis": "yelp_polarity Loss Curves (Head Only) shows both training and validation loss decreasing steadily over five epochs, from roughly 0.696 down to 0.674 for training and 0.696 down to 0.669 for validation. There\u2019s no sign of overfitting; the validation curve remains slightly below the training curve by epoch 5, indicating stable generalization and successful convergence within five epochs.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9b232c90eb8248edba7db412eecf37cb_proc_164440/yelp_polarity_head_only_loss_curves.png"
+      },
+      {
+        "analysis": "sst2 Detection AUC Curves (Head Only) reveals that the KL-based uncertainty metric consistently outperforms the simple vote-based metric at every epoch. KL-AUC starts around 0.516, peaks at about 0.5205 in epoch 3, and then gently declines to ~0.5175 by epoch 5. The vote-based AUC fluctuates around random chance (0.5), dipping as low as ~0.494 in epoch 4 before recovering to ~0.515 in epoch 5, suggesting instability and weaker discriminative power for vote divergence on SST2.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9b232c90eb8248edba7db412eecf37cb_proc_164440/sst2_head_only_detection_auc.png"
+      },
+      {
+        "analysis": "sst2 Detection DES Curves (Head Only) indicates that normalized DES-KL detection scores hover around 0.086\u20130.087 across epochs, peaking at ~0.0868 in epoch 3 before a slight decline. DES-Vote scores are lower and more variable, ranging from ~0.0828 to ~0.0858, with its best performance in epoch 5. Overall, DES-KL offers a consistently stronger detection signal than DES-Vote for this task.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9b232c90eb8248edba7db412eecf37cb_proc_164440/sst2_head_only_detection_des.png"
+      },
+      {
+        "analysis": "imdb Loss Curves (Head Only) demonstrates a comparable learning pattern to Yelp: training loss steadily declines from ~0.702 to ~0.681 and validation loss from ~0.692 to ~0.679 across five epochs. The gap between train and validation losses remains narrow, confirming good fit without evident overfitting by epoch 5.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9b232c90eb8248edba7db412eecf37cb_proc_164440/imdb_head_only_loss_curves.png"
+      },
+      {
+        "analysis": "yelp_polarity Detection AUC Curves (Head Only) shows a strong early gain for the vote-based metric, jumping to ~0.535 in epoch 2 before dipping to ~0.517 at epoch 4 and recovering to ~0.532 by epoch 5. The KL-based metric climbs steadily, peaking at ~0.538 in epoch 4 and then slightly falling to ~0.526. The KL measure overtakes vote-based detection by epoch 4, suggesting that KL divergence may provide more reliable uncertainty estimates at later stages of fine-tuning.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9b232c90eb8248edba7db412eecf37cb_proc_164440/yelp_polarity_head_only_detection_auc.png"
+      },
+      {
+        "analysis": "imdb Detection DES Curves (Head Only) reveals that DES-Vote detection scores rise from ~0.0856 to ~0.0915 by epoch 4, then fall to ~0.0870 in epoch 5. DES-KL also improves up to ~0.08535 at epoch 4 and then plateaus. DES-Vote outperforms DES-KL on IMDb by a margin of roughly 0.005 at its peak, indicating vote divergence may capture more task-specific uncertainty here.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9b232c90eb8248edba7db412eecf37cb_proc_164440/imdb_head_only_detection_des.png"
+      },
+      {
+        "analysis": "imdb Detection AUC Curves (Head Only) finds that vote-based AUC steadily increases to ~0.5485 at epoch 4 before dropping to ~0.522 in epoch 5, while KL-AUC rises to ~0.512 by epoch 4 and then levels off. Peak detection performance occurs at epoch 4 for both metrics, with vote-based AUC outperforming KL by roughly 0.036, suggesting a better overall separation of correct versus incorrect outputs via simple voting divergence on the IMDb dataset.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9b232c90eb8248edba7db412eecf37cb_proc_164440/imdb_head_only_detection_auc.png"
+      },
+      {
+        "analysis": "sst2 Loss Curves (Head Only) again confirm stable fine-tuning: training loss falls from ~0.704 to ~0.683, validation from ~0.695 to ~0.685 over five epochs, with no divergence between curves. Rapid early drop between epoch 1 and 2 indicates the head-only adapter quickly learns the SST2 task.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9b232c90eb8248edba7db412eecf37cb_proc_164440/sst2_head_only_loss_curves.png"
+      },
+      {
+        "analysis": "yelp_polarity Detection DES Curves (Head Only) shows DES-Vote scores jumping from ~0.0820 to ~0.0893 at epoch 2, followed by slight fluctuations, and reaching ~0.0887 by epoch 5. DES-KL steadily improves to ~0.08985 at epoch 4 before a minor decrease. Both measures peak around epoch 4, with DES-KL slightly surpassing vote-based detection at that stage, indicating stable detection performance for DES-KL and a clear signal for identifying hallucinations in Yelp polarity.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9b232c90eb8248edba7db412eecf37cb_proc_164440/yelp_polarity_head_only_detection_des.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9b232c90eb8248edba7db412eecf37cb_proc_164440/yelp_polarity_head_only_loss_curves.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9b232c90eb8248edba7db412eecf37cb_proc_164440/sst2_head_only_detection_auc.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9b232c90eb8248edba7db412eecf37cb_proc_164440/sst2_head_only_detection_des.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9b232c90eb8248edba7db412eecf37cb_proc_164440/imdb_head_only_loss_curves.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9b232c90eb8248edba7db412eecf37cb_proc_164440/yelp_polarity_head_only_detection_auc.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9b232c90eb8248edba7db412eecf37cb_proc_164440/imdb_head_only_detection_des.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9b232c90eb8248edba7db412eecf37cb_proc_164440/imdb_head_only_detection_auc.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9b232c90eb8248edba7db412eecf37cb_proc_164440/sst2_head_only_loss_curves.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9b232c90eb8248edba7db412eecf37cb_proc_164440/yelp_polarity_head_only_detection_des.png"
+    ],
+    "vlm_feedback_summary": "All tasks demonstrate stable loss reduction without overfitting through five epochs. KL-divergence generally outperforms vote-based divergence on SST2 and Yelp for AUC detection, whereas vote-based methods show stronger detection on IMDb, especially around epoch 4. DES-KL offers consistent detection scores across tasks, with peak performance around epoch 3\u20134, while DES-Vote exhibits more variability but can surpass DES-KL on certain tasks (e.g., IMDb). These insights guide optimal epoch selection and metric choice for robust uncertainty quantification in head-only fine-tuning.",
+    "exp_results_dir": "experiment_results/experiment_9b232c90eb8248edba7db412eecf37cb_proc_164440",
+    "ablation_name": "Head-Only Fine-Tuning",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_9b232c90eb8248edba7db412eecf37cb_proc_164440/experiment_data.npy"
+    ]
+  },
+  {
+    "overall_plan": "Ablation name: No_Pretraining_RandomInit.\nThe code below instantiates BERT with random weights (via a fresh BertConfig) to ablate pre\u2010training, and then fine\u2010tunes on SST2, Yelp, and IMDB with identical settings. It generates paraphrase variants, computes train/val losses, uncertainty\u2010based detection metrics, and final predictions, and organizes everything under the \u201cNo_Pretraining_RandomInit\u201d key before saving as a single `experiment_data.npy` file.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "training loss",
+            "lower_is_better": true,
+            "description": "Training loss on the dataset",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.2254,
+                "best_value": 0.2254
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.1953,
+                "best_value": 0.1953
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.6333,
+                "best_value": 0.6333
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Validation loss on the dataset",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.6035,
+                "best_value": 0.6035
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.2818,
+                "best_value": 0.2818
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.5007,
+                "best_value": 0.5007
+              }
+            ]
+          },
+          {
+            "metric_name": "detection AUC (voting)",
+            "lower_is_better": false,
+            "description": "Out-of-distribution detection AUC using the voting method",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.5366,
+                "best_value": 0.5366
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.6478,
+                "best_value": 0.6478
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.5064,
+                "best_value": 0.5064
+              }
+            ]
+          },
+          {
+            "metric_name": "detection DES (voting)",
+            "lower_is_better": true,
+            "description": "Out-of-distribution detection DES using the voting method",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.0894,
+                "best_value": 0.0894
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.108,
+                "best_value": 0.108
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.0844,
+                "best_value": 0.0844
+              }
+            ]
+          },
+          {
+            "metric_name": "detection AUC (kl)",
+            "lower_is_better": false,
+            "description": "Out-of-distribution detection AUC using the KL divergence method",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.5369,
+                "best_value": 0.5369
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.8605,
+                "best_value": 0.8605
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.6649,
+                "best_value": 0.6649
+              }
+            ]
+          },
+          {
+            "metric_name": "detection DES (kl)",
+            "lower_is_better": true,
+            "description": "Out-of-distribution detection DES using the KL divergence method",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.0895,
+                "best_value": 0.0895
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.1434,
+                "best_value": 0.1434
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.1108,
+                "best_value": 0.1108
+              }
+            ]
+          },
+          {
+            "metric_name": "test accuracy",
+            "lower_is_better": false,
+            "description": "Test accuracy on the dataset",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.728,
+                "best_value": 0.728
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.884,
+                "best_value": 0.884
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.778,
+                "best_value": 0.778
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os, random, re\nimport nltk\nimport torch\nimport numpy as np\nimport torch.nn.functional as F\nfrom nltk.corpus import wordnet\nfrom datasets import load_dataset\nfrom torch.utils.data import DataLoader, TensorDataset\nfrom transformers import BertTokenizerFast, BertForSequenceClassification, BertConfig\nfrom torch.optim import Adam\nfrom sklearn.metrics import roc_auc_score\n\n# setup\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\nnltk.download(\"wordnet\", quiet=True)\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# ablation\nABL = \"No_Pretraining_RandomInit\"\nexperiment_data = {ABL: {}}\n\n\n# paraphrase utility\ndef generate_paraphrases(text, K):\n    words = text.split()\n    paras = []\n    for _ in range(K):\n        new = words.copy()\n        for idx in random.sample(range(len(words)), min(2, len(words))):\n            w = re.sub(r\"\\W+\", \"\", words[idx])\n            syns = wordnet.synsets(w)\n            lemmas = {\n                l.name().replace(\"_\", \" \")\n                for s in syns\n                for l in s.lemmas()\n                if l.name().lower() != w.lower()\n            }\n            if lemmas:\n                new[idx] = random.choice(list(lemmas))\n        paras.append(\" \".join(new))\n    return paras\n\n\n# settings\ndatasets_info = {\n    \"sst2\": (\"glue\", \"sst2\", \"sentence\", \"label\"),\n    \"yelp_polarity\": (\"yelp_polarity\", None, \"text\", \"label\"),\n    \"imdb\": (\"imdb\", None, \"text\", \"label\"),\n}\ntrain_size, val_size = 5000, 500\nK, epochs, bs, lr = 5, 5, 32, 2e-5\ntokenizer = BertTokenizerFast.from_pretrained(\"bert-base-uncased\")\n\nfor name, (ds, sub, text_col, label_col) in datasets_info.items():\n    # load data\n    ds_tr = (\n        load_dataset(ds, sub, split=\"train\") if sub else load_dataset(ds, split=\"train\")\n    )\n    ds_va = load_dataset(ds, sub, split=\"validation\" if sub else \"test\")\n    ds_tr = ds_tr.shuffle(42).select(range(train_size))\n    ds_va = ds_va.shuffle(42).select(range(val_size))\n    texts_tr, labels_tr = ds_tr[text_col], ds_tr[label_col]\n    texts_va, labels_va = ds_va[text_col], ds_va[label_col]\n    # paraphrases\n    paras = {i: generate_paraphrases(t, K) for i, t in enumerate(texts_va)}\n\n    # tokenize\n    tr_enc = tokenizer(texts_tr, truncation=True, padding=True, return_tensors=\"pt\")\n    va_enc = tokenizer(texts_va, truncation=True, padding=True, return_tensors=\"pt\")\n    train_ds = TensorDataset(\n        tr_enc[\"input_ids\"], tr_enc[\"attention_mask\"], torch.tensor(labels_tr)\n    )\n    val_ds = TensorDataset(\n        va_enc[\"input_ids\"], va_enc[\"attention_mask\"], torch.tensor(labels_va)\n    )\n    tr_loader = DataLoader(train_ds, batch_size=bs, shuffle=True)\n    va_loader = DataLoader(val_ds, batch_size=bs)\n\n    # init random\u2010weight BERT\n    config = BertConfig.from_pretrained(\"bert-base-uncased\", num_labels=2)\n    model = BertForSequenceClassification(config).to(device)\n    optimizer = Adam(model.parameters(), lr=lr)\n\n    # prepare storage\n    experiment_data[ABL][name] = {\n        \"losses\": {\"train\": [], \"val\": []},\n        \"metrics\": {\"detection\": []},\n        \"predictions\": [],\n        \"ground_truth\": labels_va,\n    }\n\n    # training loop\n    for epoch in range(1, epochs + 1):\n        model.train()\n        tr_ls = []\n        for ids, mask, labs in tr_loader:\n            ids, mask, labs = ids.to(device), mask.to(device), labs.to(device)\n            optimizer.zero_grad()\n            out = model(input_ids=ids, attention_mask=mask, labels=labs)\n            out.loss.backward()\n            optimizer.step()\n            tr_ls.append(out.loss.item())\n        experiment_data[ABL][name][\"losses\"][\"train\"].append(\n            {\"epoch\": epoch, \"loss\": float(np.mean(tr_ls))}\n        )\n\n        model.eval()\n        va_ls = []\n        with torch.no_grad():\n            for ids, mask, labs in va_loader:\n                ids, mask, labs = ids.to(device), mask.to(device), labs.to(device)\n                out = model(input_ids=ids, attention_mask=mask, labels=labs)\n                va_ls.append(out.loss.item())\n        experiment_data[ABL][name][\"losses\"][\"val\"].append(\n            {\"epoch\": epoch, \"loss\": float(np.mean(va_ls))}\n        )\n        print(f\"{name} Epoch {epoch}: val_loss={np.mean(va_ls):.4f}\")\n\n        # detection metrics\n        uncs_vote, uncs_kl, errs = [], [], []\n        for i, txt in enumerate(texts_va):\n            probs, preds = [], []\n            for var in [txt] + paras[i]:\n                enc = tokenizer(\n                    var, return_tensors=\"pt\", truncation=True, padding=True\n                ).to(device)\n                with torch.no_grad():\n                    logits = model(**enc).logits\n                p = torch.softmax(logits, -1).squeeze(0).cpu()\n                probs.append(p)\n                preds.append(int(p.argmax().item()))\n            maj = max(set(preds), key=preds.count)\n            uncs_vote.append(1 - preds.count(maj) / len(preds))\n            klv = []\n            for a in range(len(probs)):\n                for b in range(a + 1, len(probs)):\n                    P, Q = probs[a], probs[b]\n                    klv.append(\n                        0.5\n                        * (\n                            F.kl_div(Q.log(), P, reduction=\"sum\").item()\n                            + F.kl_div(P.log(), Q, reduction=\"sum\").item()\n                        )\n                    )\n            uncs_kl.append(float(np.mean(klv)))\n            errs.append(int(preds[0] != int(labels_va[i])))\n        try:\n            auc_v = roc_auc_score(errs, uncs_vote)\n            auc_k = roc_auc_score(errs, uncs_kl)\n        except:\n            auc_v = auc_k = 0.5\n        des_v = auc_v / (K + 1)\n        des_k = auc_k / (K + 1)\n        experiment_data[ABL][name][\"metrics\"][\"detection\"].append(\n            {\n                \"epoch\": epoch,\n                \"auc_vote\": auc_v,\n                \"DES_vote\": des_v,\n                \"auc_kl\": auc_k,\n                \"DES_kl\": des_k,\n            }\n        )\n        print(\n            f\"{name} Epoch {epoch}: AUC_v={auc_v:.3f}, DES_v={des_v:.3f}, AUC_k={auc_k:.3f}, DES_k={des_k:.3f}\"\n        )\n\n    # final preds\n    preds = []\n    model.eval()\n    with torch.no_grad():\n        for ids, mask, _ in va_loader:\n            ids, mask = ids.to(device), mask.to(device)\n            logits = model(input_ids=ids, attention_mask=mask).logits\n            preds.extend(torch.argmax(logits, -1).cpu().tolist())\n    experiment_data[ABL][name][\"predictions\"] = preds\n\n# save\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n# Load experiment data\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\nelse:\n    exp = experiment_data.get(\"No_Pretraining_RandomInit\", {})\n    datasets = list(exp.keys())\n    # Print final detection AUC metrics\n    for ds in datasets:\n        det = exp[ds][\"metrics\"][\"detection\"]\n        last = det[-1]\n        print(\n            f\"{ds} Final AUC Vote: {last['auc_vote']:.4f}, AUC KL: {last['auc_kl']:.4f}\"\n        )\n    # Plot loss curves\n    try:\n        fig, axes = plt.subplots(1, len(datasets), figsize=(5 * len(datasets), 4))\n        for ax, ds in zip(axes, datasets):\n            losses = exp[ds][\"losses\"]\n            epochs = [d[\"epoch\"] for d in losses[\"train\"]]\n            tr = [d[\"loss\"] for d in losses[\"train\"]]\n            va = [d[\"loss\"] for d in losses[\"val\"]]\n            ax.plot(epochs, tr, label=\"Train Loss\")\n            ax.plot(epochs, va, label=\"Val Loss\")\n            ax.set_title(f\"{ds} Loss Curves\")\n            ax.set_xlabel(\"Epoch\")\n            ax.set_ylabel(\"Loss\")\n            ax.legend()\n        fig.tight_layout()\n        plt.savefig(os.path.join(working_dir, \"all_datasets_loss_curves.png\"))\n        plt.close()\n    except Exception as e:\n        print(f\"Error creating loss curves: {e}\")\n        plt.close()\n    # Plot detection AUC curves\n    try:\n        fig, axes = plt.subplots(1, len(datasets), figsize=(5 * len(datasets), 4))\n        for ax, ds in zip(axes, datasets):\n            det = exp[ds][\"metrics\"][\"detection\"]\n            epochs = [d[\"epoch\"] for d in det]\n            av = [d[\"auc_vote\"] for d in det]\n            ak = [d[\"auc_kl\"] for d in det]\n            ax.plot(epochs, av, label=\"AUC Vote\")\n            ax.plot(epochs, ak, label=\"AUC KL\")\n            ax.set_title(f\"{ds} Detection AUC\")\n            ax.set_xlabel(\"Epoch\")\n            ax.set_ylabel(\"AUC\")\n            ax.legend()\n        fig.tight_layout()\n        plt.savefig(os.path.join(working_dir, \"all_datasets_detection_auc.png\"))\n        plt.close()\n    except Exception as e:\n        print(f\"Error creating detection AUC plots: {e}\")\n        plt.close()\n",
+    "plot_plan": "We will load the saved experiment data and extract the \u201cNo_Pretraining_RandomInit\u201d ablation. We then iterate over each dataset, printing its final epoch\u2019s detection AUC metrics. Next we build a combined loss\u2010curve figure with one subplot per dataset, plotting train vs. validation loss over epochs, and save it to the working directory in a try\u2010except block. Then we similarly create a combined detection AUC figure showing both vote\u2010based and KL\u2010based AUC per epoch for each dataset, again wrapping in try\u2010except and ensuring figures are closed. All figures include clear titles and axis labels, and saved filenames indicate \u201call_datasets\u201d and the plot type. We use only basic matplotlib, loop cleanly, and close figures even on error. This provides a concise overview of training dynamics and detection performance across all datasets.",
+    "plot_analyses": [],
+    "plot_paths": [
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_1746817a2766428e8d23cb0f558d155c_proc_164442/all_datasets_loss_curves.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_1746817a2766428e8d23cb0f558d155c_proc_164442/all_datasets_detection_auc.png"
+    ],
+    "vlm_feedback_summary": [],
+    "exp_results_dir": "experiment_results/experiment_1746817a2766428e8d23cb0f558d155c_proc_164442",
+    "ablation_name": "No_Pretraining_RandomInit",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_1746817a2766428e8d23cb0f558d155c_proc_164442/experiment_data.npy"
+    ]
+  },
+  {
+    "overall_plan": "Ablation name: PositionalEmbeddingAblation.\nHere\u2019s a self-contained script that runs the positional-embedding ablation across SST-2, Yelp and IMDb, zeroes and freezes BERT\u2019s positional embeddings, fine-tunes, collects losses, classification accuracies, paraphrase-based detection metrics, predictions and ground truths, and saves everything as a single `experiment_data.npy`.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "training loss",
+            "lower_is_better": true,
+            "description": "Final training loss",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.0442,
+                "best_value": 0.0442
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.0619,
+                "best_value": 0.0619
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.1096,
+                "best_value": 0.1096
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Final validation loss",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.8616,
+                "best_value": 0.8616
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.3378,
+                "best_value": 0.3378
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.4163,
+                "best_value": 0.4163
+              }
+            ]
+          },
+          {
+            "metric_name": "training accuracy",
+            "lower_is_better": false,
+            "description": "Final training accuracy",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.9918,
+                "best_value": 0.9918
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.99,
+                "best_value": 0.99
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.9848,
+                "best_value": 0.9848
+              }
+            ]
+          },
+          {
+            "metric_name": "validation accuracy",
+            "lower_is_better": false,
+            "description": "Final validation accuracy",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.766,
+                "best_value": 0.766
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.896,
+                "best_value": 0.896
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.886,
+                "best_value": 0.886
+              }
+            ]
+          },
+          {
+            "metric_name": "detection AUC (vote)",
+            "lower_is_better": false,
+            "description": "Detection AUC based on vote",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.5541,
+                "best_value": 0.5541
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.623,
+                "best_value": 0.623
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.5436,
+                "best_value": 0.5436
+              }
+            ]
+          },
+          {
+            "metric_name": "detection DES score (vote)",
+            "lower_is_better": true,
+            "description": "Detection DES score based on vote",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.0924,
+                "best_value": 0.0924
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.1038,
+                "best_value": 0.1038
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.0906,
+                "best_value": 0.0906
+              }
+            ]
+          },
+          {
+            "metric_name": "detection AUC (KL divergence)",
+            "lower_is_better": false,
+            "description": "Detection AUC based on KL divergence",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.6655,
+                "best_value": 0.6655
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.8437,
+                "best_value": 0.8437
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.7663,
+                "best_value": 0.7663
+              }
+            ]
+          },
+          {
+            "metric_name": "detection DES score (KL divergence)",
+            "lower_is_better": true,
+            "description": "Detection DES score based on KL divergence",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.1109,
+                "best_value": 0.1109
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.1406,
+                "best_value": 0.1406
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.1277,
+                "best_value": 0.1277
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os, random, re\nimport nltk\nimport torch\nimport numpy as np\nimport torch.nn.functional as F\nfrom nltk.corpus import wordnet\nfrom datasets import load_dataset\nfrom torch.utils.data import DataLoader, TensorDataset\nfrom transformers import BertTokenizerFast, BertForSequenceClassification\nfrom torch.optim import Adam\nfrom sklearn.metrics import roc_auc_score\n\n# setup\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nnltk.download(\"wordnet\", quiet=True)\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n\ndef generate_paraphrases(text, K):\n    words = text.split()\n    paras = []\n    for _ in range(K):\n        new = words.copy()\n        for idx in random.sample(range(len(words)), min(2, len(words))):\n            w = re.sub(r\"\\W+\", \"\", words[idx])\n            syns = wordnet.synsets(w)\n            lemmas = {\n                l.name().replace(\"_\", \" \")\n                for s in syns\n                for l in s.lemmas()\n                if l.name().lower() != w.lower()\n            }\n            if lemmas:\n                new[idx] = random.choice(list(lemmas))\n        paras.append(\" \".join(new))\n    return paras\n\n\ndatasets_info = {\n    \"sst2\": (\"glue\", \"sst2\", \"sentence\", \"label\"),\n    \"yelp_polarity\": (\"yelp_polarity\", None, \"text\", \"label\"),\n    \"imdb\": (\"imdb\", None, \"text\", \"label\"),\n}\n\n# hyperparameters\ntrain_size, val_size = 5000, 500\nK, epochs, bs, lr = 5, 5, 32, 2e-5\n\ntokenizer = BertTokenizerFast.from_pretrained(\"bert-base-uncased\")\nexperiment_data = {\"positional_embedding_ablation\": {}}\n\nfor name, (ds, sub, text_col, label_col) in datasets_info.items():\n    # load and sample\n    ds_train = (\n        load_dataset(ds, sub, split=\"train\") if sub else load_dataset(ds, split=\"train\")\n    )\n    ds_val = load_dataset(ds, sub, split=\"validation\" if sub else \"test\")\n    ds_train = ds_train.shuffle(42).select(range(train_size))\n    ds_val = ds_val.shuffle(42).select(range(val_size))\n    texts_train, labels_train = ds_train[text_col], ds_train[label_col]\n    texts_val, labels_val = ds_val[text_col], ds_val[label_col]\n    paras = {i: generate_paraphrases(t, K) for i, t in enumerate(texts_val)}\n\n    # tokenize & dataloaders\n    tr_enc = tokenizer(texts_train, truncation=True, padding=True, return_tensors=\"pt\")\n    va_enc = tokenizer(texts_val, truncation=True, padding=True, return_tensors=\"pt\")\n    train_ds = TensorDataset(\n        tr_enc[\"input_ids\"], tr_enc[\"attention_mask\"], torch.tensor(labels_train)\n    )\n    val_ds = TensorDataset(\n        va_enc[\"input_ids\"], va_enc[\"attention_mask\"], torch.tensor(labels_val)\n    )\n    tr_loader = DataLoader(train_ds, batch_size=bs, shuffle=True)\n    va_loader = DataLoader(val_ds, batch_size=bs)\n\n    # model + ablation\n    model = BertForSequenceClassification.from_pretrained(\n        \"bert-base-uncased\", num_labels=2\n    ).to(device)\n    # zero + freeze positional embeddings\n    model.bert.embeddings.position_embeddings.weight.data.zero_()\n    model.bert.embeddings.position_embeddings.weight.requires_grad = False\n    optimizer = Adam([p for p in model.parameters() if p.requires_grad], lr=lr)\n\n    # storage\n    data = {\n        \"losses\": {\"train\": [], \"val\": []},\n        \"metrics\": {\"train\": [], \"val\": []},\n        \"detection\": [],\n        \"predictions\": [],\n        \"ground_truth\": labels_val,\n    }\n\n    for epoch in range(1, epochs + 1):\n        # training\n        model.train()\n        train_losses = []\n        for ids, mask, lbl in tr_loader:\n            ids, mask, lbl = ids.to(device), mask.to(device), lbl.to(device)\n            optimizer.zero_grad()\n            out = model(input_ids=ids, attention_mask=mask, labels=lbl)\n            out.loss.backward()\n            optimizer.step()\n            train_losses.append(out.loss.item())\n        train_loss = float(np.mean(train_losses))\n        data[\"losses\"][\"train\"].append(train_loss)\n\n        # validation loss\n        model.eval()\n        val_losses = []\n        with torch.no_grad():\n            for ids, mask, lbl in va_loader:\n                ids, mask, lbl = ids.to(device), mask.to(device), lbl.to(device)\n                out = model(input_ids=ids, attention_mask=mask, labels=lbl)\n                val_losses.append(out.loss.item())\n        val_loss = float(np.mean(val_losses))\n        data[\"losses\"][\"val\"].append(val_loss)\n\n        # classification accuracies\n        correct_tr, total_tr = 0, 0\n        with torch.no_grad():\n            for ids, mask, lbl in tr_loader:\n                ids, mask, lbl = ids.to(device), mask.to(device), lbl.to(device)\n                logits = model(input_ids=ids, attention_mask=mask).logits\n                preds = logits.argmax(-1)\n                correct_tr += (preds == lbl).sum().item()\n                total_tr += lbl.size(0)\n        tr_acc = correct_tr / total_tr\n        correct_va, total_va = 0, 0\n        with torch.no_grad():\n            for ids, mask, lbl in va_loader:\n                ids, mask, lbl = ids.to(device), mask.to(device), lbl.to(device)\n                logits = model(input_ids=ids, attention_mask=mask).logits\n                preds = logits.argmax(-1)\n                correct_va += (preds == lbl).sum().item()\n                total_va += lbl.size(0)\n        va_acc = correct_va / total_va\n        data[\"metrics\"][\"train\"].append(tr_acc)\n        data[\"metrics\"][\"val\"].append(va_acc)\n\n        # paraphrase\u2010based detection\n        uncs_vote, uncs_kl, errs = [], [], []\n        for i, txt in enumerate(texts_val):\n            probs, preds = [], []\n            for variant in [txt] + paras[i]:\n                enc = tokenizer(\n                    variant, return_tensors=\"pt\", truncation=True, padding=True\n                ).to(device)\n                with torch.no_grad():\n                    logits = model(**enc).logits\n                p = torch.softmax(logits, dim=-1).squeeze(0).cpu()\n                probs.append(p)\n                preds.append(int(p.argmax().item()))\n            maj = max(set(preds), key=preds.count)\n            uncs_vote.append(1 - preds.count(maj) / len(preds))\n            kl_vals = []\n            for a in range(len(probs)):\n                for b in range(a + 1, len(probs)):\n                    P, Q = probs[a], probs[b]\n                    kl_vals.append(\n                        0.5\n                        * (\n                            F.kl_div(Q.log(), P, reduction=\"sum\").item()\n                            + F.kl_div(P.log(), Q, reduction=\"sum\").item()\n                        )\n                    )\n            uncs_kl.append(float(np.mean(kl_vals)))\n            errs.append(int(preds[0] != int(labels_val[i])))\n        try:\n            auc_v = roc_auc_score(errs, uncs_vote)\n        except:\n            auc_v = 0.5\n        try:\n            auc_k = roc_auc_score(errs, uncs_kl)\n        except:\n            auc_k = 0.5\n        des_v, des_k = auc_v / (K + 1), auc_k / (K + 1)\n        data[\"detection\"].append(\n            {\n                \"epoch\": epoch,\n                \"auc_vote\": auc_v,\n                \"DES_vote\": des_v,\n                \"auc_kl\": auc_k,\n                \"DES_kl\": des_k,\n            }\n        )\n\n        print(\n            f\"{name} Epoch {epoch} | tr_loss={train_loss:.4f} val_loss={val_loss:.4f} \"\n            f\"tr_acc={tr_acc:.4f} val_acc={va_acc:.4f} \"\n            f\"AUC_vote={auc_v:.4f} DES_vote={des_v:.4f} AUC_kl={auc_k:.4f} DES_kl={des_k:.4f}\"\n        )\n\n    # final predictions\n    model.eval()\n    preds = []\n    with torch.no_grad():\n        for ids, mask, _ in va_loader:\n            ids, mask = ids.to(device), mask.to(device)\n            logits = model(input_ids=ids, attention_mask=mask).logits\n            preds.extend(torch.argmax(logits, -1).cpu().tolist())\n    data[\"predictions\"] = preds\n\n    experiment_data[\"positional_embedding_ablation\"][name] = data\n\n# save\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\n# Load experiment data\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\n    data = experiment_data[\"positional_embedding_ablation\"]\n    datasets = list(data.keys())\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n    datasets = []\n    data = {}\n\n# Print final evaluation metrics\nfor name in datasets:\n    val_acc = data[name][\"metrics\"][\"val\"][-1]\n    det = data[name][\"detection\"][-1]\n    print(\n        f\"{name} - Final Val Acc: {val_acc:.4f}, AUC_vote: {det['auc_vote']:.4f}, AUC_kl: {det['auc_kl']:.4f}\"\n    )\n\n# Plot 1: Loss curves\ntry:\n    epochs = range(1, len(data[datasets[0]][\"losses\"][\"train\"]) + 1)\n    plt.figure()\n    for name in datasets:\n        losses = data[name][\"losses\"]\n        plt.plot(epochs, losses[\"train\"], label=f\"{name} Train\")\n        plt.plot(epochs, losses[\"val\"], \"--\", label=f\"{name} Val\")\n    plt.title(\"Loss Curves for sst2, yelp_polarity, imdb\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Loss\")\n    plt.legend()\n    plt.savefig(\n        os.path.join(working_dir, \"loss_curves_positional_embedding_ablation.png\")\n    )\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating loss curves: {e}\")\n    plt.close()\n\n# Plot 2: Accuracy curves\ntry:\n    plt.figure()\n    for name in datasets:\n        mets = data[name][\"metrics\"]\n        plt.plot(epochs, mets[\"train\"], label=f\"{name} Train\")\n        plt.plot(epochs, mets[\"val\"], \"--\", label=f\"{name} Val\")\n    plt.title(\"Accuracy Curves for sst2, yelp_polarity, imdb\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Accuracy\")\n    plt.legend()\n    plt.savefig(\n        os.path.join(working_dir, \"accuracy_curves_positional_embedding_ablation.png\")\n    )\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating accuracy curves: {e}\")\n    plt.close()\n\n# Plot 3: Detection AUC curves\ntry:\n    fig, axes = plt.subplots(1, 2, figsize=(10, 4))\n    for name in datasets:\n        dets = data[name][\"detection\"]\n        ep = [d[\"epoch\"] for d in dets]\n        axes[0].plot(ep, [d[\"auc_vote\"] for d in dets], label=name)\n        axes[1].plot(ep, [d[\"auc_kl\"] for d in dets], label=name)\n    axes[0].set_title(\"AUC_vote over Epochs\")\n    axes[1].set_title(\"AUC_kl over Epochs\")\n    for ax in axes:\n        ax.set_xlabel(\"Epoch\")\n        ax.set_ylabel(\"AUC\")\n        ax.legend()\n    fig.suptitle(\n        \"Detection AUC Curves for sst2, yelp_polarity, imdb\\n(Left: AUC_vote, Right: AUC_kl)\"\n    )\n    plt.savefig(\n        os.path.join(\n            working_dir, \"detection_auc_curves_positional_embedding_ablation.png\"\n        )\n    )\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating detection AUC plots: {e}\")\n    plt.close()\n",
+    "plot_plan": "I will load the experiment data and extract the per\u2010dataset losses, accuracies, and detection AUCs. Then I will print the final validation accuracy and detection AUCs for each dataset. Next, I will create three separate figures in try\u2010except blocks: (1) combined loss curves across datasets, (2) combined accuracy curves, and (3) detection AUC curves with two subplots for vote\u2010based and KL\u2010based AUCs. Each plot will be saved to the working directory with descriptive filenames, include appropriate titles and subtitles, and figures will be closed after saving. I will stick to basic matplotlib and ensure no more than five figures.",
+    "plot_analyses": [
+      {
+        "analysis": "Training accuracy for all three sentiment tasks rises steadily across epochs, nearing perfect performance by epoch 4\u20135. Validation accuracy for SST-2 peaks at epoch 2 before declining, indicating overfitting. Yelp polarity validation stays relatively stable around 0.90 with a slight downward drift after epoch 3. IMDb validation accuracy improves until epoch 3, dips at epoch 4, then recovers somewhat by epoch 5, suggesting mild overfitting and some variance in held-out performance.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_74cd1572cf364cd9af47e780a766505d_proc_164440/accuracy_curves_positional_embedding_ablation.png"
+      },
+      {
+        "analysis": "Training loss on SST-2, Yelp polarity, and IMDb consistently decreases each epoch, converging toward zero. Validation loss for SST-2 drops until epoch 2 then climbs sharply, mirroring its validation accuracy drop and confirming overfitting. Yelp polarity validation loss bottoms out around epoch 3 before increasing, and IMDb validation loss turns upward after epoch 2. All three tasks exhibit signs of overfitting beyond epoch 2\u20133, despite low training losses.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_74cd1572cf364cd9af47e780a766505d_proc_164440/loss_curves_positional_embedding_ablation.png"
+      },
+      {
+        "analysis": "Vote-based detection AUC starts low for all tasks. SST-2 vote AUC peaks at epoch 2 (~0.59) then declines. Yelp polarity vote AUC steadily improves across epochs, reaching ~0.625 at epoch 5. IMDb vote AUC fluctuates, peaking at epoch 4 (~0.58). In contrast, KL-based detection AUC is substantially higher across the board: SST-2 climbs from ~0.65 to ~0.70 by epoch 4 before a slight drop, Yelp polarity rises rapidly to ~0.85 by epoch 3 and plateaus, and IMDb KL AUC peaks at ~0.79 at epoch 4. KL divergence clearly outperforms simple vote agreement as an uncertainty metric, with optimal detection performance around epochs 3\u20134.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_74cd1572cf364cd9af47e780a766505d_proc_164440/detection_auc_curves_positional_embedding_ablation.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_74cd1572cf364cd9af47e780a766505d_proc_164440/accuracy_curves_positional_embedding_ablation.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_74cd1572cf364cd9af47e780a766505d_proc_164440/loss_curves_positional_embedding_ablation.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_74cd1572cf364cd9af47e780a766505d_proc_164440/detection_auc_curves_positional_embedding_ablation.png"
+    ],
+    "vlm_feedback_summary": "Classification accuracy and loss curves reveal overfitting past epoch 2\u20133 for all datasets. Detection metrics show that KL divergence yields much stronger AUCs than vote agreement, peaking at epochs 3\u20134. Early stopping and favoring the KL-based divergence metric are recommended for robust uncertainty estimation.",
+    "exp_results_dir": "experiment_results/experiment_74cd1572cf364cd9af47e780a766505d_proc_164440",
+    "ablation_name": "PositionalEmbeddingAblation",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_74cd1572cf364cd9af47e780a766505d_proc_164440/experiment_data.npy"
+    ]
+  },
+  {
+    "overall_plan": "Ablation name: No_Dropout_Ablation.\nWe disable all dropout by zeroing out every nn.Dropout module\u2019s p attribute immediately after model loading, and label this experiment under `\"No_Dropout_Ablation\"`.  The rest of the script mirrors the baseline: loading and sampling GLUE/SST2, Yelp, and IMDB datasets, generating K paraphrases per validation example, training for a fixed number of epochs, evaluating detection uncertainty via vote disagreement and symmetric KL across variants, and tracking AUC/D ES metrics each epoch.  We collect train/validation losses, detection metrics, final predictions, and ground\u2010truth labels for each dataset, then save everything into `experiment_data.npy` in the working directory.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "training loss",
+            "lower_is_better": true,
+            "description": "Final training loss",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.0131,
+                "best_value": 0.0131
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.0099,
+                "best_value": 0.0099
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.0178,
+                "best_value": 0.0178
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Final validation loss",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.5191,
+                "best_value": 0.5191
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.2328,
+                "best_value": 0.2328
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.3398,
+                "best_value": 0.3398
+              }
+            ]
+          },
+          {
+            "metric_name": "detection AUC (vote)",
+            "lower_is_better": false,
+            "description": "Area Under the Curve for detection using voting",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.6403,
+                "best_value": 0.6403
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.6066,
+                "best_value": 0.6066
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.6107,
+                "best_value": 0.6107
+              }
+            ]
+          },
+          {
+            "metric_name": "detection DES (vote)",
+            "lower_is_better": true,
+            "description": "Detection error score using voting method",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.1067,
+                "best_value": 0.1067
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.1011,
+                "best_value": 0.1011
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.1018,
+                "best_value": 0.1018
+              }
+            ]
+          },
+          {
+            "metric_name": "detection AUC (KL)",
+            "lower_is_better": false,
+            "description": "Area Under the Curve for detection using KL divergence",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.7488,
+                "best_value": 0.7488
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.873,
+                "best_value": 0.873
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.8708,
+                "best_value": 0.8708
+              }
+            ]
+          },
+          {
+            "metric_name": "detection DES (KL)",
+            "lower_is_better": true,
+            "description": "Detection error score using KL divergence",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.1248,
+                "best_value": 0.1248
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.1455,
+                "best_value": 0.1455
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.1451,
+                "best_value": 0.1451
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os, random, re, nltk\nimport torch, numpy as np\nimport torch.nn as nn\nimport torch.nn.functional as F\nfrom datasets import load_dataset\nfrom torch.utils.data import DataLoader, TensorDataset\nfrom transformers import BertTokenizerFast, BertForSequenceClassification\nfrom torch.optim import Adam\nfrom sklearn.metrics import roc_auc_score\n\n# reproducibility\nrandom.seed(42)\nnp.random.seed(42)\ntorch.manual_seed(42)\n\n# working directory\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# download WordNet\nnltk.download(\"wordnet\", quiet=True)\nfrom nltk.corpus import wordnet\n\n\ndef generate_paraphrases(text, K):\n    words = text.split()\n    paras = []\n    for _ in range(K):\n        new = words.copy()\n        for idx in random.sample(range(len(words)), min(2, len(words))):\n            w = re.sub(r\"\\W+\", \"\", words[idx])\n            syns = wordnet.synsets(w)\n            lemmas = {\n                l.name().replace(\"_\", \" \")\n                for s in syns\n                for l in s.lemmas()\n                if l.name().lower() != w.lower()\n            }\n            if lemmas:\n                new[idx] = random.choice(list(lemmas))\n        paras.append(\" \".join(new))\n    return paras\n\n\n# datasets to run\ndatasets_info = {\n    \"sst2\": (\"glue\", \"sst2\", \"sentence\", \"label\"),\n    \"yelp_polarity\": (\"yelp_polarity\", None, \"text\", \"label\"),\n    \"imdb\": (\"imdb\", None, \"text\", \"label\"),\n}\n\n# hyperparameters\ntrain_size, val_size = 5000, 500\nK, epochs, bs, lr = 5, 5, 32, 2e-5\n\n# tokenizer\ntokenizer = BertTokenizerFast.from_pretrained(\"bert-base-uncased\")\n\n# main experiment data container\nexperiment_data = {\"No_Dropout_Ablation\": {}}\n\n# device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(\"Using device:\", device)\n\nfor ds_name, (ds, sub, text_col, label_col) in datasets_info.items():\n    # load and sample\n    train_split = (\n        load_dataset(ds, sub, split=\"train\") if sub else load_dataset(ds, split=\"train\")\n    )\n    val_split = load_dataset(ds, sub, split=\"validation\" if sub else \"test\")\n    train_split = train_split.shuffle(42).select(range(train_size))\n    val_split = val_split.shuffle(42).select(range(val_size))\n    texts_train, labels_train = train_split[text_col], train_split[label_col]\n    texts_val, labels_val = val_split[text_col], val_split[label_col]\n    # generate paraphrases\n    paras = {i: generate_paraphrases(t, K) for i, t in enumerate(texts_val)}\n    # tokenize\n    tr_enc = tokenizer(texts_train, truncation=True, padding=True, return_tensors=\"pt\")\n    va_enc = tokenizer(texts_val, truncation=True, padding=True, return_tensors=\"pt\")\n    train_ds = TensorDataset(\n        tr_enc[\"input_ids\"], tr_enc[\"attention_mask\"], torch.tensor(labels_train)\n    )\n    val_ds = TensorDataset(\n        va_enc[\"input_ids\"], va_enc[\"attention_mask\"], torch.tensor(labels_val)\n    )\n    tr_loader = DataLoader(train_ds, batch_size=bs, shuffle=True)\n    va_loader = DataLoader(val_ds, batch_size=bs)\n\n    # init model and disable dropout\n    model = BertForSequenceClassification.from_pretrained(\n        \"bert-base-uncased\", num_labels=2\n    ).to(device)\n    for m in model.modules():\n        if isinstance(m, nn.Dropout):\n            m.p = 0.0\n\n    optimizer = Adam(model.parameters(), lr=lr)\n\n    # record structures\n    expd = {\n        \"losses\": {\"train\": [], \"val\": []},\n        \"metrics\": {\"detection\": []},\n        \"predictions\": [],\n        \"ground_truth\": labels_val,\n    }\n    experiment_data[\"No_Dropout_Ablation\"][ds_name] = expd\n\n    # training + validation + detection\n    for epoch in range(1, epochs + 1):\n        model.train()\n        train_losses = []\n        for ids, mask, lbl in tr_loader:\n            ids, mask, lbl = ids.to(device), mask.to(device), lbl.to(device)\n            optimizer.zero_grad()\n            out = model(input_ids=ids, attention_mask=mask, labels=lbl)\n            out.loss.backward()\n            optimizer.step()\n            train_losses.append(out.loss.item())\n        expd[\"losses\"][\"train\"].append(\n            {\"epoch\": epoch, \"loss\": float(np.mean(train_losses))}\n        )\n\n        # validation loss\n        model.eval()\n        val_losses = []\n        with torch.no_grad():\n            for ids, mask, lbl in va_loader:\n                ids, mask, lbl = ids.to(device), mask.to(device), lbl.to(device)\n                out = model(input_ids=ids, attention_mask=mask, labels=lbl)\n                val_losses.append(out.loss.item())\n        vl = float(np.mean(val_losses))\n        expd[\"losses\"][\"val\"].append({\"epoch\": epoch, \"loss\": vl})\n        print(f\"{ds_name} Epoch {epoch}: val_loss={vl:.4f}\")\n\n        # detection metrics\n        uncs_vote, uncs_kl, errs = [], [], []\n        for i, txt in enumerate(texts_val):\n            probs, preds = [], []\n            for variant in [txt] + paras[i]:\n                enc = tokenizer(\n                    variant, truncation=True, padding=True, return_tensors=\"pt\"\n                ).to(device)\n                with torch.no_grad():\n                    logits = model(**enc).logits\n                p = torch.softmax(logits, dim=-1).squeeze(0).cpu()\n                probs.append(p)\n                preds.append(int(p.argmax().item()))\n            maj = max(set(preds), key=preds.count)\n            uncs_vote.append(1 - preds.count(maj) / len(preds))\n            kl_vals = []\n            for a in range(len(probs)):\n                for b in range(a + 1, len(probs)):\n                    P, Q = probs[a], probs[b]\n                    kl1 = F.kl_div(Q.log(), P, reduction=\"sum\").item()\n                    kl2 = F.kl_div(P.log(), Q, reduction=\"sum\").item()\n                    kl_vals.append(0.5 * (kl1 + kl2))\n            uncs_kl.append(float(np.mean(kl_vals)))\n            errs.append(int(preds[0] != int(labels_val[i])))\n        try:\n            auc_v = roc_auc_score(errs, uncs_vote)\n        except:\n            auc_v = 0.5\n        try:\n            auc_k = roc_auc_score(errs, uncs_kl)\n        except:\n            auc_k = 0.5\n        des_v = auc_v / (K + 1)\n        des_k = auc_k / (K + 1)\n        expd[\"metrics\"][\"detection\"].append(\n            {\n                \"epoch\": epoch,\n                \"auc_vote\": auc_v,\n                \"DES_vote\": des_v,\n                \"auc_kl\": auc_k,\n                \"DES_kl\": des_k,\n            }\n        )\n        print(\n            f\"{ds_name} Epoch {epoch}: AUC_vote={auc_v:.4f}, DES_vote={des_v:.4f}, AUC_kl={auc_k:.4f}, DES_kl={des_k:.4f}\"\n        )\n\n    # final predictions\n    preds = []\n    model.eval()\n    with torch.no_grad():\n        for ids, mask, _ in va_loader:\n            ids, mask = ids.to(device), mask.to(device)\n            logits = model(input_ids=ids, attention_mask=mask).logits\n            preds.extend(torch.argmax(logits, -1).cpu().tolist())\n    expd[\"predictions\"] = preds\n\n# save experiment data\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n# Load experiment data\ntry:\n    data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\n    exp = data.get(\"No_Dropout_Ablation\", {})\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n    exp = {}\n\nfor ds_name, expd in exp.items():\n    # Prepare loss data\n    train_vals = expd[\"losses\"][\"train\"]\n    val_vals = expd[\"losses\"][\"val\"]\n    epochs = [e[\"epoch\"] for e in train_vals]\n    train_loss = [e[\"loss\"] for e in train_vals]\n    val_loss = [e[\"loss\"] for e in val_vals]\n    # Plot loss curves\n    try:\n        plt.figure()\n        plt.plot(epochs, train_loss, marker=\"o\", label=\"Train Loss\")\n        plt.plot(epochs, val_loss, marker=\"o\", label=\"Val Loss\")\n        plt.xlabel(\"Epoch\")\n        plt.ylabel(\"Loss\")\n        plt.title(f\"{ds_name} Loss Curves (Training & Validation)\")\n        plt.legend()\n        fn = os.path.join(working_dir, f\"{ds_name}_loss_curves.png\")\n        plt.savefig(fn)\n    except Exception as e:\n        print(f\"Error creating loss plot for {ds_name}: {e}\")\n    finally:\n        plt.close()\n    # Prepare detection metrics\n    det = expd[\"metrics\"][\"detection\"]\n    det_epochs = [m[\"epoch\"] for m in det]\n    auc_vote = [m[\"auc_vote\"] for m in det]\n    auc_kl = [m[\"auc_kl\"] for m in det]\n    # Plot detection AUCs\n    try:\n        plt.figure()\n        plt.plot(det_epochs, auc_vote, marker=\"o\", label=\"AUC_vote\")\n        plt.plot(det_epochs, auc_kl, marker=\"o\", label=\"AUC_kl\")\n        plt.xlabel(\"Epoch\")\n        plt.ylabel(\"AUC\")\n        plt.title(f\"{ds_name} Detection AUC Metrics\")\n        plt.legend()\n        fn2 = os.path.join(working_dir, f\"{ds_name}_detection_auc.png\")\n        plt.savefig(fn2)\n    except Exception as e:\n        print(f\"Error creating detection plot for {ds_name}: {e}\")\n    finally:\n        plt.close()\n    # Print final metrics\n    if det:\n        last = det[-1]\n        print(\n            f\"{ds_name} Final AUC_vote: {last['auc_vote']:.4f}, AUC_kl: {last['auc_kl']:.4f}\"\n        )\n",
+    "plot_plan": "We\u2019ll load the saved experiment data, extract the losses and detection metrics for each dataset, and generate two plots per dataset: one showing training vs. validation loss over epochs and another showing AUC_vote and AUC_kl over epochs. Each plot is placed in a try-except block so failures don\u2019t stop execution, and we always close the figure in both cases. Filenames include the dataset name and the type of plot, and titles are descriptive. All figures are saved under the working directory. Finally, we print out a summary of final AUCs for each dataset.",
+    "plot_analyses": [
+      {
+        "analysis": "In imdb detection AUC metrics across epochs, AUC_vote gradually increases from about 0.58 at epoch 1 to 0.62 at epoch 2, then slightly dips and plateaus around 0.61 by epoch 5. AUC_kl jumps sharply to 0.90 at epoch 2 before declining to 0.87 by epoch 5. Both curves peak at epoch 2, and the KL divergence measure consistently outperforms the voting-based metric by roughly 0.25\u20130.30, indicating KL divergence is a far stronger uncertainty signal for this task. The slight post-peak decline suggests overfitting or diminishing returns from further epochs.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9d34db6142df40de818f797aa7734a09_proc_164442/imdb_detection_auc.png"
+      },
+      {
+        "analysis": "In yelp polarity detection, AUC_vote starts near 0.60 at epoch 1 but drops to 0.55 by epoch 3 before a modest recovery to 0.606 at epoch 5. AUC_kl remains high (0.87\u20130.88) at epochs 1\u20132, dips to 0.84 at epoch 3, and recovers to 0.875 by epoch 5. The KL-based approach outperforms vote-based across all epochs, again peaking around epoch 2. The dip at epoch 3 across both curves, especially KL, aligns with overfitting risks when continuing training past the early sweet spot.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9d34db6142df40de818f797aa7734a09_proc_164442/yelp_polarity_detection_auc.png"
+      },
+      {
+        "analysis": "In sst2 detection, AUC_vote rises from about 0.632 at epoch 1 to 0.645 at epoch 2, then falls to 0.565 at epoch 3 before recovering to 0.64 by epoch 5. AUC_kl trends from 0.732 to 0.738 at epoch 2, dips to 0.69 by epoch 4, then reaches its highest value of 0.75 at epoch 5. The KL divergence metric again outperforms vote-based detection by ~0.10\u20130.15 throughout, though its optimal epoch shifts slightly later compared to the other datasets.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9d34db6142df40de818f797aa7734a09_proc_164442/sst2_detection_auc.png"
+      },
+      {
+        "analysis": "In yelp polarity loss curves, training loss plummets from 0.25 at epoch 1 to near zero by epoch 4\u20135. Validation loss decreases from 0.168 at epoch 1 to a minimum of 0.162 at epoch 2, then climbs to 0.248 by epoch 4 and 0.232 at epoch 5. This divergence between train and val loss indicates overfitting beyond epoch 2.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9d34db6142df40de818f797aa7734a09_proc_164442/yelp_polarity_loss_curves.png"
+      },
+      {
+        "analysis": "In imdb loss curves, train loss drops steeply from 0.345 at epoch 1 to 0.015 at epoch 5. Validation loss mildly decreases to 0.205 at epoch 2 then increases steadily to 0.339 by epoch 5, again signaling overfitting after epoch 2.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9d34db6142df40de818f797aa7734a09_proc_164442/imdb_loss_curves.png"
+      },
+      {
+        "analysis": "In sst2 loss curves, train loss falls from 0.345 at epoch 1 to about 0.015 at epoch 5, while validation loss dips slightly to 0.275 at epoch 2 before rising sharply to 0.52 by epoch 5, reaffirming that epoch 2 appears to be the optimal stopping point to balance fit and generalization.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9d34db6142df40de818f797aa7734a09_proc_164442/sst2_loss_curves.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9d34db6142df40de818f797aa7734a09_proc_164442/imdb_detection_auc.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9d34db6142df40de818f797aa7734a09_proc_164442/yelp_polarity_detection_auc.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9d34db6142df40de818f797aa7734a09_proc_164442/sst2_detection_auc.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9d34db6142df40de818f797aa7734a09_proc_164442/yelp_polarity_loss_curves.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9d34db6142df40de818f797aa7734a09_proc_164442/imdb_loss_curves.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_9d34db6142df40de818f797aa7734a09_proc_164442/sst2_loss_curves.png"
+    ],
+    "vlm_feedback_summary": "KL-based divergence across prompt perturbations consistently provides a more reliable uncertainty and hallucination signal than majority-vote agreement. Detection performance peaks around epoch 2 for most tasks, aligning with the lowest validation losses and suggesting early stopping is crucial to prevent overfitting. Dataset difficulty impacts overall AUC: IMDb shows the highest detection scores, Yelp is intermediate, and SST-2 is the most challenging, yet KL divergence still outperforms vote-based measures by a substantial margin.",
+    "exp_results_dir": "experiment_results/experiment_9d34db6142df40de818f797aa7734a09_proc_164442",
+    "ablation_name": "No_Dropout_Ablation",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_9d34db6142df40de818f797aa7734a09_proc_164442/experiment_data.npy"
+    ]
+  },
+  {
+    "overall_plan": "Ablation name: TokenTypeEmbeddingAblation.\nWe disable BERT\u2019s segment embeddings by zeroing out `token_type_embeddings` and always passing zero `token_type_ids`. We keep the rest of the training and detection loops unchanged, computing vote\u2010 and KL\u2010based AUC and DES metrics over paraphrase variants. The per\u2010dataset results are stored under a single `\"token_type_embedding_ablation\"` key in `experiment_data` and saved via `np.save(\"experiment_data.npy\", ...)` at the end.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "validation AUC vote",
+            "lower_is_better": false,
+            "description": "Area under the ROC curve using vote method",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.604,
+                "best_value": 0.604
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.6531,
+                "best_value": 0.6531
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.5622,
+                "best_value": 0.5622
+              }
+            ]
+          },
+          {
+            "metric_name": "validation DES vote",
+            "lower_is_better": true,
+            "description": "DES metric for vote predictions",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.1007,
+                "best_value": 0.1007
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.1089,
+                "best_value": 0.1089
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.0937,
+                "best_value": 0.0937
+              }
+            ]
+          },
+          {
+            "metric_name": "validation AUC KL",
+            "lower_is_better": false,
+            "description": "Area under the ROC curve using KL divergence",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.7203,
+                "best_value": 0.7203
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.8726,
+                "best_value": 0.8726
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.8288,
+                "best_value": 0.8288
+              }
+            ]
+          },
+          {
+            "metric_name": "validation DES KL",
+            "lower_is_better": true,
+            "description": "DES metric using KL divergence",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.1201,
+                "best_value": 0.1201
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.1454,
+                "best_value": 0.1454
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.1381,
+                "best_value": 0.1381
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os\nimport random\nimport re\nimport nltk\nimport torch\nimport numpy as np\nimport torch.nn.functional as F\nfrom nltk.corpus import wordnet\nfrom datasets import load_dataset\nfrom torch.utils.data import DataLoader, TensorDataset\nfrom transformers import BertTokenizerFast, BertForSequenceClassification\nfrom torch.optim import Adam\nfrom sklearn.metrics import roc_auc_score\n\n# prepare working directory\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# device and WordNet\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nnltk.download(\"wordnet\", quiet=True)\n\n\n# paraphrase generator\ndef generate_paraphrases(text, K):\n    words = text.split()\n    paras = []\n    for _ in range(K):\n        new = words.copy()\n        for idx in random.sample(range(len(words)), min(2, len(words))):\n            w = re.sub(r\"\\W+\", \"\", words[idx])\n            syns = wordnet.synsets(w)\n            lemmas = {\n                l.name().replace(\"_\", \" \")\n                for s in syns\n                for l in s.lemmas()\n                if l.name().lower() != w.lower()\n            }\n            if lemmas:\n                new[idx] = random.choice(list(lemmas))\n        paras.append(\" \".join(new))\n    return paras\n\n\n# dataset info and hyperparams\ndatasets_info = {\n    \"sst2\": (\"glue\", \"sst2\", \"sentence\", \"label\"),\n    \"yelp_polarity\": (\"yelp_polarity\", None, \"text\", \"label\"),\n    \"imdb\": (\"imdb\", None, \"text\", \"label\"),\n}\ntrain_size, val_size = 5000, 500\nK, epochs, bs, lr = 5, 5, 32, 2e-5\n\n# tokenizer\ntokenizer = BertTokenizerFast.from_pretrained(\"bert-base-uncased\")\n\n# collect all results\nexperiment_data = {\"token_type_embedding_ablation\": {}}\n\nfor name, (ds, sub, text_col, label_col) in datasets_info.items():\n    # load and trim dataset\n    ds_train = (\n        load_dataset(ds, sub, split=\"train\") if sub else load_dataset(ds, split=\"train\")\n    )\n    ds_val = load_dataset(ds, sub, split=\"validation\" if sub else \"test\")\n    ds_train = ds_train.shuffle(42).select(range(train_size))\n    ds_val = ds_val.shuffle(42).select(range(val_size))\n    texts_train, labels_train = ds_train[text_col], ds_train[label_col]\n    texts_val, labels_val = ds_val[text_col], ds_val[label_col]\n    # paraphrases for validation\n    paras = {i: generate_paraphrases(t, K) for i, t in enumerate(texts_val)}\n    # tokenize for training and validation\n    tr_enc = tokenizer(texts_train, truncation=True, padding=True, return_tensors=\"pt\")\n    va_enc = tokenizer(texts_val, truncation=True, padding=True, return_tensors=\"pt\")\n    train_ds = TensorDataset(\n        tr_enc[\"input_ids\"], tr_enc[\"attention_mask\"], torch.tensor(labels_train)\n    )\n    val_ds = TensorDataset(\n        va_enc[\"input_ids\"], va_enc[\"attention_mask\"], torch.tensor(labels_val)\n    )\n    tr_loader = DataLoader(train_ds, batch_size=bs, shuffle=True)\n    va_loader = DataLoader(val_ds, batch_size=bs)\n\n    # model and ablation: zero out token_type embeddings\n    model = BertForSequenceClassification.from_pretrained(\n        \"bert-base-uncased\", num_labels=2\n    ).to(device)\n    with torch.no_grad():\n        model.bert.embeddings.token_type_embeddings.weight.data.zero_()\n    optimizer = Adam(model.parameters(), lr=lr)\n\n    # prepare storage\n    inner = {\n        \"losses\": {\"train\": [], \"val\": []},\n        \"metrics\": {\"train\": [], \"val\": []},\n        \"predictions\": [],\n        \"ground_truth\": labels_val,\n    }\n    experiment_data[\"token_type_embedding_ablation\"][name] = inner\n\n    # training loop\n    for epoch in range(1, epochs + 1):\n        model.train()\n        train_losses = []\n        for ids, mask, labels in tr_loader:\n            ids, mask, labels = ids.to(device), mask.to(device), labels.to(device)\n            token_types = torch.zeros_like(ids).to(device)\n            optimizer.zero_grad()\n            out = model(\n                input_ids=ids,\n                attention_mask=mask,\n                token_type_ids=token_types,\n                labels=labels,\n            )\n            out.loss.backward()\n            optimizer.step()\n            train_losses.append(out.loss.item())\n        inner[\"losses\"][\"train\"].append(\n            {\"epoch\": epoch, \"loss\": float(np.mean(train_losses))}\n        )\n\n        # validation loss\n        model.eval()\n        val_losses = []\n        with torch.no_grad():\n            for ids, mask, labels in va_loader:\n                ids, mask, labels = ids.to(device), mask.to(device), labels.to(device)\n                token_types = torch.zeros_like(ids).to(device)\n                out = model(\n                    input_ids=ids,\n                    attention_mask=mask,\n                    token_type_ids=token_types,\n                    labels=labels,\n                )\n                val_losses.append(out.loss.item())\n        v_loss = float(np.mean(val_losses))\n        inner[\"losses\"][\"val\"].append({\"epoch\": epoch, \"loss\": v_loss})\n        print(f\"{name} Epoch {epoch}: val_loss={v_loss:.4f}\")\n\n        # detection metrics\n        uncs_vote, uncs_kl, errs = [], [], []\n        for i, txt in enumerate(texts_val):\n            probs, preds = [], []\n            for variant in [txt] + paras[i]:\n                enc = tokenizer(\n                    variant, truncation=True, padding=True, return_tensors=\"pt\"\n                )\n                ids_v = enc[\"input_ids\"].to(device)\n                mask_v = enc[\"attention_mask\"].to(device)\n                token_types_v = torch.zeros_like(ids_v).to(device)\n                with torch.no_grad():\n                    logits = model(\n                        input_ids=ids_v,\n                        attention_mask=mask_v,\n                        token_type_ids=token_types_v,\n                    ).logits\n                p = torch.softmax(logits, -1).squeeze(0).cpu()\n                probs.append(p)\n                preds.append(int(p.argmax().item()))\n            maj = max(set(preds), key=preds.count)\n            uncs_vote.append(1 - preds.count(maj) / len(preds))\n            kl_vals = []\n            for a in range(len(probs)):\n                for b in range(a + 1, len(probs)):\n                    P, Q = probs[a], probs[b]\n                    kl1 = F.kl_div(Q.log(), P, reduction=\"sum\").item()\n                    kl2 = F.kl_div(P.log(), Q, reduction=\"sum\").item()\n                    kl_vals.append(0.5 * (kl1 + kl2))\n            uncs_kl.append(float(np.mean(kl_vals)))\n            errs.append(int(preds[0] != int(labels_val[i])))\n        try:\n            auc_v = roc_auc_score(errs, uncs_vote)\n        except:\n            auc_v = 0.5\n        try:\n            auc_k = roc_auc_score(errs, uncs_kl)\n        except:\n            auc_k = 0.5\n        des_v = auc_v / (K + 1)\n        des_k = auc_k / (K + 1)\n        inner[\"metrics\"][\"val\"].append(\n            {\n                \"epoch\": epoch,\n                \"auc_vote\": auc_v,\n                \"DES_vote\": des_v,\n                \"auc_kl\": auc_k,\n                \"DES_kl\": des_k,\n            }\n        )\n        print(\n            f\"{name} Epoch {epoch}: AUC_vote={auc_v:.4f}, DES_vote={des_v:.4f}, AUC_kl={auc_k:.4f}, DES_kl={des_k:.4f}\"\n        )\n\n    # final predictions\n    preds = []\n    model.eval()\n    with torch.no_grad():\n        for ids, mask, _ in va_loader:\n            ids, mask = ids.to(device), mask.to(device)\n            token_types = torch.zeros_like(ids).to(device)\n            logits = model(\n                input_ids=ids, attention_mask=mask, token_type_ids=token_types\n            ).logits\n            preds.extend(torch.argmax(logits, -1).cpu().tolist())\n    inner[\"predictions\"] = preds\n\n# save results\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n# Load experiment data\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n    experiment_data = {}\n\nfor name, data in experiment_data.get(\"token_type_embedding_ablation\", {}).items():\n    # Extract curves and metrics\n    train_entries = data[\"losses\"][\"train\"]\n    val_entries = data[\"losses\"][\"val\"]\n    epochs = [e[\"epoch\"] for e in train_entries]\n    train_losses = [e[\"loss\"] for e in train_entries]\n    val_losses = [e[\"loss\"] for e in val_entries]\n    metric_entries = data[\"metrics\"][\"val\"]\n    auc_vote = [m[\"auc_vote\"] for m in metric_entries]\n    auc_kl = [m[\"auc_kl\"] for m in metric_entries]\n    # Compute and print accuracy\n    preds = np.array(data.get(\"predictions\", []))\n    gt = np.array(data.get(\"ground_truth\", []))\n    if preds.size and gt.size:\n        acc = np.mean(preds == gt)\n        print(f\"{name} Validation Accuracy: {acc:.4f}\")\n    # Plot loss curves\n    try:\n        plt.figure()\n        plt.plot(epochs, train_losses, label=\"Train Loss\")\n        plt.plot(epochs, val_losses, label=\"Val Loss\")\n        plt.xlabel(\"Epoch\")\n        plt.ylabel(\"Loss\")\n        plt.title(f\"{name} - Loss Curves\\nLeft: Training Loss, Right: Validation Loss\")\n        plt.legend()\n        plt.savefig(os.path.join(working_dir, f\"{name}_loss_curves.png\"))\n        plt.close()\n    except Exception as e:\n        print(f\"Error creating loss plot for {name}: {e}\")\n        plt.close()\n    # Plot AUC metrics\n    try:\n        plt.figure()\n        plt.plot(epochs, auc_vote, marker=\"o\", label=\"AUC_vote\")\n        plt.plot(epochs, auc_kl, marker=\"s\", label=\"AUC_kl\")\n        plt.xlabel(\"Epoch\")\n        plt.ylabel(\"AUC\")\n        plt.title(f\"{name} - AUC Curves\\nAUC_vote vs AUC_kl\")\n        plt.legend()\n        plt.savefig(os.path.join(working_dir, f\"{name}_auc_curves.png\"))\n        plt.close()\n    except Exception as e:\n        print(f\"Error creating AUC plot for {name}: {e}\")\n        plt.close()\n",
+    "plot_plan": "I will load the saved experiment_data.npy from the working directory and retrieve the token_type_embedding_ablation results for each dataset. For each dataset I will extract the training and validation losses per epoch, as well as the validation AUC_vote and AUC_kl metrics. I will also compute and print the final classification accuracy on the validation set by comparing stored predictions to ground truth labels. Then I'll create two separate figures per dataset: one for the loss curves and another for the AUC metrics, each wrapped in its own try-except block. Titles will specify the dataset name and include subtitles like \"Left: Training Loss, Right: Validation Loss\" or \"AUC_vote vs AUC_kl\". All plots will be saved to working_dir with descriptive filenames containing the dataset name and plot type. I will use plain matplotlib and ensure each figure is closed after saving to keep the working environment clean.",
+    "plot_analyses": [
+      {
+        "analysis": "Imdb AUC vote curve dips at epoch 2 around 0.52 then rises to peak ~0.62 at epoch 4 before falling at epoch 5, whereas AUC_kl remains high and stable between ~0.83\u20130.87, peaking at epoch 4. This indicates that KL divergence based metric provides consistently stronger discrimination than simple vote agreement on this dataset, with vote metric improving up to epoch 4 but still trailing significantly.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7856d3a5914e40dda4cca14396e9eb43_proc_164442/imdb_auc_curves.png"
+      },
+      {
+        "analysis": "On SST2, vote-based AUC climbs from about 0.657 to 0.676 by epoch 3 but then sharply drops to ~0.608 at epoch 4 and ~0.604 at epoch 5. In contrast, KL-based metric improves from ~0.689 to ~0.735 by epoch 3 and slightly declines thereafter but stays above ~0.72. This suggests vote agreement becomes unstable after epoch 3, while KL divergence remains robust.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7856d3a5914e40dda4cca14396e9eb43_proc_164442/sst2_auc_curves.png"
+      },
+      {
+        "analysis": "Yelp polarity vote agreement AUC decreases from ~0.623 at epoch 1 to ~0.583 at epoch 3 before recovering to ~0.654 by epoch 5, showing initial instability. KL-based metric steadily increases from ~0.853 to ~0.915 at epoch 4 before a minor drop at epoch 5, confirming its superior and stable performance in uncertainty detection.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7856d3a5914e40dda4cca14396e9eb43_proc_164442/yelp_polarity_auc_curves.png"
+      },
+      {
+        "analysis": "Yelp polarity training loss drops rapidly from ~0.27 to ~0.015 by epoch 5, while validation loss decreases slightly until epoch 2 (~0.13) then spikes to ~0.23 at epoch 3, slightly decreases at epoch 4, and rises again at epoch 5. This pattern indicates overfitting beginning around epoch 2\u20133, with generalization deteriorating despite continued training loss reduction.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7856d3a5914e40dda4cca14396e9eb43_proc_164442/yelp_polarity_loss_curves.png"
+      },
+      {
+        "analysis": "Imdb training loss falls from ~0.36 to ~0.03 by epoch 5, but validation loss declines until epoch 2 (~0.22) then rises steadily to ~0.42 at epoch 5. The gap widening after epoch 2 implies early sign of overfitting, with validation performance degrading as training continues.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7856d3a5914e40dda4cca14396e9eb43_proc_164442/imdb_loss_curves.png"
+      },
+      {
+        "analysis": "SST2 training loss drops from ~0.42 to ~0.045 by epoch 5, whereas validation loss holds near ~0.33 at epoch 1\u20132, decreases to ~0.295 at epoch 3, then jumps to ~0.425 at epoch 4 and ~0.435 at epoch 5. This trend highlights overfitting starting after epoch 3, suggesting optimal stopping around epoch 3.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7856d3a5914e40dda4cca14396e9eb43_proc_164442/sst2_loss_curves.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7856d3a5914e40dda4cca14396e9eb43_proc_164442/imdb_auc_curves.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7856d3a5914e40dda4cca14396e9eb43_proc_164442/sst2_auc_curves.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7856d3a5914e40dda4cca14396e9eb43_proc_164442/yelp_polarity_auc_curves.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7856d3a5914e40dda4cca14396e9eb43_proc_164442/yelp_polarity_loss_curves.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7856d3a5914e40dda4cca14396e9eb43_proc_164442/imdb_loss_curves.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7856d3a5914e40dda4cca14396e9eb43_proc_164442/sst2_loss_curves.png"
+    ],
+    "vlm_feedback_summary": "Across the three sentiment analysis benchmarks, the KL divergence\u2013based uncertainty metric consistently outperforms the vote agreement metric, delivering higher and more stable AUC scores with peaks around epoch 4. The vote-based metric shows more volatility and degraded performance in later epochs. Loss curves on all datasets exhibit rapid training loss reduction but rising validation loss after epoch 2\u20133, indicating overfitting and underscoring the need for early stopping around epoch 3 to 4 for best generalization.",
+    "exp_results_dir": "experiment_results/experiment_7856d3a5914e40dda4cca14396e9eb43_proc_164442",
+    "ablation_name": "TokenTypeEmbeddingAblation",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_7856d3a5914e40dda4cca14396e9eb43_proc_164442/experiment_data.npy"
+    ]
+  },
+  {
+    "overall_plan": "Ablation name: BiasRemovalAblation.\nI will initialize all bias terms in every `nn.Linear` layer to zero and set `requires_grad=False` before creating the optimizer, ensuring they never update. The rest of training, validation, and detection metrics remain unchanged, but I will wrap results in a top\u2010level `BiasRemovalAblation` key per dataset. Finally, I save losses, validation detection metrics, predictions, and ground truth arrays in `experiment_data.npy`.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "train loss",
+            "lower_is_better": true,
+            "description": "Loss on the train set",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.0358,
+                "best_value": 0.0358
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.0156,
+                "best_value": 0.0156
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.0368,
+                "best_value": 0.0368
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Loss on the validation set",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.4356,
+                "best_value": 0.4356
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.2583,
+                "best_value": 0.2583
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.305,
+                "best_value": 0.305
+              }
+            ]
+          },
+          {
+            "metric_name": "ROC AUC (vote uncertainty)",
+            "lower_is_better": false,
+            "description": "ROC AUC using vote uncertainty",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.675,
+                "best_value": 0.675
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.5815,
+                "best_value": 0.5815
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.5465,
+                "best_value": 0.5465
+              }
+            ]
+          },
+          {
+            "metric_name": "Detection Efficiency Score (vote uncertainty)",
+            "lower_is_better": false,
+            "description": "Detection Efficiency Score with vote uncertainty",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.1125,
+                "best_value": 0.1125
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.0969,
+                "best_value": 0.0969
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.0911,
+                "best_value": 0.0911
+              }
+            ]
+          },
+          {
+            "metric_name": "ROC AUC (KL uncertainty)",
+            "lower_is_better": false,
+            "description": "ROC AUC using KL uncertainty",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.7675,
+                "best_value": 0.7675
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.8475,
+                "best_value": 0.8475
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.8187,
+                "best_value": 0.8187
+              }
+            ]
+          },
+          {
+            "metric_name": "Detection Efficiency Score (KL uncertainty)",
+            "lower_is_better": false,
+            "description": "Detection Efficiency Score with KL uncertainty",
+            "data": [
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.1279,
+                "best_value": 0.1279
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.1413,
+                "best_value": 0.1413
+              },
+              {
+                "dataset_name": "imdb",
+                "final_value": 0.1365,
+                "best_value": 0.1365
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os\nimport random\nimport re\nimport nltk\nimport torch\nimport numpy as np\nimport torch.nn.functional as F\nfrom nltk.corpus import wordnet\nfrom datasets import load_dataset\nfrom torch.utils.data import DataLoader, TensorDataset\nfrom transformers import BertTokenizerFast, BertForSequenceClassification\nfrom torch.optim import Adam\nfrom sklearn.metrics import roc_auc_score\n\n# prepare working directory\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\n\n# download WordNet\nnltk.download(\"wordnet\", quiet=True)\n\n\ndef generate_paraphrases(text, K):\n    words = text.split()\n    paras = []\n    for _ in range(K):\n        new = words.copy()\n        for idx in random.sample(range(len(words)), min(2, len(words))):\n            w = re.sub(r\"\\W+\", \"\", words[idx])\n            syns = wordnet.synsets(w)\n            lemmas = {\n                l.name().replace(\"_\", \" \")\n                for s in syns\n                for l in s.lemmas()\n                if l.name().lower() != w.lower()\n            }\n            if lemmas:\n                new[idx] = random.choice(list(lemmas))\n        paras.append(\" \".join(new))\n    return paras\n\n\n# datasets and columns\ndatasets_info = {\n    \"sst2\": (\"glue\", \"sst2\", \"sentence\", \"label\"),\n    \"yelp_polarity\": (\"yelp_polarity\", None, \"text\", \"label\"),\n    \"imdb\": (\"imdb\", None, \"text\", \"label\"),\n}\n\n# hyperparameters\ntrain_size, val_size = 5000, 500\nK, epochs, bs, lr = 5, 5, 32, 2e-5\n\n# tokenizer\ntokenizer = BertTokenizerFast.from_pretrained(\"bert-base-uncased\")\n\n# prepare data container\nablation = \"BiasRemovalAblation\"\nexperiment_data = {ablation: {}}\n\nfor name, (ds, sub, text_col, label_col) in datasets_info.items():\n    # load and trim data\n    ds_train = (\n        load_dataset(ds, sub, split=\"train\") if sub else load_dataset(ds, split=\"train\")\n    )\n    ds_val = load_dataset(ds, sub, split=\"validation\" if sub else \"test\")\n    ds_train = ds_train.shuffle(42).select(range(train_size))\n    ds_val = ds_val.shuffle(42).select(range(val_size))\n    texts_train, labels_train = ds_train[text_col], ds_train[label_col]\n    texts_val, labels_val = ds_val[text_col], ds_val[label_col]\n    paras = {i: generate_paraphrases(t, K) for i, t in enumerate(texts_val)}\n    # tokenize\n    tr_enc = tokenizer(texts_train, truncation=True, padding=True, return_tensors=\"pt\")\n    va_enc = tokenizer(texts_val, truncation=True, padding=True, return_tensors=\"pt\")\n    train_ds = TensorDataset(\n        tr_enc[\"input_ids\"], tr_enc[\"attention_mask\"], torch.tensor(labels_train)\n    )\n    val_ds = TensorDataset(\n        va_enc[\"input_ids\"], va_enc[\"attention_mask\"], torch.tensor(labels_val)\n    )\n    tr_loader = DataLoader(train_ds, batch_size=bs, shuffle=True)\n    va_loader = DataLoader(val_ds, batch_size=bs)\n\n    # model and ablate biases\n    model = BertForSequenceClassification.from_pretrained(\n        \"bert-base-uncased\", num_labels=2\n    ).to(device)\n    for m in model.modules():\n        if isinstance(m, torch.nn.Linear) and m.bias is not None:\n            m.bias.data.zero_()\n            m.bias.requires_grad = False\n    optimizer = Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=lr)\n\n    # init storage\n    experiment_data[ablation][name] = {\n        \"losses\": {\"train\": [], \"val\": []},\n        \"metrics\": {\"val\": []},\n        \"predictions\": [],\n        \"ground_truth\": list(labels_val),\n    }\n\n    # training loop\n    for epoch in range(1, epochs + 1):\n        model.train()\n        train_losses = []\n        for ids, mask, labels in tr_loader:\n            ids, mask, labels = ids.to(device), mask.to(device), labels.to(device)\n            optimizer.zero_grad()\n            out = model(input_ids=ids, attention_mask=mask, labels=labels)\n            out.loss.backward()\n            optimizer.step()\n            train_losses.append(out.loss.item())\n        experiment_data[ablation][name][\"losses\"][\"train\"].append(\n            float(np.mean(train_losses))\n        )\n\n        # validation loss\n        model.eval()\n        val_losses = []\n        with torch.no_grad():\n            for ids, mask, labels in va_loader:\n                ids, mask, labels = ids.to(device), mask.to(device), labels.to(device)\n                out = model(input_ids=ids, attention_mask=mask, labels=labels)\n                val_losses.append(out.loss.item())\n        experiment_data[ablation][name][\"losses\"][\"val\"].append(\n            float(np.mean(val_losses))\n        )\n\n        # detection metrics on val\n        uncs_vote, uncs_kl, errs = [], [], []\n        for i, txt in enumerate(texts_val):\n            probs, preds = [], []\n            for variant in [txt] + paras[i]:\n                enc = tokenizer(\n                    variant, return_tensors=\"pt\", truncation=True, padding=True\n                ).to(device)\n                with torch.no_grad():\n                    logits = model(**enc).logits\n                p = torch.softmax(logits, dim=-1).squeeze(0).cpu()\n                probs.append(p)\n                preds.append(int(p.argmax().item()))\n            maj = max(set(preds), key=preds.count)\n            uncs_vote.append(1 - preds.count(maj) / len(preds))\n            kl_vals = []\n            for a in range(len(probs)):\n                for b in range(a + 1, len(probs)):\n                    P, Q = probs[a], probs[b]\n                    kl_vals.append(\n                        0.5\n                        * (\n                            F.kl_div(Q.log(), P, reduction=\"sum\").item()\n                            + F.kl_div(P.log(), Q, reduction=\"sum\").item()\n                        )\n                    )\n            uncs_kl.append(float(np.mean(kl_vals)))\n            errs.append(int(preds[0] != int(labels_val[i])))\n        try:\n            auc_v = roc_auc_score(errs, uncs_vote)\n        except:\n            auc_v = 0.5\n        try:\n            auc_k = roc_auc_score(errs, uncs_kl)\n        except:\n            auc_k = 0.5\n        des_v = auc_v / (K + 1)\n        des_k = auc_k / (K + 1)\n        experiment_data[ablation][name][\"metrics\"][\"val\"].append(\n            {\n                \"epoch\": epoch,\n                \"auc_vote\": auc_v,\n                \"DES_vote\": des_v,\n                \"auc_kl\": auc_k,\n                \"DES_kl\": des_k,\n            }\n        )\n        print(\n            f\"{name} Epoch {epoch}: val_loss={experiment_data[ablation][name]['losses']['val'][-1]:.4f}, \"\n            f\"AUC_vote={auc_v:.4f}, DES_vote={des_v:.4f}, AUC_kl={auc_k:.4f}, DES_kl={des_k:.4f}\"\n        )\n\n    # final predictions\n    preds = []\n    model.eval()\n    with torch.no_grad():\n        for ids, mask, _ in va_loader:\n            ids, mask = ids.to(device), mask.to(device)\n            logits = model(input_ids=ids, attention_mask=mask).logits\n            preds.extend(torch.argmax(logits, -1).cpu().tolist())\n    experiment_data[ablation][name][\"predictions\"] = preds\n\n# save experiment data\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n    experiment_data = {}\n\nfor ablation_key, ablation_data in experiment_data.items():\n    for ds_name, ds_data in ablation_data.items():\n        # Loss curves\n        try:\n            plt.figure()\n            epochs = list(range(1, len(ds_data[\"losses\"][\"train\"]) + 1))\n            plt.plot(epochs, ds_data[\"losses\"][\"train\"], label=\"Train Loss\")\n            plt.plot(epochs, ds_data[\"losses\"][\"val\"], label=\"Val Loss\")\n            plt.xlabel(\"Epoch\")\n            plt.ylabel(\"Loss\")\n            plt.title(\n                f\"Loss Curves \u2014 {ds_name}\\nTraining vs Validation Loss on {ds_name}\"\n            )\n            plt.legend()\n            plt.savefig(os.path.join(working_dir, f\"{ds_name}_loss_curve.png\"))\n            plt.close()\n        except Exception as e:\n            print(f\"Error creating loss plot for {ds_name}: {e}\")\n            plt.close()\n        # AUC curves\n        try:\n            plt.figure()\n            metrics = ds_data[\"metrics\"][\"val\"]\n            epochs = [m[\"epoch\"] for m in metrics]\n            auc_vote = [m[\"auc_vote\"] for m in metrics]\n            auc_kl = [m[\"auc_kl\"] for m in metrics]\n            plt.plot(epochs, auc_vote, marker=\"o\", label=\"AUC_vote\")\n            plt.plot(epochs, auc_kl, marker=\"s\", label=\"AUC_kl\")\n            plt.xlabel(\"Epoch\")\n            plt.ylabel(\"AUC\")\n            plt.title(f\"AUC Curves \u2014 {ds_name}\\nAUC_vote and AUC_kl on {ds_name}\")\n            plt.legend()\n            plt.savefig(os.path.join(working_dir, f\"{ds_name}_auc_curve.png\"))\n            plt.close()\n        except Exception as e:\n            print(f\"Error creating AUC plot for {ds_name}: {e}\")\n            plt.close()\n        # Label distribution\n        try:\n            plt.figure()\n            gt = ds_data[\"ground_truth\"]\n            pred = ds_data[\"predictions\"]\n            counts_gt = [gt.count(0), gt.count(1)]\n            counts_pred = [pred.count(0), pred.count(1)]\n            x = np.arange(2)\n            width = 0.35\n            plt.bar(x - width / 2, counts_gt, width, label=\"Ground Truth\")\n            plt.bar(x + width / 2, counts_pred, width, label=\"Predictions\")\n            plt.xticks(x, [\"Class 0\", \"Class 1\"])\n            plt.ylabel(\"Count\")\n            plt.title(\n                f\"Label Distribution \u2014 {ds_name}\\nLeft: Ground Truth, Right: Predictions for {ds_name}\"\n            )\n            plt.legend()\n            plt.savefig(os.path.join(working_dir, f\"{ds_name}_label_distribution.png\"))\n            plt.close()\n        except Exception as e:\n            print(f\"Error creating label distribution plot for {ds_name}: {e}\")\n            plt.close()\n\n# Print final metrics\nfor ablation_key, ablation_data in experiment_data.items():\n    for ds_name, ds_data in ablation_data.items():\n        final = ds_data[\"metrics\"][\"val\"][-1]\n        print(\n            f\"{ds_name} final metrics: AUC_vote={final['auc_vote']:.4f}, DES_vote={final['DES_vote']:.4f}, \"\n            f\"AUC_kl={final['auc_kl']:.4f}, DES_kl={final['DES_kl']:.4f}\"\n        )\n",
+    "plot_plan": "We will load the saved experiment data and iterate over each ablation group (here only \u201cBiasRemovalAblation\u201d) and its datasets. For each dataset, we create three separate figures inside try-except blocks: training vs. validation loss curves over epochs, AUC curves for both vote and KL uncertainty metrics, and a bar chart comparing ground-truth and predicted label distributions. Each plot is labeled with a clear multi-line title that specifies the dataset and plot type, and saved to the working directory using descriptive filenames. We always close the figure after saving or catching any errors to avoid resource leaks. Finally, after plotting we print out the final validation metrics (AUC_vote, DES_vote, AUC_kl, DES_kl) for each dataset. This script uses only numpy and matplotlib without any custom styles, and only plots data that is present in the loaded experiment data.",
+    "plot_analyses": [
+      {
+        "analysis": "Label distribution for yelp_polarity indicates ground truth is nearly balanced (around 252 vs. 246) but predictions show a slight overprediction of class 0 (~260) and underprediction of class 1 (~240), suggesting a mild bias toward negative labels.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7fb1bcfc326d4ecd9b86d2033aa9690f_proc_164440/yelp_polarity_label_distribution.png"
+      },
+      {
+        "analysis": "AUC curves for yelp_polarity reveal that the KL-based divergence metric (AUC_kl) starts at ~0.77, rises to ~0.85 by epoch 2, peaks at ~0.88 in epoch 4, then slightly drops to ~0.845, whereas the simple vote-agreement metric (AUC_vote) remains low (0.54\u21920.615 at epoch 3) before declining. This demonstrates superior and more stable performance of the KL metric, with an optimal detection window around epochs 3\u20134.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7fb1bcfc326d4ecd9b86d2033aa9690f_proc_164440/yelp_polarity_auc_curve.png"
+      },
+      {
+        "analysis": "Loss trajectories on yelp_polarity show rapid training-loss decline (0.27\u21920.01) across epochs, while validation loss starts low (~0.145), marginally improves by epoch 2, then steadily increases to ~0.26 by epoch 5. The growing gap indicates overfitting after epoch 2, favoring early stopping around epoch 2\u20133.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7fb1bcfc326d4ecd9b86d2033aa9690f_proc_164440/yelp_polarity_loss_curve.png"
+      },
+      {
+        "analysis": "Training vs. validation loss on imdb exhibits a steep drop in train loss (0.37\u21920.035). Validation loss decreases slightly to ~0.215 by epoch 2, spikes to ~0.30 at epoch 3, then fluctuates downward to ~0.28 at epoch 4 before rising again. This pattern signals instability and overfitting beyond epoch 2.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7fb1bcfc326d4ecd9b86d2033aa9690f_proc_164440/imdb_loss_curve.png"
+      },
+      {
+        "analysis": "Imdb AUC curves show AUC_kl consistently high (0.805\u21920.855\u21920.855\u21920.865\u21920.82) with its best at epoch 4, while AUC_vote lags (0.54\u21920.545\u21920.58\u21920.61\u21920.545). The KL divergence measure outperforms vote agreement in detecting uncertainty, peaking slightly later on this dataset.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7fb1bcfc326d4ecd9b86d2033aa9690f_proc_164440/imdb_auc_curve.png"
+      },
+      {
+        "analysis": "Sst2 AUC analysis indicates AUC_kl begins at ~0.725, peaks at ~0.74 in epoch 2, dips to ~0.70 in epoch 4, then recovers to ~0.77 by epoch 5. AUC_vote shows a smaller range (0.625\u21920.675\u21920.635\u21920.645\u21920.675). KL divergence remains the stronger signal throughout but exhibits some variability.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7fb1bcfc326d4ecd9b86d2033aa9690f_proc_164440/sst2_auc_curve.png"
+      },
+      {
+        "analysis": "Label distribution for sst2 is close to balanced (GT: 238 vs. 262) while predictions skew toward class 0 (255 vs. 245), mirroring the bias seen on other tasks with a tendency to overpredict the negative class.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7fb1bcfc326d4ecd9b86d2033aa9690f_proc_164440/sst2_label_distribution.png"
+      },
+      {
+        "analysis": "Loss curves on sst2 reveal fast training-loss reduction (0.395\u21920.035) versus validation loss that falls to ~0.285 by epoch 2, then rises steadily to ~0.435 by epoch 5. Overfitting becomes pronounced after epoch 2, supporting an early-stop choice around that point.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7fb1bcfc326d4ecd9b86d2033aa9690f_proc_164440/sst2_loss_curve.png"
+      },
+      {
+        "analysis": "Imdb label distribution shows ground truth (255 vs. 245) nearly balanced but predictions biased to class 0 (265 vs. 235), consistent with other tasks\u2019 slight negative-class overprediction.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7fb1bcfc326d4ecd9b86d2033aa9690f_proc_164440/imdb_label_distribution.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7fb1bcfc326d4ecd9b86d2033aa9690f_proc_164440/yelp_polarity_label_distribution.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7fb1bcfc326d4ecd9b86d2033aa9690f_proc_164440/yelp_polarity_auc_curve.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7fb1bcfc326d4ecd9b86d2033aa9690f_proc_164440/yelp_polarity_loss_curve.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7fb1bcfc326d4ecd9b86d2033aa9690f_proc_164440/imdb_loss_curve.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7fb1bcfc326d4ecd9b86d2033aa9690f_proc_164440/imdb_auc_curve.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7fb1bcfc326d4ecd9b86d2033aa9690f_proc_164440/sst2_auc_curve.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7fb1bcfc326d4ecd9b86d2033aa9690f_proc_164440/sst2_label_distribution.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7fb1bcfc326d4ecd9b86d2033aa9690f_proc_164440/sst2_loss_curve.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7fb1bcfc326d4ecd9b86d2033aa9690f_proc_164440/imdb_label_distribution.png"
+    ],
+    "vlm_feedback_summary": "Across yelp_polarity, imdb, and sst2, the KL-divergence uncertainty metric consistently outperforms vote-agreement in AUC, peaking around epochs 3\u20134. All tasks exhibit overfitting after epoch 2\u2014validation loss rises as training loss falls\u2014indicating early stopping should be set around epoch 2\u20133. Slight model bias toward class 0 (negative label) appears in all label distributions, suggesting the need for balancing strategies or calibration in paraphrase-driven PIU.",
+    "exp_results_dir": "experiment_results/experiment_7fb1bcfc326d4ecd9b86d2033aa9690f_proc_164440",
+    "ablation_name": "BiasRemovalAblation",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_7fb1bcfc326d4ecd9b86d2033aa9690f_proc_164440/experiment_data.npy"
+    ]
+  },
+  {
+    "overall_plan": "Ablation name: TransformerDepthAblation.\nWe extend the baseline with two settings: full_depth uses the original 12\u2010layer BERT, while reduced_depth builds a BERT with 6 encoder layers and copies the pretrained weights for embeddings, pooler, and the first 6 layers. All other training and paraphrase\u2010based uncertainty detection loops remain unchanged across datasets. We collect train/validation losses, detection metrics, predictions, and ground truth in a nested `experiment_data` keyed by ablation and dataset, and finally save everything to `experiment_data.npy`.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "training loss",
+            "lower_is_better": true,
+            "description": "Training loss",
+            "data": [
+              {
+                "dataset_name": "sst2 (full_depth)",
+                "final_value": 0.0308,
+                "best_value": 0.0308
+              },
+              {
+                "dataset_name": "yelp_polarity (full_depth)",
+                "final_value": 0.0215,
+                "best_value": 0.0215
+              },
+              {
+                "dataset_name": "imdb (full_depth)",
+                "final_value": 0.0467,
+                "best_value": 0.0467
+              },
+              {
+                "dataset_name": "sst2 (reduced_depth)",
+                "final_value": 0.0335,
+                "best_value": 0.0335
+              },
+              {
+                "dataset_name": "yelp_polarity (reduced_depth)",
+                "final_value": 0.0154,
+                "best_value": 0.0154
+              },
+              {
+                "dataset_name": "imdb (reduced_depth)",
+                "final_value": 0.0406,
+                "best_value": 0.0406
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Validation loss",
+            "data": [
+              {
+                "dataset_name": "sst2 (full_depth)",
+                "final_value": 0.4367,
+                "best_value": 0.4367
+              },
+              {
+                "dataset_name": "yelp_polarity (full_depth)",
+                "final_value": 0.1385,
+                "best_value": 0.1385
+              },
+              {
+                "dataset_name": "imdb (full_depth)",
+                "final_value": 0.3104,
+                "best_value": 0.3104
+              },
+              {
+                "dataset_name": "sst2 (reduced_depth)",
+                "final_value": 0.6043,
+                "best_value": 0.6043
+              },
+              {
+                "dataset_name": "yelp_polarity (reduced_depth)",
+                "final_value": 0.3684,
+                "best_value": 0.3684
+              },
+              {
+                "dataset_name": "imdb (reduced_depth)",
+                "final_value": 0.3892,
+                "best_value": 0.3892
+              }
+            ]
+          },
+          {
+            "metric_name": "detection AUC (vote)",
+            "lower_is_better": false,
+            "description": "Detection AUC using vote",
+            "data": [
+              {
+                "dataset_name": "sst2 (full_depth)",
+                "final_value": 0.6565,
+                "best_value": 0.6565
+              },
+              {
+                "dataset_name": "yelp_polarity (full_depth)",
+                "final_value": 0.5283,
+                "best_value": 0.5283
+              },
+              {
+                "dataset_name": "imdb (full_depth)",
+                "final_value": 0.6011,
+                "best_value": 0.6011
+              },
+              {
+                "dataset_name": "sst2 (reduced_depth)",
+                "final_value": 0.5924,
+                "best_value": 0.5924
+              },
+              {
+                "dataset_name": "yelp_polarity (reduced_depth)",
+                "final_value": 0.5817,
+                "best_value": 0.5817
+              },
+              {
+                "dataset_name": "imdb (reduced_depth)",
+                "final_value": 0.5288,
+                "best_value": 0.5288
+              }
+            ]
+          },
+          {
+            "metric_name": "detection DES (vote)",
+            "lower_is_better": true,
+            "description": "Detection DES using vote",
+            "data": [
+              {
+                "dataset_name": "sst2 (full_depth)",
+                "final_value": 0.1094,
+                "best_value": 0.1094
+              },
+              {
+                "dataset_name": "yelp_polarity (full_depth)",
+                "final_value": 0.0881,
+                "best_value": 0.0881
+              },
+              {
+                "dataset_name": "imdb (full_depth)",
+                "final_value": 0.1002,
+                "best_value": 0.1002
+              },
+              {
+                "dataset_name": "sst2 (reduced_depth)",
+                "final_value": 0.0987,
+                "best_value": 0.0987
+              },
+              {
+                "dataset_name": "yelp_polarity (reduced_depth)",
+                "final_value": 0.097,
+                "best_value": 0.097
+              },
+              {
+                "dataset_name": "imdb (reduced_depth)",
+                "final_value": 0.0881,
+                "best_value": 0.0881
+              }
+            ]
+          },
+          {
+            "metric_name": "detection AUC (kl)",
+            "lower_is_better": false,
+            "description": "Detection AUC using KL divergence",
+            "data": [
+              {
+                "dataset_name": "sst2 (full_depth)",
+                "final_value": 0.7603,
+                "best_value": 0.7603
+              },
+              {
+                "dataset_name": "yelp_polarity (full_depth)",
+                "final_value": 0.863,
+                "best_value": 0.863
+              },
+              {
+                "dataset_name": "imdb (full_depth)",
+                "final_value": 0.8298,
+                "best_value": 0.8298
+              },
+              {
+                "dataset_name": "sst2 (reduced_depth)",
+                "final_value": 0.6697,
+                "best_value": 0.6697
+              },
+              {
+                "dataset_name": "yelp_polarity (reduced_depth)",
+                "final_value": 0.8311,
+                "best_value": 0.8311
+              },
+              {
+                "dataset_name": "imdb (reduced_depth)",
+                "final_value": 0.7998,
+                "best_value": 0.7998
+              }
+            ]
+          },
+          {
+            "metric_name": "detection DES (kl)",
+            "lower_is_better": true,
+            "description": "Detection DES using KL divergence",
+            "data": [
+              {
+                "dataset_name": "sst2 (full_depth)",
+                "final_value": 0.1267,
+                "best_value": 0.1267
+              },
+              {
+                "dataset_name": "yelp_polarity (full_depth)",
+                "final_value": 0.1438,
+                "best_value": 0.1438
+              },
+              {
+                "dataset_name": "imdb (full_depth)",
+                "final_value": 0.1383,
+                "best_value": 0.1383
+              },
+              {
+                "dataset_name": "sst2 (reduced_depth)",
+                "final_value": 0.1116,
+                "best_value": 0.1116
+              },
+              {
+                "dataset_name": "yelp_polarity (reduced_depth)",
+                "final_value": 0.1385,
+                "best_value": 0.1385
+              },
+              {
+                "dataset_name": "imdb (reduced_depth)",
+                "final_value": 0.1333,
+                "best_value": 0.1333
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os\nimport random, re\nimport nltk\nimport torch\nimport numpy as np\nimport torch.nn.functional as F\nfrom nltk.corpus import wordnet\nfrom datasets import load_dataset\nfrom torch.utils.data import DataLoader, TensorDataset\nfrom transformers import BertTokenizerFast, BertForSequenceClassification, BertConfig\nfrom torch.optim import Adam\nfrom sklearn.metrics import roc_auc_score\n\n# device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\nnltk.download(\"wordnet\", quiet=True)\n\n\ndef generate_paraphrases(text, K):\n    words = text.split()\n    paras = []\n    for _ in range(K):\n        new = words.copy()\n        for idx in random.sample(range(len(words)), min(2, len(words))):\n            w = re.sub(r\"\\W+\", \"\", words[idx])\n            syns = wordnet.synsets(w)\n            lemmas = {\n                l.name().replace(\"_\", \" \")\n                for s in syns\n                for l in s.lemmas()\n                if l.name().lower() != w.lower()\n            }\n            if lemmas:\n                new[idx] = random.choice(list(lemmas))\n        paras.append(\" \".join(new))\n    return paras\n\n\n# setup\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\ndatasets_info = {\n    \"sst2\": (\"glue\", \"sst2\", \"sentence\", \"label\"),\n    \"yelp_polarity\": (\"yelp_polarity\", None, \"text\", \"label\"),\n    \"imdb\": (\"imdb\", None, \"text\", \"label\"),\n}\n\ntrain_size, val_size = 5000, 500\nK, epochs, bs, lr = 5, 5, 32, 2e-5\n\ntokenizer = BertTokenizerFast.from_pretrained(\"bert-base-uncased\")\nexperiment_data = {\"full_depth\": {}, \"reduced_depth\": {}}\n\nfor ablation in [\"full_depth\", \"reduced_depth\"]:\n    for name, (ds, sub, text_col, label_col) in datasets_info.items():\n        # load & trim\n        ds_train = (\n            load_dataset(ds, sub, split=\"train\")\n            if sub\n            else load_dataset(ds, split=\"train\")\n        )\n        ds_val = load_dataset(ds, sub, split=\"validation\" if sub else \"test\")\n        ds_train = ds_train.shuffle(42).select(range(train_size))\n        ds_val = ds_val.shuffle(42).select(range(val_size))\n        texts_train, labels_train = ds_train[text_col], ds_train[label_col]\n        texts_val, labels_val = ds_val[text_col], ds_val[label_col]\n        paras = {i: generate_paraphrases(t, K) for i, t in enumerate(texts_val)}\n        # tokenize\n        tr_enc = tokenizer(\n            texts_train, truncation=True, padding=True, return_tensors=\"pt\"\n        )\n        va_enc = tokenizer(\n            texts_val, truncation=True, padding=True, return_tensors=\"pt\"\n        )\n        train_ds = TensorDataset(\n            tr_enc[\"input_ids\"], tr_enc[\"attention_mask\"], torch.tensor(labels_train)\n        )\n        val_ds = TensorDataset(\n            va_enc[\"input_ids\"], va_enc[\"attention_mask\"], torch.tensor(labels_val)\n        )\n        tr_loader = DataLoader(train_ds, batch_size=bs, shuffle=True)\n        va_loader = DataLoader(val_ds, batch_size=bs)\n        # build model\n        if ablation == \"full_depth\":\n            model = BertForSequenceClassification.from_pretrained(\n                \"bert-base-uncased\", num_labels=2\n            ).to(device)\n        else:\n            config = BertConfig.from_pretrained(\"bert-base-uncased\")\n            config.num_hidden_layers //= 2\n            model = BertForSequenceClassification(config)\n            pretrained = BertForSequenceClassification.from_pretrained(\n                \"bert-base-uncased\", num_labels=2\n            )\n            m_state = model.state_dict()\n            for k, v in pretrained.state_dict().items():\n                if k in m_state:\n                    m_state[k] = v\n            model.load_state_dict(m_state)\n            model.to(device)\n        optimizer = Adam(model.parameters(), lr=lr)\n        # prepare storage\n        experiment_data[ablation][name] = {\n            \"losses\": {\"train\": [], \"val\": []},\n            \"metrics\": {\"detection\": []},\n            \"predictions\": [],\n            \"ground_truth\": labels_val,\n        }\n        # train & eval\n        for epoch in range(1, epochs + 1):\n            model.train()\n            train_losses = []\n            for ids, mask, labels in tr_loader:\n                ids, mask, labels = ids.to(device), mask.to(device), labels.to(device)\n                optimizer.zero_grad()\n                out = model(input_ids=ids, attention_mask=mask, labels=labels)\n                out.loss.backward()\n                optimizer.step()\n                train_losses.append(out.loss.item())\n            experiment_data[ablation][name][\"losses\"][\"train\"].append(\n                {\"epoch\": epoch, \"loss\": float(np.mean(train_losses))}\n            )\n            model.eval()\n            val_losses = []\n            with torch.no_grad():\n                for ids, mask, labels in va_loader:\n                    ids, mask, labels = (\n                        ids.to(device),\n                        mask.to(device),\n                        labels.to(device),\n                    )\n                    out = model(input_ids=ids, attention_mask=mask, labels=labels)\n                    val_losses.append(out.loss.item())\n            vl = float(np.mean(val_losses))\n            experiment_data[ablation][name][\"losses\"][\"val\"].append(\n                {\"epoch\": epoch, \"loss\": vl}\n            )\n            print(f\"[{ablation}/{name}] Epoch {epoch}: val_loss={vl:.4f}\")\n            # detection\n            uncs_vote, uncs_kl, errs = [], [], []\n            for i, txt in enumerate(texts_val):\n                probs, preds = [], []\n                for v in [txt] + paras[i]:\n                    enc = tokenizer(\n                        v, truncation=True, padding=True, return_tensors=\"pt\"\n                    ).to(device)\n                    with torch.no_grad():\n                        logits = model(**enc).logits\n                    p = torch.softmax(logits, dim=-1).squeeze(0).cpu()\n                    probs.append(p)\n                    preds.append(int(p.argmax()))\n                maj = max(set(preds), key=preds.count)\n                uncs_vote.append(1 - preds.count(maj) / len(preds))\n                klv = []\n                for a in range(len(probs)):\n                    for b in range(a + 1, len(probs)):\n                        P, Q = probs[a], probs[b]\n                        klv.append(\n                            0.5\n                            * (\n                                F.kl_div(Q.log(), P, reduction=\"sum\").item()\n                                + F.kl_div(P.log(), Q, reduction=\"sum\").item()\n                            )\n                        )\n                uncs_kl.append(float(np.mean(klv)))\n                errs.append(int(preds[0] != int(labels_val[i])))\n            try:\n                auc_v = roc_auc_score(errs, uncs_vote)\n            except:\n                auc_v = 0.5\n            try:\n                auc_k = roc_auc_score(errs, uncs_kl)\n            except:\n                auc_k = 0.5\n            des_v, des_k = auc_v / (K + 1), auc_k / (K + 1)\n            experiment_data[ablation][name][\"metrics\"][\"detection\"].append(\n                {\n                    \"epoch\": epoch,\n                    \"auc_vote\": auc_v,\n                    \"DES_vote\": des_v,\n                    \"auc_kl\": auc_k,\n                    \"DES_kl\": des_k,\n                }\n            )\n            print(\n                f\"[{ablation}/{name}] AUC_vote={auc_v:.4f},DES_vote={des_v:.4f},AUC_kl={auc_k:.4f},DES_kl={des_k:.4f}\"\n            )\n        # final preds\n        preds = []\n        model.eval()\n        with torch.no_grad():\n            for ids, mask, _ in va_loader:\n                ids, mask = ids.to(device), mask.to(device)\n                logits = model(input_ids=ids, attention_mask=mask).logits\n                preds.extend(torch.argmax(logits, -1).cpu().tolist())\n        experiment_data[ablation][name][\"predictions\"] = preds\n\n# save\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\n# Load experiment data\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n    experiment_data = {}\n\n# Print final detection metrics\nfor ablation, ds_dict in experiment_data.items():\n    for dataset, data in ds_dict.items():\n        try:\n            last = data[\"metrics\"][\"detection\"][-1]\n            print(\n                f\"[{dataset}][{ablation}] Final metrics - \"\n                f\"AUC_vote: {last['auc_vote']:.4f}, DES_vote: {last['DES_vote']:.4f}, \"\n                f\"AUC_kl: {last['auc_kl']:.4f}, DES_kl: {last['DES_kl']:.4f}\"\n            )\n        except Exception as e:\n            print(f\"Error printing metrics for {dataset}-{ablation}: {e}\")\n\n# Plot per dataset\nfor dataset in experiment_data.get(\"full_depth\", {}):\n    try:\n        fig, axes = plt.subplots(1, 2, figsize=(12, 5))\n        for ablation in [\"full_depth\", \"reduced_depth\"]:\n            losses = experiment_data[ablation][dataset][\"losses\"]\n            train = [x[\"loss\"] for x in losses[\"train\"]]\n            val = [x[\"loss\"] for x in losses[\"val\"]]\n            epochs = [x[\"epoch\"] for x in losses[\"train\"]]\n            axes[0].plot(epochs, train, marker=\"o\", label=f\"{ablation}-train\")\n            axes[0].plot(epochs, val, marker=\"x\", label=f\"{ablation}-val\")\n\n            det = experiment_data[ablation][dataset][\"metrics\"][\"detection\"]\n            ev = [m[\"auc_vote\"] for m in det]\n            ek = [m[\"auc_kl\"] for m in det]\n            ep = [m[\"epoch\"] for m in det]\n            axes[1].plot(ep, ev, marker=\"o\", label=f\"{ablation}-AUC_vote\")\n            axes[1].plot(ep, ek, marker=\"x\", label=f\"{ablation}-AUC_kl\")\n\n        axes[0].set_xlabel(\"Epoch\")\n        axes[0].set_ylabel(\"Loss\")\n        axes[0].set_title(\"Loss Curves\")\n        axes[0].legend()\n        axes[1].set_xlabel(\"Epoch\")\n        axes[1].set_ylabel(\"AUC\")\n        axes[1].set_title(\"Detection AUC (Vote vs KL)\")\n        axes[1].legend()\n        fig.suptitle(\n            f\"{dataset} Experiment Results\\n\"\n            \"Left: Loss Curves, Right: Detection AUC (Vote vs KL)\"\n        )\n        plt.tight_layout(rect=[0, 0.03, 1, 0.95])\n        fname = f\"{dataset}_loss_detection.png\"\n        plt.savefig(os.path.join(working_dir, fname))\n        plt.close()\n    except Exception as e:\n        print(f\"Error creating plot for {dataset}: {e}\")\n",
+    "plot_plan": "We will load the saved experiment data from the working directory and print out the final detection metrics for each dataset under both ablation settings. Then, for each dataset, we will create a side\u2010by\u2010side plot showing training vs validation loss curves on the left and detection AUC curves (vote and KL) on the right, combining results for both full and reduced depth models. Each plot will have a clear title and subtitle indicating what is shown on each side, and will be saved to the working directory with a descriptive filename. All plotting is wrapped in try\u2010except blocks to handle errors gracefully, and figures are closed after saving. Only existing data from the loaded file is used.",
+    "plot_analyses": [
+      {
+        "analysis": "On sst2, both full-depth and reduced-depth configurations achieve rapid training loss reduction, with train losses dipping below 0.05 by epoch 4. Validation loss for full-depth dips at epoch 2 (~0.30) then rises, indicating mild overfitting beyond epoch 2. Reduced-depth validation loss starts higher (~0.38) and climbs steadily to ~0.62 by epoch 4 before a slight decrease, signaling stronger overfitting or capacity limits. For detection, KL divergence consistently outperforms vote disagreement: full-depth AUC_kl hovers around 0.75\u20130.79 versus AUC_vote at 0.63\u20130.70. Reduced-depth AUC_kl (0.62\u20130.70) also beats AUC_vote (0.59\u20130.65), though both metrics trail full-depth. KL-based PIU yields robust uncertainty estimates despite smaller model capacity.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_1fbca80115dc4f94a62937611cfbdba3_proc_164442/sst2_loss_detection.png"
+      },
+      {
+        "analysis": "On yelp_polarity, training loss for both depths falls below 0.05 by epoch 3. Full-depth validation loss has its lowest point at epoch 2 (~0.14) then oscillates upward before returning (~0.14), suggesting an optimal early stopping point. Reduced-depth validation loss halves to ~0.23 at epoch 2 but then climbs past its starting value, highlighting capacity constraints. In detection, full-depth AUC_kl remains consistently high (0.83\u20130.88) while AUC_vote peaks around 0.62 at epoch 3 then declines. Reduced-depth AUC_kl improves from ~0.77 to ~0.83, outperforming its vote metric (~0.56\u20130.59) by a substantial margin. KL-based divergence again proves more reliable than majority\u2010vote.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_1fbca80115dc4f94a62937611cfbdba3_proc_164442/yelp_polarity_loss_detection.png"
+      },
+      {
+        "analysis": "On imdb, both depths drive train loss under 0.07 by epoch 3. Validation loss bottoms out early (full-depth ~0.23 at epoch 2; reduced-depth ~0.27) before rising, indicating early-stopping benefits. Detection AUC shows full-depth AUC_kl leading at ~0.82\u20130.88 while full-depth AUC_vote stays near ~0.59\u20130.61. Reduced-depth AUC_kl steadily climbs from 0.66 to 0.82, narrowing the gap to full-depth, and always exceeds reduced-depth AUC_vote (0.52\u20130.58). KL divergence remains the preferred signal for uncertainty across model capacities.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_1fbca80115dc4f94a62937611cfbdba3_proc_164442/imdb_loss_detection.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_1fbca80115dc4f94a62937611cfbdba3_proc_164442/sst2_loss_detection.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_1fbca80115dc4f94a62937611cfbdba3_proc_164442/yelp_polarity_loss_detection.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_1fbca80115dc4f94a62937611cfbdba3_proc_164442/imdb_loss_detection.png"
+    ],
+    "vlm_feedback_summary": "Across SST2, Yelp Polarity, and IMDB, KL\u2010based divergence from a small prompt ensemble consistently outperforms simple vote agreement in detecting model uncertainty and potential hallucinations. Full-depth models edge out reduced-depth on absolute AUCs, but reduced-depth still gains significant signal from PIU. Early stopping (around epoch 2) appears critical to prevent overfitting. These ablations confirm that PIU\u2019s core component\u2014measuring output divergence via lightweight paraphrases\u2014is effective and model-agnostic, with KL divergence as the most reliable metric.",
+    "exp_results_dir": "experiment_results/experiment_1fbca80115dc4f94a62937611cfbdba3_proc_164442",
+    "ablation_name": "TransformerDepthAblation",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_1fbca80115dc4f94a62937611cfbdba3_proc_164442/experiment_data.npy"
+    ]
+  }
+]

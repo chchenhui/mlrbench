@@ -1,0 +1,32 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-written and easy to understand, especially for its short workshop format (3 pages main text). The ideas, motivation, and proposed method (UGC) are clearly articulated. The structure is logical, progressing from problem statement to method description, experiments, and results. For instance, Section 3 clearly outlines the two phases of UGC. The abstract and introduction effectively set the stage. Most details are presented concisely, with further information appropriately placed in appendices (e.g., Appendix A for theoretical justification, Appendix B for hyperparameters and additional ablations). The language is generally precise. Figures are described in the text, and these descriptions largely align with the analyses provided in the `research_summary.json` and `ablation_summary.json` derived from the code."
+    },
+    "Novelty": {
+        "score": 8,
+        "justification": "The paper proposes Unsupervised Gradient Clustering (UGC), a method to discover latent spurious-feature groups by clustering per-sample gradients without explicit group labels. While the components (gradient extraction, k-means, Group DRO) are existing techniques, their combination and application to form pseudo-groups for robust optimization in an unsupervised manner appears novel. The paper explicitly states, 'To our knowledge, UGC is the first to cluster per-sample gradient vectors to form pseudo-groups for group-robust learning without annotations.' This distinguishes it from methods like Group DRO (requires labels), JTT (loss-based heuristics), and IRM (requires environment labels). The theoretical insight linking gradient structure to feature-label correlation, while perhaps building on general understanding, is applied innovatively for this clustering purpose."
+    },
+    "Soundness": {
+        "score": 7,
+        "justification": "The core methodology of UGC—extracting gradients, clustering them, and then applying group-robust optimization—is sound and appropriate for the stated problem. The experimental setup on the synthetic spurious dataset (Arjovsky et al., 2019) is standard for initial validation. The main results reported in the paper (e.g., matching oracle-DRO worst-group accuracy of ~99.4% and achieving ~99.6% test accuracy) are consistent with the provided code (`best_solution_be4523f06c524c6bbaf8939619561351.py`) and its `research_summary.json` (which shows 0.9942 in-sample WG acc, 0.9924 dev WG acc, and 0.996 test acc). Most ablation results described (e.g., for learning rate sweep, cluster-count, feature normalization, linear probe) are also supported by the `ablation_summary.json`. However, there is a notable discrepancy: Section 5, discussing Figure 6 (Weight Decay Ablation), claims 'Moderate decay (e.g. 1e-4) yields slight robustness gains'. The `ablation_summary.json` for 'WEIGHT_DECAY_VARIATION' indicates that a weight decay of 1e-4 results in *worse* validation worst-group accuracy (0.962) compared to no decay (0.9885) or a higher decay of 1e-3 (0.9809). This specific claim in the paper is not supported by the provided code's results. The theoretical justification in Appendix A is limited to a linear model, which is a simplification. Despite the discrepancy, the primary claims about UGC's effectiveness on the synthetic dataset are well-supported and reproducible."
+    },
+    "Significance": {
+        "score": 7,
+        "justification": "The paper addresses the critical and challenging problem of mitigating spurious correlations in deep learning models, particularly in scenarios where group annotations are unavailable. An effective unsupervised method like UGC, if generalizable, would be highly significant by reducing reliance on costly manual labeling. The reported performance on the synthetic dataset, matching oracle methods, is promising. The work aligns well with the workshop's themes of exploring foundations and solutions for shortcut learning, especially 'Proposing new robustification methods' and 'Finding solutions for robustness to spurious correlation when information regarding spurious feature is completely or partially unknown.' The primary limitation to its current significance is that the empirical validation is confined to a single synthetic dataset. The paper acknowledges this by listing scaling to real-world datasets as future work. For a workshop setting, presenting a novel idea with strong initial results on a relevant problem is significant."
+    },
+    "Overall": {
+        "score": 7,
+        "strengths": [
+            "Proposes a novel and intuitive unsupervised method (UGC) for mitigating spurious correlations by discovering latent groups via gradient clustering.",
+            "UGC is simple to understand and appears relatively easy to implement, potentially integrating well with existing training pipelines.",
+            "Demonstrates strong empirical performance on a synthetic benchmark, achieving worst-group accuracy comparable to oracle methods that require true group labels.",
+            "The core experimental results on the synthetic dataset are reproducible based on the provided code and associated summaries, lending credibility to the main findings."
+        ],
+        "weaknesses": [
+            "The empirical validation is currently limited to a single synthetic dataset. The generalizability of UGC to more complex, real-world datasets and diverse types of spurious correlations remains unevaluated.",
+            "There is an inconsistency in the paper's reporting of the weight decay ablation results (Figure 6). The claim that moderate weight decay (1e-4) offers 'slight robustness gains' is contradicted by the `ablation_summary.json` from the provided code, which shows this setting performs worse than no decay or a higher decay (1e-3)."
+        ]
+    },
+    "Confidence": 4
+}

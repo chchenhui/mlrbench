@@ -1,0 +1,336 @@
+{
+  "best node": {
+    "overall_plan": "Hyperparam tuning name: EPOCHS.\nI will loop over different epoch settings (e.g., 10, 30, 50), reinitialize and train the LSTM encoder from scratch for each setting, and record per\u2010epoch losses and retrieval accuracies as well as final validation predictions. All results are organized under the hyperparameter tuning key \u201cEPOCHS\u201d and saved to a single NumPy file for later plotting or analysis.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "train accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the training set",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 1.0,
+                "best_value": 1.0
+              }
+            ]
+          },
+          {
+            "metric_name": "validation accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the validation set",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 1.0,
+                "best_value": 1.0
+              }
+            ]
+          },
+          {
+            "metric_name": "training loss",
+            "lower_is_better": true,
+            "description": "Loss on the training set",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 0.0,
+                "best_value": 0.0
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Loss on the validation set",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 0.0,
+                "best_value": 0.0
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os\nimport random\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.nn.functional as F\nfrom torch.utils.data import Dataset, DataLoader, Subset\nfrom torch.optim import Adam\n\n# set up working directory\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\n\n# generate synthetic code snippets and traces\ncodes = []\nfor c in range(1, 11):\n    codes.append(f\"def f(x): return x+{c}\")\n    codes.append(f\"def f(x): return {c}+x\")\ninput_set = np.random.randint(-10, 10, size=100)\ntraces = []\nfor code in codes:\n    env = {}\n    exec(code, env)\n    f = env[\"f\"]\n    traces.append(tuple(f(int(x)) for x in input_set))\n\n# group snippets by trace\ntrace_to_indices = {}\nfor idx, trace in enumerate(traces):\n    trace_to_indices.setdefault(trace, []).append(idx)\ngroup_to_indices = {gid: ids for gid, ids in enumerate(trace_to_indices.values())}\nindex_to_gid = [None] * len(codes)\nfor gid, idxs in group_to_indices.items():\n    for idx in idxs:\n        index_to_gid[idx] = gid\n\n# encode snippets as character sequences\nvocab = sorted(set(\"\".join(codes)))\nstoi = {c: i + 1 for i, c in enumerate(vocab)}\nstoi[\"PAD\"] = 0\nmax_len = max(len(s) for s in codes)\nencoded = []\nfor s in codes:\n    seq = [stoi[c] for c in s] + [0] * (max_len - len(s))\n    encoded.append(seq)\nencoded = torch.LongTensor(encoded)\n\n\n# dataset & loaders\nclass CodeDataset(Dataset):\n    def __init__(self, encoded, group_to_indices, index_to_gid):\n        self.encoded = encoded\n        self.group_to_indices = group_to_indices\n        self.index_to_gid = index_to_gid\n\n    def __len__(self):\n        return len(self.index_to_gid)\n\n    def __getitem__(self, idx):\n        anchor = self.encoded[idx]\n        gid = self.index_to_gid[idx]\n        pos = idx\n        while pos == idx:\n            pos = random.choice(self.group_to_indices[gid])\n        neg_gid = random.choice([g for g in self.group_to_indices if g != gid])\n        neg = random.choice(self.group_to_indices[neg_gid])\n        return anchor, self.encoded[pos], self.encoded[neg]\n\n\ndataset = CodeDataset(encoded, group_to_indices, index_to_gid)\nall_gids = list(group_to_indices.keys())\nrandom.shuffle(all_gids)\nsplit = int(0.8 * len(all_gids))\ntrain_gids, val_gids = all_gids[:split], all_gids[split:]\ntrain_indices = [i for g in train_gids for i in group_to_indices[g]]\nval_indices = [i for g in val_gids for i in group_to_indices[g]]\ntrain_loader = DataLoader(Subset(dataset, train_indices), batch_size=8, shuffle=True)\nval_loader = DataLoader(Subset(dataset, val_indices), batch_size=8, shuffle=False)\n\n\n# model definition\nclass CodeEncoder(nn.Module):\n    def __init__(self, vocab_size, embed_dim=64, hidden=64):\n        super().__init__()\n        self.embed = nn.Embedding(vocab_size, embed_dim, padding_idx=0)\n        self.lstm = nn.LSTM(embed_dim, hidden, batch_first=True)\n\n    def forward(self, x):\n        x = self.embed(x)\n        _, (h, _) = self.lstm(x)\n        return h.squeeze(0)\n\n\n# hyperparameter tuning over different epoch counts\nEPOCH_LIST = [10, 30, 50]\nexperiment_data = {\"EPOCHS\": {\"synthetic\": {}}}\n\nfor E in EPOCH_LIST:\n    # reinitialize model & optimizer\n    model = CodeEncoder(len(stoi), 64, 64).to(device)\n    optimizer = Adam(model.parameters(), lr=1e-3)\n    loss_fn = nn.TripletMarginLoss(margin=1.0)\n\n    # containers for this setting\n    data = {\n        \"metrics\": {\"train\": [], \"val\": []},\n        \"losses\": {\"train\": [], \"val\": []},\n        \"predictions\": [],\n        \"ground_truth\": [],\n    }\n\n    # training + validation\n    for epoch in range(E):\n        model.train()\n        total_train_loss = 0.0\n        for a, p, n in train_loader:\n            a, p, n = a.to(device), p.to(device), n.to(device)\n            emb_a, emb_p, emb_n = model(a), model(p), model(n)\n            loss = loss_fn(emb_a, emb_p, emb_n)\n            optimizer.zero_grad()\n            loss.backward()\n            optimizer.step()\n            total_train_loss += loss.item()\n        avg_train_loss = total_train_loss / len(train_loader)\n        data[\"losses\"][\"train\"].append(avg_train_loss)\n\n        model.eval()\n        total_val_loss = 0.0\n        with torch.no_grad():\n            for a, p, n in val_loader:\n                a, p, n = a.to(device), p.to(device), n.to(device)\n                total_val_loss += loss_fn(model(a), model(p), model(n)).item()\n        avg_val_loss = total_val_loss / len(val_loader)\n        data[\"losses\"][\"val\"].append(avg_val_loss)\n\n        # compute retrieval accuracies\n        with torch.no_grad():\n            emb_all = model(encoded.to(device))\n            emb_norm = F.normalize(emb_all, dim=1)\n            sims = emb_norm @ emb_norm.T\n\n            def compute_acc(indices):\n                correct = 0\n                for i in indices:\n                    sim = sims[i].clone()\n                    sim[i] = -float(\"inf\")\n                    top1 = torch.argmax(sim).item()\n                    if index_to_gid[top1] == index_to_gid[i]:\n                        correct += 1\n                return correct / len(indices)\n\n            train_acc = compute_acc(train_indices)\n            val_acc = compute_acc(val_indices)\n        data[\"metrics\"][\"train\"].append(train_acc)\n        data[\"metrics\"][\"val\"].append(val_acc)\n\n    # final predictions on validation\n    model.eval()\n    with torch.no_grad():\n        emb_all = model(encoded.to(device))\n        emb_norm = F.normalize(emb_all, dim=1)\n        sims = emb_norm @ emb_norm.T\n        for i in val_indices:\n            sim = sims[i].clone()\n            sim[i] = -float(\"inf\")\n            top1 = torch.argmax(sim).item()\n            data[\"predictions\"].append(index_to_gid[top1])\n            data[\"ground_truth\"].append(index_to_gid[i])\n\n    experiment_data[\"EPOCHS\"][\"synthetic\"][E] = data\n    print(f\"Finished EPOCHS={E}: final val_acc={val_acc:.4f}\")\n\n# save all results\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\nprint(\"Saved experiment_data.npy\")\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\n    synthetic_data = experiment_data[\"EPOCHS\"][\"synthetic\"]\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n    synthetic_data = {}\n\n# Plot loss curves\ntry:\n    plt.figure()\n    for E, data in synthetic_data.items():\n        epochs = list(range(1, len(data[\"losses\"][\"train\"]) + 1))\n        plt.plot(epochs, data[\"losses\"][\"train\"], label=f\"Train E={E}\")\n        plt.plot(epochs, data[\"losses\"][\"val\"], linestyle=\"--\", label=f\"Val E={E}\")\n    plt.suptitle(\"Synthetic Dataset\")\n    plt.title(\"Train vs Validation Loss Curves\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Loss\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_loss_curves.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating loss curves plot: {e}\")\n    plt.close()\n\n# Plot accuracy curves\ntry:\n    plt.figure()\n    for E, data in synthetic_data.items():\n        epochs = list(range(1, len(data[\"metrics\"][\"train\"]) + 1))\n        plt.plot(epochs, data[\"metrics\"][\"train\"], label=f\"Train E={E}\")\n        plt.plot(epochs, data[\"metrics\"][\"val\"], linestyle=\"--\", label=f\"Val E={E}\")\n    plt.suptitle(\"Synthetic Dataset\")\n    plt.title(\"Train vs Validation Retrieval Accuracy\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Accuracy\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_accuracy_curves.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating accuracy curves plot: {e}\")\n    plt.close()\n",
+    "plot_plan": "The code below loads the saved experiment data for the synthetic dataset, then creates two summary plots: one showing train vs. validation loss curves for each epoch setting, and another showing train vs. validation retrieval accuracy curves. Each plotting block is wrapped in a try-except to handle potential errors, uses clear titles and subtitles specifying the synthetic dataset, labels axes, includes a legend, and saves to the working directory with descriptive filenames while always closing the figure.",
+    "plot_analyses": [
+      {
+        "analysis": "Plot 1 shows that all three epoch budgets (10, 30, 50) eventually reach perfect training accuracy, but their validation curves tell different stories. With only 10 epochs, validation peaks around 65\u201370%, indicating underfitting on the held\u2010out set before training halts. Allowing 30 epochs pushes validation up to about 75%, but it plateaus quickly\u2014suggesting the model learns faster but still fails to fully generalize. At 50 epochs, training accuracy climbs more gradually, and validation remains stuck at 50% until roughly epoch 12, when it suddenly jumps to near 100%. This abrupt transition hints at a late learning regime change (e.g., a schedule step or warm\u2010up ending) rather than smooth generalization improvements.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_52c025f14d09471881bea2a75607be65_proc_385044/synthetic_accuracy_curves.png"
+      },
+      {
+        "analysis": "Plot 2 confirms that training loss falls swiftly to near zero in all settings, but validation loss behaves differently across epoch choices. For 10 epochs, validation loss drops smoothly to around 0.1 and then stops. At 30 epochs, loss also falls fast but shows small oscillations around zero toward the end, reflecting some overfitting. Under the 50\u2010epoch run, validation loss oscillates more noticeably even after hitting near\u2010zero, indicating sensitivity to noise and potential overtraining. The sharper spikes correspond temporally to the delayed accuracy jump seen in the first plot, reinforcing the idea of a late training schedule event.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_52c025f14d09471881bea2a75607be65_proc_385044/synthetic_loss_curves.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_52c025f14d09471881bea2a75607be65_proc_385044/synthetic_accuracy_curves.png",
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_52c025f14d09471881bea2a75607be65_proc_385044/synthetic_loss_curves.png"
+    ],
+    "vlm_feedback_summary": "Validation performance under short runs (10 epochs) suffers from underfitting, while medium runs (30 epochs) strike a better balance but still plateau early. Very long runs (50 epochs) introduce unstable behavior until a late jump in metrics, suggesting a learning rate or warm\u2010up schedule impact. To improve, consider fine\u2010tuning the learning\u2010rate schedule and early stopping, and add regularization (dropout or weight decay). Proposed additional test datasets from HuggingFace: \"mbpp\" for Python problem generalization and \"code_x_glue_cc_code_clone_detection\" for adversarial clone detection.",
+    "exp_results_dir": "experiment_results/experiment_52c025f14d09471881bea2a75607be65_proc_385044",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_52c025f14d09471881bea2a75607be65_proc_385044/experiment_data.npy"
+    ]
+  },
+  "best node with different seeds": [
+    {
+      "overall_plan": "Continue the systematic hyperparameter sweep over different epoch settings for the LSTM encoder\u2014reinitializing and training from scratch at each setting, logging per\u2010epoch losses, retrieval accuracies, and final validation predictions under the key \u201cEPOCHS\u201d in a single NumPy file\u2014while introducing a seed node stage upfront to ensure reproducibility and consistent initialization across all experiments.",
+      "analysis": "",
+      "metric": {
+        "value": {
+          "metric_names": [
+            {
+              "metric_name": "train accuracy",
+              "lower_is_better": false,
+              "description": "Proportion of correctly classified samples in the training set",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 1.0,
+                  "best_value": 1.0
+                }
+              ]
+            },
+            {
+              "metric_name": "validation accuracy",
+              "lower_is_better": false,
+              "description": "Proportion of correctly classified samples in the validation set",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 1.0,
+                  "best_value": 1.0
+                }
+              ]
+            },
+            {
+              "metric_name": "training loss",
+              "lower_is_better": true,
+              "description": "Cross-entropy loss on the training set",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 0.0,
+                  "best_value": 0.0
+                }
+              ]
+            },
+            {
+              "metric_name": "validation loss",
+              "lower_is_better": true,
+              "description": "Cross-entropy loss on the validation set",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 0.0208,
+                  "best_value": 0.0
+                }
+              ]
+            }
+          ]
+        },
+        "maximize": null,
+        "name": null,
+        "description": null
+      },
+      "code": "# Set random seed\nimport random\nimport numpy as np\nimport torch\n\nseed = 2\nrandom.seed(seed)\nnp.random.seed(seed)\ntorch.manual_seed(seed)\nif torch.cuda.is_available():\n    torch.cuda.manual_seed(seed)\n\nimport os\nimport random\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.nn.functional as F\nfrom torch.utils.data import Dataset, DataLoader, Subset\nfrom torch.optim import Adam\n\n# set up working directory\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\n\n# generate synthetic code snippets and traces\ncodes = []\nfor c in range(1, 11):\n    codes.append(f\"def f(x): return x+{c}\")\n    codes.append(f\"def f(x): return {c}+x\")\ninput_set = np.random.randint(-10, 10, size=100)\ntraces = []\nfor code in codes:\n    env = {}\n    exec(code, env)\n    f = env[\"f\"]\n    traces.append(tuple(f(int(x)) for x in input_set))\n\n# group snippets by trace\ntrace_to_indices = {}\nfor idx, trace in enumerate(traces):\n    trace_to_indices.setdefault(trace, []).append(idx)\ngroup_to_indices = {gid: ids for gid, ids in enumerate(trace_to_indices.values())}\nindex_to_gid = [None] * len(codes)\nfor gid, idxs in group_to_indices.items():\n    for idx in idxs:\n        index_to_gid[idx] = gid\n\n# encode snippets as character sequences\nvocab = sorted(set(\"\".join(codes)))\nstoi = {c: i + 1 for i, c in enumerate(vocab)}\nstoi[\"PAD\"] = 0\nmax_len = max(len(s) for s in codes)\nencoded = []\nfor s in codes:\n    seq = [stoi[c] for c in s] + [0] * (max_len - len(s))\n    encoded.append(seq)\nencoded = torch.LongTensor(encoded)\n\n\n# dataset & loaders\nclass CodeDataset(Dataset):\n    def __init__(self, encoded, group_to_indices, index_to_gid):\n        self.encoded = encoded\n        self.group_to_indices = group_to_indices\n        self.index_to_gid = index_to_gid\n\n    def __len__(self):\n        return len(self.index_to_gid)\n\n    def __getitem__(self, idx):\n        anchor = self.encoded[idx]\n        gid = self.index_to_gid[idx]\n        pos = idx\n        while pos == idx:\n            pos = random.choice(self.group_to_indices[gid])\n        neg_gid = random.choice([g for g in self.group_to_indices if g != gid])\n        neg = random.choice(self.group_to_indices[neg_gid])\n        return anchor, self.encoded[pos], self.encoded[neg]\n\n\ndataset = CodeDataset(encoded, group_to_indices, index_to_gid)\nall_gids = list(group_to_indices.keys())\nrandom.shuffle(all_gids)\nsplit = int(0.8 * len(all_gids))\ntrain_gids, val_gids = all_gids[:split], all_gids[split:]\ntrain_indices = [i for g in train_gids for i in group_to_indices[g]]\nval_indices = [i for g in val_gids for i in group_to_indices[g]]\ntrain_loader = DataLoader(Subset(dataset, train_indices), batch_size=8, shuffle=True)\nval_loader = DataLoader(Subset(dataset, val_indices), batch_size=8, shuffle=False)\n\n\n# model definition\nclass CodeEncoder(nn.Module):\n    def __init__(self, vocab_size, embed_dim=64, hidden=64):\n        super().__init__()\n        self.embed = nn.Embedding(vocab_size, embed_dim, padding_idx=0)\n        self.lstm = nn.LSTM(embed_dim, hidden, batch_first=True)\n\n    def forward(self, x):\n        x = self.embed(x)\n        _, (h, _) = self.lstm(x)\n        return h.squeeze(0)\n\n\n# hyperparameter tuning over different epoch counts\nEPOCH_LIST = [10, 30, 50]\nexperiment_data = {\"EPOCHS\": {\"synthetic\": {}}}\n\nfor E in EPOCH_LIST:\n    # reinitialize model & optimizer\n    model = CodeEncoder(len(stoi), 64, 64).to(device)\n    optimizer = Adam(model.parameters(), lr=1e-3)\n    loss_fn = nn.TripletMarginLoss(margin=1.0)\n\n    # containers for this setting\n    data = {\n        \"metrics\": {\"train\": [], \"val\": []},\n        \"losses\": {\"train\": [], \"val\": []},\n        \"predictions\": [],\n        \"ground_truth\": [],\n    }\n\n    # training + validation\n    for epoch in range(E):\n        model.train()\n        total_train_loss = 0.0\n        for a, p, n in train_loader:\n            a, p, n = a.to(device), p.to(device), n.to(device)\n            emb_a, emb_p, emb_n = model(a), model(p), model(n)\n            loss = loss_fn(emb_a, emb_p, emb_n)\n            optimizer.zero_grad()\n            loss.backward()\n            optimizer.step()\n            total_train_loss += loss.item()\n        avg_train_loss = total_train_loss / len(train_loader)\n        data[\"losses\"][\"train\"].append(avg_train_loss)\n\n        model.eval()\n        total_val_loss = 0.0\n        with torch.no_grad():\n            for a, p, n in val_loader:\n                a, p, n = a.to(device), p.to(device), n.to(device)\n                total_val_loss += loss_fn(model(a), model(p), model(n)).item()\n        avg_val_loss = total_val_loss / len(val_loader)\n        data[\"losses\"][\"val\"].append(avg_val_loss)\n\n        # compute retrieval accuracies\n        with torch.no_grad():\n            emb_all = model(encoded.to(device))\n            emb_norm = F.normalize(emb_all, dim=1)\n            sims = emb_norm @ emb_norm.T\n\n            def compute_acc(indices):\n                correct = 0\n                for i in indices:\n                    sim = sims[i].clone()\n                    sim[i] = -float(\"inf\")\n                    top1 = torch.argmax(sim).item()\n                    if index_to_gid[top1] == index_to_gid[i]:\n                        correct += 1\n                return correct / len(indices)\n\n            train_acc = compute_acc(train_indices)\n            val_acc = compute_acc(val_indices)\n        data[\"metrics\"][\"train\"].append(train_acc)\n        data[\"metrics\"][\"val\"].append(val_acc)\n\n    # final predictions on validation\n    model.eval()\n    with torch.no_grad():\n        emb_all = model(encoded.to(device))\n        emb_norm = F.normalize(emb_all, dim=1)\n        sims = emb_norm @ emb_norm.T\n        for i in val_indices:\n            sim = sims[i].clone()\n            sim[i] = -float(\"inf\")\n            top1 = torch.argmax(sim).item()\n            data[\"predictions\"].append(index_to_gid[top1])\n            data[\"ground_truth\"].append(index_to_gid[i])\n\n    experiment_data[\"EPOCHS\"][\"synthetic\"][E] = data\n    print(f\"Finished EPOCHS={E}: final val_acc={val_acc:.4f}\")\n\n# save all results\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\nprint(\"Saved experiment_data.npy\")\n",
+      "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\n    synthetic_data = experiment_data[\"EPOCHS\"][\"synthetic\"]\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n    synthetic_data = {}\n\n# Plot loss curves\ntry:\n    plt.figure()\n    for E, data in synthetic_data.items():\n        epochs = list(range(1, len(data[\"losses\"][\"train\"]) + 1))\n        plt.plot(epochs, data[\"losses\"][\"train\"], label=f\"Train E={E}\")\n        plt.plot(epochs, data[\"losses\"][\"val\"], linestyle=\"--\", label=f\"Val E={E}\")\n    plt.suptitle(\"Synthetic Dataset\")\n    plt.title(\"Train vs Validation Loss Curves\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Loss\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_loss_curves.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating loss curves plot: {e}\")\n    plt.close()\n\n# Plot accuracy curves\ntry:\n    plt.figure()\n    for E, data in synthetic_data.items():\n        epochs = list(range(1, len(data[\"metrics\"][\"train\"]) + 1))\n        plt.plot(epochs, data[\"metrics\"][\"train\"], label=f\"Train E={E}\")\n        plt.plot(epochs, data[\"metrics\"][\"val\"], linestyle=\"--\", label=f\"Val E={E}\")\n    plt.suptitle(\"Synthetic Dataset\")\n    plt.title(\"Train vs Validation Retrieval Accuracy\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Accuracy\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_accuracy_curves.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating accuracy curves plot: {e}\")\n    plt.close()\n",
+      "plot_analyses": [
+        {
+          "analysis": "Retrieval accuracy curves across varying epoch budgets show rapid convergence: training accuracy reaches perfect retrieval by around epoch 8 in all settings. Validation accuracy with only 10 epochs also saturates near 100% shortly after training starts, indicating that 10 epochs suffice to learn this synthetic task. Extending to 30 or 50 epochs yields almost identical final performance but introduces a plateau in validation accuracy at 75% for several epochs before a sudden jump to 100%, suggesting that additional epochs delay convergence rather than improve generalization further.",
+          "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_4d809ff3638143aca86191056c6d8a82_proc_395098/synthetic_accuracy_curves.png"
+        },
+        {
+          "analysis": "Loss curves decline steadily for training in all epoch settings, dropping from just above 1.0 to near zero by around epoch 12\u201315. Validation loss mirrors this trend but exhibits more variability, especially under longer training (50 epochs), with small oscillations between epochs 10\u201320 before settling to zero. Overall, the model fits the synthetic dataset quickly and without significant overfitting, as evidenced by train and validation losses converging to zero and matching closely.",
+          "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_4d809ff3638143aca86191056c6d8a82_proc_395098/synthetic_loss_curves.png"
+        }
+      ],
+      "plot_paths": [
+        "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_4d809ff3638143aca86191056c6d8a82_proc_395098/synthetic_accuracy_curves.png",
+        "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_4d809ff3638143aca86191056c6d8a82_proc_395098/synthetic_loss_curves.png"
+      ],
+      "vlm_feedback_summary": "Both accuracy and loss plots demonstrate that the contrastive pre-training model on the synthetic task converges within the first 15 epochs, with minimal gap between training and validation metrics. Increasing epochs beyond 15 does not yield measurable gains; it only prolongs convergence. For efficiency, downstream experiments can use a shorter pre-training schedule without sacrificing performance.",
+      "exp_results_dir": "experiment_results/experiment_4d809ff3638143aca86191056c6d8a82_proc_395098",
+      "exp_results_npy_files": [
+        "experiment_results/experiment_4d809ff3638143aca86191056c6d8a82_proc_395098/experiment_data.npy"
+      ]
+    },
+    {
+      "overall_plan": "Establish reproducible LSTM training runs by setting and controlling random seeds before initializing each experiment (Seed node). Within this reproducible framework, systematically tune the number of training epochs by looping over preset values (e.g., 10, 30, 50), reinitializing the LSTM encoder for each epoch setting, and recording per\u2010epoch training losses, retrieval accuracies, and final validation predictions. Save all metrics and configurations under the hyperparameter tuning key \u201cEPOCHS\u201d in a single NumPy file for subsequent analysis and plotting.",
+      "analysis": "The implementation indeed runs without errors, but it never incorporates the collected dynamic execution traces into the model as intended. The CodeEncoder only processes static code token sequences, so the dynamic\u2010trace augmentation core to TraceCode is never applied. To fix this, modify the Dataset to also return trace sequences (e.g., basic\u2010block or value logs), introduce a TraceEncoder (e.g., an LSTM) in the model to encode these traces, and fuse the trace embeddings with the code\u2010token embeddings in the forward pass before computing the triplet loss. Additionally, there\u2019s a minor typo in the final log print (\u20184 seconds seconds\u2019); it can be corrected to a single \u2018seconds.\u2019",
+      "metric": {
+        "value": {
+          "metric_names": [
+            {
+              "metric_name": "train accuracy",
+              "lower_is_better": false,
+              "description": "Accuracy on the training set.",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 1.0,
+                  "best_value": 1.0
+                }
+              ]
+            },
+            {
+              "metric_name": "validation accuracy",
+              "lower_is_better": false,
+              "description": "Accuracy on the validation set.",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 1.0,
+                  "best_value": 1.0
+                }
+              ]
+            },
+            {
+              "metric_name": "training loss",
+              "lower_is_better": true,
+              "description": "Loss on the training set.",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 0.0,
+                  "best_value": 0.0
+                }
+              ]
+            },
+            {
+              "metric_name": "validation loss",
+              "lower_is_better": true,
+              "description": "Loss on the validation set.",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 0.0208,
+                  "best_value": 0.0
+                }
+              ]
+            }
+          ]
+        },
+        "maximize": null,
+        "name": null,
+        "description": null
+      },
+      "code": "# Set random seed\nimport random\nimport numpy as np\nimport torch\n\nseed = 2\nrandom.seed(seed)\nnp.random.seed(seed)\ntorch.manual_seed(seed)\nif torch.cuda.is_available():\n    torch.cuda.manual_seed(seed)\n\nimport os\nimport random\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.nn.functional as F\nfrom torch.utils.data import Dataset, DataLoader, Subset\nfrom torch.optim import Adam\n\n# set up working directory\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\n\n# generate synthetic code snippets and traces\ncodes = []\nfor c in range(1, 11):\n    codes.append(f\"def f(x): return x+{c}\")\n    codes.append(f\"def f(x): return {c}+x\")\ninput_set = np.random.randint(-10, 10, size=100)\ntraces = []\nfor code in codes:\n    env = {}\n    exec(code, env)\n    f = env[\"f\"]\n    traces.append(tuple(f(int(x)) for x in input_set))\n\n# group snippets by trace\ntrace_to_indices = {}\nfor idx, trace in enumerate(traces):\n    trace_to_indices.setdefault(trace, []).append(idx)\ngroup_to_indices = {gid: ids for gid, ids in enumerate(trace_to_indices.values())}\nindex_to_gid = [None] * len(codes)\nfor gid, idxs in group_to_indices.items():\n    for idx in idxs:\n        index_to_gid[idx] = gid\n\n# encode snippets as character sequences\nvocab = sorted(set(\"\".join(codes)))\nstoi = {c: i + 1 for i, c in enumerate(vocab)}\nstoi[\"PAD\"] = 0\nmax_len = max(len(s) for s in codes)\nencoded = []\nfor s in codes:\n    seq = [stoi[c] for c in s] + [0] * (max_len - len(s))\n    encoded.append(seq)\nencoded = torch.LongTensor(encoded)\n\n\n# dataset & loaders\nclass CodeDataset(Dataset):\n    def __init__(self, encoded, group_to_indices, index_to_gid):\n        self.encoded = encoded\n        self.group_to_indices = group_to_indices\n        self.index_to_gid = index_to_gid\n\n    def __len__(self):\n        return len(self.index_to_gid)\n\n    def __getitem__(self, idx):\n        anchor = self.encoded[idx]\n        gid = self.index_to_gid[idx]\n        pos = idx\n        while pos == idx:\n            pos = random.choice(self.group_to_indices[gid])\n        neg_gid = random.choice([g for g in self.group_to_indices if g != gid])\n        neg = random.choice(self.group_to_indices[neg_gid])\n        return anchor, self.encoded[pos], self.encoded[neg]\n\n\ndataset = CodeDataset(encoded, group_to_indices, index_to_gid)\nall_gids = list(group_to_indices.keys())\nrandom.shuffle(all_gids)\nsplit = int(0.8 * len(all_gids))\ntrain_gids, val_gids = all_gids[:split], all_gids[split:]\ntrain_indices = [i for g in train_gids for i in group_to_indices[g]]\nval_indices = [i for g in val_gids for i in group_to_indices[g]]\ntrain_loader = DataLoader(Subset(dataset, train_indices), batch_size=8, shuffle=True)\nval_loader = DataLoader(Subset(dataset, val_indices), batch_size=8, shuffle=False)\n\n\n# model definition\nclass CodeEncoder(nn.Module):\n    def __init__(self, vocab_size, embed_dim=64, hidden=64):\n        super().__init__()\n        self.embed = nn.Embedding(vocab_size, embed_dim, padding_idx=0)\n        self.lstm = nn.LSTM(embed_dim, hidden, batch_first=True)\n\n    def forward(self, x):\n        x = self.embed(x)\n        _, (h, _) = self.lstm(x)\n        return h.squeeze(0)\n\n\n# hyperparameter tuning over different epoch counts\nEPOCH_LIST = [10, 30, 50]\nexperiment_data = {\"EPOCHS\": {\"synthetic\": {}}}\n\nfor E in EPOCH_LIST:\n    # reinitialize model & optimizer\n    model = CodeEncoder(len(stoi), 64, 64).to(device)\n    optimizer = Adam(model.parameters(), lr=1e-3)\n    loss_fn = nn.TripletMarginLoss(margin=1.0)\n\n    # containers for this setting\n    data = {\n        \"metrics\": {\"train\": [], \"val\": []},\n        \"losses\": {\"train\": [], \"val\": []},\n        \"predictions\": [],\n        \"ground_truth\": [],\n    }\n\n    # training + validation\n    for epoch in range(E):\n        model.train()\n        total_train_loss = 0.0\n        for a, p, n in train_loader:\n            a, p, n = a.to(device), p.to(device), n.to(device)\n            emb_a, emb_p, emb_n = model(a), model(p), model(n)\n            loss = loss_fn(emb_a, emb_p, emb_n)\n            optimizer.zero_grad()\n            loss.backward()\n            optimizer.step()\n            total_train_loss += loss.item()\n        avg_train_loss = total_train_loss / len(train_loader)\n        data[\"losses\"][\"train\"].append(avg_train_loss)\n\n        model.eval()\n        total_val_loss = 0.0\n        with torch.no_grad():\n            for a, p, n in val_loader:\n                a, p, n = a.to(device), p.to(device), n.to(device)\n                total_val_loss += loss_fn(model(a), model(p), model(n)).item()\n        avg_val_loss = total_val_loss / len(val_loader)\n        data[\"losses\"][\"val\"].append(avg_val_loss)\n\n        # compute retrieval accuracies\n        with torch.no_grad():\n            emb_all = model(encoded.to(device))\n            emb_norm = F.normalize(emb_all, dim=1)\n            sims = emb_norm @ emb_norm.T\n\n            def compute_acc(indices):\n                correct = 0\n                for i in indices:\n                    sim = sims[i].clone()\n                    sim[i] = -float(\"inf\")\n                    top1 = torch.argmax(sim).item()\n                    if index_to_gid[top1] == index_to_gid[i]:\n                        correct += 1\n                return correct / len(indices)\n\n            train_acc = compute_acc(train_indices)\n            val_acc = compute_acc(val_indices)\n        data[\"metrics\"][\"train\"].append(train_acc)\n        data[\"metrics\"][\"val\"].append(val_acc)\n\n    # final predictions on validation\n    model.eval()\n    with torch.no_grad():\n        emb_all = model(encoded.to(device))\n        emb_norm = F.normalize(emb_all, dim=1)\n        sims = emb_norm @ emb_norm.T\n        for i in val_indices:\n            sim = sims[i].clone()\n            sim[i] = -float(\"inf\")\n            top1 = torch.argmax(sim).item()\n            data[\"predictions\"].append(index_to_gid[top1])\n            data[\"ground_truth\"].append(index_to_gid[i])\n\n    experiment_data[\"EPOCHS\"][\"synthetic\"][E] = data\n    print(f\"Finished EPOCHS={E}: final val_acc={val_acc:.4f}\")\n\n# save all results\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\nprint(\"Saved experiment_data.npy\")\n",
+      "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\n    synthetic_data = experiment_data[\"EPOCHS\"][\"synthetic\"]\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n    synthetic_data = {}\n\n# Plot loss curves\ntry:\n    plt.figure()\n    for E, data in synthetic_data.items():\n        epochs = list(range(1, len(data[\"losses\"][\"train\"]) + 1))\n        plt.plot(epochs, data[\"losses\"][\"train\"], label=f\"Train E={E}\")\n        plt.plot(epochs, data[\"losses\"][\"val\"], linestyle=\"--\", label=f\"Val E={E}\")\n    plt.suptitle(\"Synthetic Dataset\")\n    plt.title(\"Train vs Validation Loss Curves\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Loss\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_loss_curves.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating loss curves plot: {e}\")\n    plt.close()\n\n# Plot accuracy curves\ntry:\n    plt.figure()\n    for E, data in synthetic_data.items():\n        epochs = list(range(1, len(data[\"metrics\"][\"train\"]) + 1))\n        plt.plot(epochs, data[\"metrics\"][\"train\"], label=f\"Train E={E}\")\n        plt.plot(epochs, data[\"metrics\"][\"val\"], linestyle=\"--\", label=f\"Val E={E}\")\n    plt.suptitle(\"Synthetic Dataset\")\n    plt.title(\"Train vs Validation Retrieval Accuracy\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Accuracy\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_accuracy_curves.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating accuracy curves plot: {e}\")\n    plt.close()\n",
+      "plot_analyses": [],
+      "plot_paths": [],
+      "vlm_feedback_summary": []
+    },
+    {
+      "overall_plan": "Perform a reproducible hyperparameter sweep over the number of training epochs (e.g., 10, 30, 50) for the LSTM encoder. For each epoch setting, initialize the model with a fixed random seed, train from scratch, and record per-epoch losses, retrieval accuracies, and final validation predictions. Store all results under the 'EPOCHS' hyperparameter key in a single NumPy file to enable consistent analysis and visualization.",
+      "analysis": "",
+      "metric": {
+        "value": {
+          "metric_names": [
+            {
+              "metric_name": "train accuracy",
+              "lower_is_better": false,
+              "description": "Accuracy on the training dataset.",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 1.0,
+                  "best_value": 1.0
+                }
+              ]
+            },
+            {
+              "metric_name": "validation accuracy",
+              "lower_is_better": false,
+              "description": "Accuracy on the validation dataset.",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 1.0,
+                  "best_value": 1.0
+                }
+              ]
+            },
+            {
+              "metric_name": "training loss",
+              "lower_is_better": true,
+              "description": "Loss on the training dataset.",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 0.0,
+                  "best_value": 0.0
+                }
+              ]
+            },
+            {
+              "metric_name": "validation loss",
+              "lower_is_better": true,
+              "description": "Loss on the validation dataset.",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 0.138,
+                  "best_value": 0.1083
+                }
+              ]
+            }
+          ]
+        },
+        "maximize": null,
+        "name": null,
+        "description": null
+      },
+      "code": "# Set random seed\nimport random\nimport numpy as np\nimport torch\n\nseed = 0\nrandom.seed(seed)\nnp.random.seed(seed)\ntorch.manual_seed(seed)\nif torch.cuda.is_available():\n    torch.cuda.manual_seed(seed)\n\nimport os\nimport random\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.nn.functional as F\nfrom torch.utils.data import Dataset, DataLoader, Subset\nfrom torch.optim import Adam\n\n# set up working directory\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\n\n# generate synthetic code snippets and traces\ncodes = []\nfor c in range(1, 11):\n    codes.append(f\"def f(x): return x+{c}\")\n    codes.append(f\"def f(x): return {c}+x\")\ninput_set = np.random.randint(-10, 10, size=100)\ntraces = []\nfor code in codes:\n    env = {}\n    exec(code, env)\n    f = env[\"f\"]\n    traces.append(tuple(f(int(x)) for x in input_set))\n\n# group snippets by trace\ntrace_to_indices = {}\nfor idx, trace in enumerate(traces):\n    trace_to_indices.setdefault(trace, []).append(idx)\ngroup_to_indices = {gid: ids for gid, ids in enumerate(trace_to_indices.values())}\nindex_to_gid = [None] * len(codes)\nfor gid, idxs in group_to_indices.items():\n    for idx in idxs:\n        index_to_gid[idx] = gid\n\n# encode snippets as character sequences\nvocab = sorted(set(\"\".join(codes)))\nstoi = {c: i + 1 for i, c in enumerate(vocab)}\nstoi[\"PAD\"] = 0\nmax_len = max(len(s) for s in codes)\nencoded = []\nfor s in codes:\n    seq = [stoi[c] for c in s] + [0] * (max_len - len(s))\n    encoded.append(seq)\nencoded = torch.LongTensor(encoded)\n\n\n# dataset & loaders\nclass CodeDataset(Dataset):\n    def __init__(self, encoded, group_to_indices, index_to_gid):\n        self.encoded = encoded\n        self.group_to_indices = group_to_indices\n        self.index_to_gid = index_to_gid\n\n    def __len__(self):\n        return len(self.index_to_gid)\n\n    def __getitem__(self, idx):\n        anchor = self.encoded[idx]\n        gid = self.index_to_gid[idx]\n        pos = idx\n        while pos == idx:\n            pos = random.choice(self.group_to_indices[gid])\n        neg_gid = random.choice([g for g in self.group_to_indices if g != gid])\n        neg = random.choice(self.group_to_indices[neg_gid])\n        return anchor, self.encoded[pos], self.encoded[neg]\n\n\ndataset = CodeDataset(encoded, group_to_indices, index_to_gid)\nall_gids = list(group_to_indices.keys())\nrandom.shuffle(all_gids)\nsplit = int(0.8 * len(all_gids))\ntrain_gids, val_gids = all_gids[:split], all_gids[split:]\ntrain_indices = [i for g in train_gids for i in group_to_indices[g]]\nval_indices = [i for g in val_gids for i in group_to_indices[g]]\ntrain_loader = DataLoader(Subset(dataset, train_indices), batch_size=8, shuffle=True)\nval_loader = DataLoader(Subset(dataset, val_indices), batch_size=8, shuffle=False)\n\n\n# model definition\nclass CodeEncoder(nn.Module):\n    def __init__(self, vocab_size, embed_dim=64, hidden=64):\n        super().__init__()\n        self.embed = nn.Embedding(vocab_size, embed_dim, padding_idx=0)\n        self.lstm = nn.LSTM(embed_dim, hidden, batch_first=True)\n\n    def forward(self, x):\n        x = self.embed(x)\n        _, (h, _) = self.lstm(x)\n        return h.squeeze(0)\n\n\n# hyperparameter tuning over different epoch counts\nEPOCH_LIST = [10, 30, 50]\nexperiment_data = {\"EPOCHS\": {\"synthetic\": {}}}\n\nfor E in EPOCH_LIST:\n    # reinitialize model & optimizer\n    model = CodeEncoder(len(stoi), 64, 64).to(device)\n    optimizer = Adam(model.parameters(), lr=1e-3)\n    loss_fn = nn.TripletMarginLoss(margin=1.0)\n\n    # containers for this setting\n    data = {\n        \"metrics\": {\"train\": [], \"val\": []},\n        \"losses\": {\"train\": [], \"val\": []},\n        \"predictions\": [],\n        \"ground_truth\": [],\n    }\n\n    # training + validation\n    for epoch in range(E):\n        model.train()\n        total_train_loss = 0.0\n        for a, p, n in train_loader:\n            a, p, n = a.to(device), p.to(device), n.to(device)\n            emb_a, emb_p, emb_n = model(a), model(p), model(n)\n            loss = loss_fn(emb_a, emb_p, emb_n)\n            optimizer.zero_grad()\n            loss.backward()\n            optimizer.step()\n            total_train_loss += loss.item()\n        avg_train_loss = total_train_loss / len(train_loader)\n        data[\"losses\"][\"train\"].append(avg_train_loss)\n\n        model.eval()\n        total_val_loss = 0.0\n        with torch.no_grad():\n            for a, p, n in val_loader:\n                a, p, n = a.to(device), p.to(device), n.to(device)\n                total_val_loss += loss_fn(model(a), model(p), model(n)).item()\n        avg_val_loss = total_val_loss / len(val_loader)\n        data[\"losses\"][\"val\"].append(avg_val_loss)\n\n        # compute retrieval accuracies\n        with torch.no_grad():\n            emb_all = model(encoded.to(device))\n            emb_norm = F.normalize(emb_all, dim=1)\n            sims = emb_norm @ emb_norm.T\n\n            def compute_acc(indices):\n                correct = 0\n                for i in indices:\n                    sim = sims[i].clone()\n                    sim[i] = -float(\"inf\")\n                    top1 = torch.argmax(sim).item()\n                    if index_to_gid[top1] == index_to_gid[i]:\n                        correct += 1\n                return correct / len(indices)\n\n            train_acc = compute_acc(train_indices)\n            val_acc = compute_acc(val_indices)\n        data[\"metrics\"][\"train\"].append(train_acc)\n        data[\"metrics\"][\"val\"].append(val_acc)\n\n    # final predictions on validation\n    model.eval()\n    with torch.no_grad():\n        emb_all = model(encoded.to(device))\n        emb_norm = F.normalize(emb_all, dim=1)\n        sims = emb_norm @ emb_norm.T\n        for i in val_indices:\n            sim = sims[i].clone()\n            sim[i] = -float(\"inf\")\n            top1 = torch.argmax(sim).item()\n            data[\"predictions\"].append(index_to_gid[top1])\n            data[\"ground_truth\"].append(index_to_gid[i])\n\n    experiment_data[\"EPOCHS\"][\"synthetic\"][E] = data\n    print(f\"Finished EPOCHS={E}: final val_acc={val_acc:.4f}\")\n\n# save all results\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\nprint(\"Saved experiment_data.npy\")\n",
+      "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\n    synthetic_data = experiment_data[\"EPOCHS\"][\"synthetic\"]\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n    synthetic_data = {}\n\n# Plot loss curves\ntry:\n    plt.figure()\n    for E, data in synthetic_data.items():\n        epochs = list(range(1, len(data[\"losses\"][\"train\"]) + 1))\n        plt.plot(epochs, data[\"losses\"][\"train\"], label=f\"Train E={E}\")\n        plt.plot(epochs, data[\"losses\"][\"val\"], linestyle=\"--\", label=f\"Val E={E}\")\n    plt.suptitle(\"Synthetic Dataset\")\n    plt.title(\"Train vs Validation Loss Curves\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Loss\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_loss_curves.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating loss curves plot: {e}\")\n    plt.close()\n\n# Plot accuracy curves\ntry:\n    plt.figure()\n    for E, data in synthetic_data.items():\n        epochs = list(range(1, len(data[\"metrics\"][\"train\"]) + 1))\n        plt.plot(epochs, data[\"metrics\"][\"train\"], label=f\"Train E={E}\")\n        plt.plot(epochs, data[\"metrics\"][\"val\"], linestyle=\"--\", label=f\"Val E={E}\")\n    plt.suptitle(\"Synthetic Dataset\")\n    plt.title(\"Train vs Validation Retrieval Accuracy\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Accuracy\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_accuracy_curves.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating accuracy curves plot: {e}\")\n    plt.close()\n",
+      "plot_analyses": [
+        {
+          "analysis": "All three training configurations rapidly drive retrieval accuracy on the synthetic task to perfect (1.0). With E=10, training reaches 1 by around epoch 7 and validation by epoch 9. For E=30, training plateaus at 1 even faster (\u2248epoch 3\u20134), but validation only catches up by \u2248epoch 11. When E=50, training hits perfect accuracy around epoch 8\u20139, whereas validation requires until \u2248epoch 30. This indicates that increasing E accelerates fitting the training set but delays generalization on held-out data, with larger E leading to a wider train-val gap at early epochs.",
+          "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_614fc711dd7d41c192f0c78e7923b238_proc_395097/synthetic_accuracy_curves.png"
+        },
+        {
+          "analysis": "Training losses for all E values decline steeply and reach near zero by epoch 12, confirming the model\u2019s capacity to perfectly fit the synthetic data. Validation loss curves mirror this downward trend but exhibit increasingly large oscillations as E grows. E=10 shows a very smooth descent to zero, E=30 introduces moderate noise around zero after epoch 12, and E=50 produces high-variance spikes well past epoch 20. The heightened jitter at higher E suggests the model intermittently overfits subsets of dynamic trace inputs before recovering, pointing to an instability when too many execution traces are used without additional regularization.",
+          "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_614fc711dd7d41c192f0c78e7923b238_proc_395097/synthetic_loss_curves.png"
+        }
+      ],
+      "plot_paths": [
+        "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_614fc711dd7d41c192f0c78e7923b238_proc_395097/synthetic_accuracy_curves.png",
+        "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_614fc711dd7d41c192f0c78e7923b238_proc_395097/synthetic_loss_curves.png"
+      ],
+      "vlm_feedback_summary": "The synthetic retrieval task is trivially learned across all E settings, but larger numbers of execution inputs (E) slow validation convergence and introduce noisy loss behavior. A moderate E (\u224810\u201330) strikes the best balance between convergence speed and stability. Future work should explore regularization or curriculum strategies when scaling up dynamic trace complexity, and transition these insights to real-code benchmarks using three HuggingFace datasets to validate generalization.",
+      "exp_results_dir": "experiment_results/experiment_614fc711dd7d41c192f0c78e7923b238_proc_395097",
+      "exp_results_npy_files": [
+        "experiment_results/experiment_614fc711dd7d41c192f0c78e7923b238_proc_395097/experiment_data.npy"
+      ]
+    }
+  ],
+  "aggregated results of nodes with different seeds": {
+    "overall_plan": "We will perform systematic hyperparameter tuning of the number of training epochs for an LSTM encoder by training from scratch with epoch settings (e.g., 10, 30, 50). For each epoch configuration, we will run multiple independent trials using different random seeds to ensure robustness. We will record per-epoch losses, retrieval accuracies, and final validation predictions for every trial. All results will be organized under the hyperparameter key 'EPOCHS', aggregated across seeds, and saved into a single NumPy file for subsequent statistical analysis and visualization.",
+    "metric": {
+      "value": null,
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "# plotting aggregation code",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\n# Load multiple experiment_data files\ntry:\n    experiment_data_path_list = [\n        \"experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_614fc711dd7d41c192f0c78e7923b238_proc_395097/experiment_data.npy\",\n        \"experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_4d809ff3638143aca86191056c6d8a82_proc_395098/experiment_data.npy\",\n    ]\n    all_experiment_data = []\n    for experiment_data_path in experiment_data_path_list:\n        data = np.load(\n            os.path.join(os.getenv(\"AI_SCIENTIST_ROOT\"), experiment_data_path),\n            allow_pickle=True,\n        ).item()\n        all_experiment_data.append(data)\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n    all_experiment_data = []\n\n# Aggregate runs by E for synthetic dataset\nruns_per_E = {}\nfor exp in all_experiment_data:\n    synthetic = exp.get(\"EPOCHS\", {}).get(\"synthetic\", {})\n    for E, run in synthetic.items():\n        runs_per_E.setdefault(E, []).append(run)\n\n# Plot aggregated loss curves with mean \u00b1 SEM\ntry:\n    plt.figure()\n    for E, run_list in runs_per_E.items():\n        if not run_list:\n            continue\n        train_losses = [np.array(r[\"losses\"][\"train\"]) for r in run_list]\n        val_losses = [np.array(r[\"losses\"][\"val\"]) for r in run_list]\n        min_len = min(\n            min(arr.shape[0] for arr in train_losses),\n            min(arr.shape[0] for arr in val_losses),\n        )\n        train_arr = np.vstack([arr[:min_len] for arr in train_losses])\n        val_arr = np.vstack([arr[:min_len] for arr in val_losses])\n        epochs = np.arange(1, min_len + 1)\n        mean_train = train_arr.mean(axis=0)\n        sem_train = train_arr.std(axis=0, ddof=1) / np.sqrt(train_arr.shape[0])\n        mean_val = val_arr.mean(axis=0)\n        sem_val = val_arr.std(axis=0, ddof=1) / np.sqrt(val_arr.shape[0])\n        plt.plot(epochs, mean_train, label=f\"Train E={E}\")\n        plt.fill_between(\n            epochs, mean_train - sem_train, mean_train + sem_train, alpha=0.3\n        )\n        plt.plot(epochs, mean_val, linestyle=\"--\", label=f\"Val E={E}\")\n        plt.fill_between(epochs, mean_val - sem_val, mean_val + sem_val, alpha=0.3)\n    plt.suptitle(\"Synthetic Dataset\")\n    plt.title(\"Train vs Validation Loss Curves with Mean\u00b1SEM\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Loss\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_loss_mean_sem_curves.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating aggregated loss plot: {e}\")\n    plt.close()\n\n# Plot aggregated retrieval accuracy with mean \u00b1 SEM\ntry:\n    plt.figure()\n    for E, run_list in runs_per_E.items():\n        if not run_list:\n            continue\n        train_acc = [np.array(r[\"metrics\"][\"train\"]) for r in run_list]\n        val_acc = [np.array(r[\"metrics\"][\"val\"]) for r in run_list]\n        min_len = min(\n            min(arr.shape[0] for arr in train_acc), min(arr.shape[0] for arr in val_acc)\n        )\n        train_arr = np.vstack([arr[:min_len] for arr in train_acc])\n        val_arr = np.vstack([arr[:min_len] for arr in val_acc])\n        epochs = np.arange(1, min_len + 1)\n        mean_train = train_arr.mean(axis=0)\n        sem_train = train_arr.std(axis=0, ddof=1) / np.sqrt(train_arr.shape[0])\n        mean_val = val_arr.mean(axis=0)\n        sem_val = val_arr.std(axis=0, ddof=1) / np.sqrt(val_arr.shape[0])\n        plt.plot(epochs, mean_train, label=f\"Train E={E}\")\n        plt.fill_between(\n            epochs, mean_train - sem_train, mean_train + sem_train, alpha=0.3\n        )\n        plt.plot(epochs, mean_val, linestyle=\"--\", label=f\"Val E={E}\")\n        plt.fill_between(epochs, mean_val - sem_val, mean_val + sem_val, alpha=0.3)\n    plt.suptitle(\"Synthetic Dataset\")\n    plt.title(\"Train vs Validation Retrieval Accuracy with Mean\u00b1SEM\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Accuracy\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_accuracy_mean_sem_curves.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating aggregated accuracy plot: {e}\")\n    plt.close()\n",
+    "plot_analyses": [],
+    "plot_paths": [
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/seed_aggregation_affa00f742204efb99a858635e012b5e/synthetic_loss_mean_sem_curves.png",
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/seed_aggregation_affa00f742204efb99a858635e012b5e/synthetic_accuracy_mean_sem_curves.png"
+    ],
+    "vlm_feedback_summary": [],
+    "exp_results_dir": "experiment_results/seed_aggregation_affa00f742204efb99a858635e012b5e",
+    "exp_results_npy_files": []
+  }
+}

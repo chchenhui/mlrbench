@@ -1,0 +1,33 @@
+{
+    "Clarity": {
+        "score": 4,
+        "justification": "The paper is very brief, missing all figures (Fig 1, 2, 3, 4, 5 are mentioned but not shown). This makes it impossible to verify visual claims about performance. Key experimental details, such as the precise features used for the DVN in the reported results, are ambiguous, with different code versions using different feature sets (e.g., paper mentions 'loss, gradient norm, embedding norm', one code uses 'loss, rep_norm', another uses only 'loss', yet another uses 'loss, input entropy, model output entropy'). Most importantly, there's a significant disconnect: the paper claims to address 'pre-training large Transformer models' and 'billions of tokens', but experiments are conducted on small TF-IDF based text classification tasks (1k training samples) and a synthetic regression task, which do not support the scalability claims for large FMs."
+    },
+    "Novelty": {
+        "score": 6,
+        "justification": "The paper proposes a meta-learned Data Valuation Network (DVN) using lightweight proxy features to guide sampling for efficient pre-training. While meta-learning for sample reweighting exists (e.g., Ren et al., 2018), its application to predict held-out validation loss reduction from cheap proxies specifically for large-scale pre-training, aiming to amortize expensive valuation, presents a potentially novel combination. However, the novelty is somewhat diluted by the limited scale of experiments which don't fully explore the 'large-scale pre-training' context."
+    },
+    "Soundness": {
+        "score": 3,
+        "justification": "The core methodological idea is plausible, but its empirical validation is weak and questionable. A major flaw is the significant mismatch between the paper's central claim of targeting 'pre-training large Transformer models' and the actual experiments conducted on small TF-IDF datasets (1k samples) and synthetic data. This fails to demonstrate the claimed scalability or effectiveness for foundation models. All figures are missing from the paper, preventing verification of quantitative claims like '30% fewer updates' or '1-3% higher accuracy'. There are inconsistencies in the DVN proxy features described in the paper versus those implemented in the provided code snippets. Furthermore, supplementary materials like `draft_summary.json` suggest potential instabilities and sensitivities of the DVN, which are not discussed in the paper, casting doubt on the robustness of the reported results. The paper's claim about softmax normalization (Figure 3) appears to be oversimplified compared to more nuanced findings in the `ablation_summary.json`."
+    },
+    "Significance": {
+        "score": 4,
+        "justification": "The paper addresses the highly significant problem of efficient data selection for pre-training foundation models, which is a core theme of the workshop. A scalable and effective method in this area would have a large impact. However, the paper fails to provide convincing evidence that the proposed DVN achieves this for actual foundation models. The experiments on small-scale TF-IDF models do not demonstrate the claimed benefits for 'large Transformer models' or 'billions of tokens'. While the idea is promising, its significance is currently limited by the lack of relevant empirical support and concerns about robustness hinted at in supplementary materials."
+    },
+    "Overall": {
+        "score": 3,
+        "strengths": [
+            "Addresses an important and relevant problem in foundation model data selection.",
+            "The core concept of a meta-learned data valuator using cheap proxy features is intuitive and potentially scalable if proven effective for large models."
+        ],
+        "weaknesses": [
+            "Critical mismatch between the claimed scope (large-scale FM pre-training) and the actual experimental setup (small TF-IDF models, synthetic data). This is the primary weakness.",
+            "All figures are missing from the paper, making it impossible to verify the quantitative and qualitative claims presented.",
+            "Insufficient detail in methodology and experimental setup; inconsistencies regarding features used for DVN across the paper and provided code.",
+            "Potential overstatement of robustness and benefits, given contradictory or nuanced information in the provided supplementary code/summaries (e.g., `draft_summary.json`, `ablation_summary.json` on softmax).",
+            "The paper is too brief to adequately describe and validate the proposed method for its claimed scope, reading more like an extended abstract."
+        ]
+    },
+    "Confidence": 4
+}

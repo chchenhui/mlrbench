@@ -1,0 +1,54 @@
+{
+  "Experiment_description": "Initial implementation of a two-layer MLP with dropout on a synthetic XOR task where one feature is hidden at test time. MC-dropout is used to estimate per-sample uncertainty and trigger clarifications when variance exceeds a threshold. We measure baseline vs clarified accuracy via the Clarification Efficiency Score (CES), logging losses, CES, predictions, and ground truths each epoch.",
+  "Significance": "These experiments establish a reproducible pipeline for uncertainty-driven clarifications, benchmark how quickly and reliably clarifications improve model accuracy, and reveal both the promise and limitations of CES as a calibration metric. Understanding CES dynamics and prediction biases informs the design of more robust clarification strategies in ambiguous query settings.",
+  "Description": "We fix random seeds across runs, generate a balanced synthetic XOR dataset with two features (one hidden until clarification), and train a small two-layer MLP with dropout. At evaluation, we mask the second feature and perform multiple stochastic forward passes to compute softmax variance; samples with variance above a threshold trigger a simulated clarification (revealing the hidden feature). Each epoch we record training/validation losses, baseline and clarified accuracies, CES, and class distributions, saving results to disk.",
+  "List_of_included_plots": [
+    {
+      "path": "experiments/2025-05-29_00-03-32_clarify_to_retrieve_attempt_0/logs/0-run/experiment_results/experiment_5b805369d8964298a8b18633656a5e20_proc_2375579/CES_curves_synthetic_xor.png",
+      "description": "CES Curves: Training CES rises quickly from negative to around 0.47 by epoch 4 and then plateaus near 0.5 through epoch 7 before dipping to ~0.43 at epoch 8; validation CES starts at ~0.38, dips to ~0.22 at epoch 3, then peaks around ~0.55 by epochs 5\u20137 before settling at ~0.43.",
+      "analysis": "The early rise and mid-training peak in validation CES indicate when clarifications become most beneficial, while the subsequent drop suggests overfitting or variance in uncertainty estimates. This plot highlights the value of early stopping around the validation peak to maximize clarification efficiency."
+    },
+    {
+      "path": "experiments/2025-05-29_00-03-32_clarify_to_retrieve_attempt_0/logs/0-run/experiment_results/experiment_a34a721fa6494b8c8ce4b52cdbcbb957_proc_2375580/CES_curves_synthetic_xor.png",
+      "description": "CES curves remain zero through epoch 5, then increase steadily for both training and validation sets, peaking around epoch 9 (train ~0.45, val ~0.53) before converging by epoch 10 (~0.38).",
+      "analysis": "A delayed onset of nonzero CES shows that uncertainty measures are meaningless until the model escapes random guessing. The higher validation peak compared to training suggests initial overestimation of uncertainty on unseen data, underscoring a need for better calibration early in training."
+    },
+    {
+      "path": "experiments/2025-05-29_00-03-32_clarify_to_retrieve_attempt_0/logs/0-run/experiment_results/experiment_7e5bc3d7000c49b49ca382bc9368bc9a_proc_2375581/class_distribution_synthetic_xor.png",
+      "description": "Ground truth shows an even 50/50 split between classes; the model\u2019s predictions are skewed: ~170 examples labeled 0 vs. ~330 labeled 1.",
+      "analysis": "A severe class-prediction bias indicates the model has failed to learn the symmetric XOR mapping, instead defaulting to a single class for most inputs. This collapse leads to zero CES until class diversity emerges, revealing limitations of using CES alone as a calibration measure."
+    }
+  ],
+  "Key_numerical_results": [
+    {
+      "result": 0.4435,
+      "description": "Final validation CES (seed 5b80)",
+      "analysis": "Moderate calibration efficiency with early peak and slight mid-training overfitting; lowest among seeds, showing seed sensitivity."
+    },
+    {
+      "result": 0.38,
+      "description": "Final validation CES (seed a34a7)",
+      "analysis": "Lower sustained CES due to delayed onset of uncertainty signals; indicates variance in uncertainty calibration across runs."
+    },
+    {
+      "result": 0.5,
+      "description": "Final validation CES (seed 7e5b)",
+      "analysis": "High end-of-training CES driven by a late collapse to balanced predictions; artifacts of prediction diversity highlight CES limitations."
+    },
+    {
+      "result": 0.6302,
+      "description": "Final validation loss (seed 5b80)",
+      "analysis": "Lowest validation loss among runs, correlating with the most stable CES trajectory."
+    },
+    {
+      "result": 0.6446,
+      "description": "Final validation loss (seed a34a7)",
+      "analysis": "Higher validation loss aligns with delayed CES improvement and indicates slower convergence."
+    },
+    {
+      "result": 0.6393,
+      "description": "Final validation loss (seed 7e5b)",
+      "analysis": "Intermediate loss but poor class balance shows that loss alone does not guarantee symmetric decision boundaries needed for reliable clarification."
+    }
+  ]
+}

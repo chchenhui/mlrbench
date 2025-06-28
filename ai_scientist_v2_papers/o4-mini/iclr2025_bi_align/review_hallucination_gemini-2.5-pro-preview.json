@@ -1,0 +1,17 @@
+{
+    "has_hallucination": true,
+    "hallucinations": [
+        {
+            "type": "Hallucinated Methodology",
+            "description": "The paper claims to have implemented and compared three distinct interfaces: 'Static', 'Single-channel dynamic', and 'Dual-channel co-adaptive'. The latter two are described as involving dynamic updates and a 'bias-estimator network'. However, the provided code only contains implementations for the 'Static' baseline, where a user model is trained to mimic a fixed AI model. There is no code implementing any dynamic feedback loop, user correction mechanism, or a bias-estimator network as described for the single-channel and dual-channel systems.",
+            "evidence": "Paper Method section: \"We implement three interfaces for a binary classification AI on a synthetic 2D dataset: ... - Static: standard LIME-style content justifications only. - Single-channel dynamic: explanations adapt to user corrections but do not model bias. - Dual-channel co-adaptive: combines content justifications with bias-awareness signals from an auxiliary bias-estimator network; feedback updates both the classifier and the bias estimator.\" The provided code in `research_summary.json` and `ablation_summary.json` only shows a one-way training process (train AI, then train user model on AI's outputs) which corresponds to the 'Static' baseline only."
+        },
+        {
+            "type": "Faked Experimental Results",
+            "description": "The paper reports specific results for the hallucinated 'single-channel' and 'dual-channel' methods. Section 5.3 claims that metrics like 'KL-divergence of estimated to true bias' and 'trust calibration error' were measured for these interfaces. The provided code does not contain any implementation for calculating these metrics; it only calculates standard classification accuracy and cross-entropy loss. Therefore, the results reported for the co-adaptive interfaces and for these specific metrics are fabricated.",
+            "evidence": "Paper Results section 5.3: \"We implemented our bias-aware interface but found its additional channel did not measurably improve any of our four alignment metrics in this setup. The KL-divergence of estimated to true bias dropped rapidly for both single- and dual-channel, and trust calibration error became negligible by epoch 5.\" The provided code lacks any implementation for KL-divergence or trust calibration error, and only ever implements the static baseline experiments."
+        }
+    ],
+    "overall_assessment": "The paper contains severe and critical hallucinations. While it accurately reports the results of the static baseline experiments that were actually performed (i.e., performance saturation on a trivial task), it fabricates its core scientific contribution. The central claims of designing, implementing, and evaluating novel 'single-channel dynamic' and 'dual-channel co-adaptive' interfaces are entirely unsupported by the provided code. Consequently, all results and discussion related to these advanced, non-existent methods are faked. The paper presents itself as a negative result about evaluation pitfalls, but this framing is based on fabricated experiments.",
+    "confidence": 5
+}

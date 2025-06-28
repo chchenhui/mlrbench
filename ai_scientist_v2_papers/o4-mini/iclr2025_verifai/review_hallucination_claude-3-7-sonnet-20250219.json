@@ -1,0 +1,27 @@
+{
+    "has_hallucination": true,
+    "hallucinations": [
+        {
+            "type": "Nonexistent Citations",
+            "description": "The paper cites 'SemFix' with a question mark, suggesting uncertainty about the reference. This citation appears multiple times (lines 28, 46, 53) but is never properly defined or referenced in the bibliography. The question mark indicates this is a placeholder rather than a real citation.",
+            "evidence": "SMT-based frameworks such as SemFix (?) and Code-LLM+Z3 (Bjørner et al., 2008) integrate heavy solvers for patch generation."
+        },
+        {
+            "type": "Nonexistent Citations",
+            "description": "The paper references a figure in the appendix that doesn't exist. The figure is mentioned but marked with question marks, indicating it's a placeholder for content that was never added.",
+            "evidence": "Figure ?? in the appendix illustrates an MBPP task where baseline code divides by zero on empty lists."
+        },
+        {
+            "type": "Hallucinated Methodology",
+            "description": "The paper claims to use Mypy plugins for abstract interpretation, but the provided code doesn't implement or use any Mypy plugins. The code only contains a simple classifier model and doesn't perform any actual abstract interpretation as described in the paper.",
+            "evidence": "After an initial draft, a fast Python abstract interpreter (interval, nullness, value-set domains via Mypy plugins) discovers potential violations (e.g. underflow, division-by-zero), renders them as concise NL constraints, and re-prompts the model."
+        },
+        {
+            "type": "Faked Experimental Results",
+            "description": "The paper claims to have evaluated the method on HumanEval and MBPP benchmarks, showing 40-60% reduction in runtime errors. However, the code only works with a synthetic dataset of four arithmetic operations and doesn't include any implementation for testing on these benchmarks.",
+            "evidence": "On standard benchmarks, AIGG reduces runtime and logical errors by up to 60% and outperforms grammar- and SMT-based baselines. [...] Table 1 reports pass@1 and runtime-error reduction. AIGG yields a 45% lower runtime error rate on HumanEval and 60% on MBPP compared to GPT-J-6B, and outperforms CFG decoding and SMT repair in correctness and latency."
+        }
+    ],
+    "overall_assessment": "The paper contains several significant hallucinations. It cites nonexistent references (SemFix with question marks), refers to a nonexistent figure in the appendix, claims to use Mypy plugins for abstract interpretation that aren't implemented in the code, and reports experimental results on HumanEval and MBPP benchmarks that weren't actually conducted according to the provided code. The code only implements a simple classifier on a synthetic dataset of four arithmetic operations, not the sophisticated abstract interpretation pipeline described in the paper.",
+    "confidence": 5
+}

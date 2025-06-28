@@ -1,0 +1,54 @@
+{
+  "Experiment_description": "Two parallel baselines for hallucination detection via perturbation\u2010induced uncertainty: (1) Implementing PIU on a surrogate MLP trained on a synthetic binary classification task using Gaussian-perturbed inputs to simulate paraphrases and measuring detection AUC; (2) Training a one\u2010dimensional logistic regression detector on synthetic divergence scores drawn from distinct distributions for correct vs hallucinated examples.",
+  "Significance": "These experiments probe both the feasibility and current limitations of using output divergence as a hallucination signal. The PIU baseline on an MLP shows that simple Gaussian perturbations yield overlapping uncertainty distributions and only marginal detection AUC (~0.51\u20130.57). The synthetic logistic baseline, by contrast, achieves near\u2010perfect detection (AUC ~0.97), revealing a performance ceiling and highlighting the need for more effective perturbation or divergence methods to bridge this gap in realistic settings.",
+  "Description": "A synthetic dataset is generated and split into training and validation sets. For the MLP PIU baseline, a two\u2010layer neural network is trained over 10 epochs; at each epoch, K Gaussian\u2010perturbed copies of each input are passed through the model to compute an uncertainty score based on prediction divergence. Detection AUC\u2010ROC is evaluated on both splits. Separately, synthetic divergence scores for 'correct' and 'hallucinated' examples are sampled from distinct distributions, loaded via PyTorch DataLoaders, and used to train a one\u2010dimensional logistic regression model with BCEWithLogitsLoss for 20 epochs, logging train/validation losses and AUCs.",
+  "List_of_included_plots": [
+    {
+      "path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_fbb9e2bbad4e4649897bd7c1231d63a8_proc_141123/synthetic_auc_curve.png",
+      "description": "Training and validation AUC over epochs reveal a steady improvement in both metrics for the MLP PIU baseline.",
+      "analysis": "Shows modest gains in detection AUC: training AUC climbs from ~0.515 to ~0.575, validation AUC peaks at ~0.603 then falls to ~0.508 by epoch 10, indicating low separability of raw divergence signals."
+    },
+    {
+      "path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_fbb9e2bbad4e4649897bd7c1231d63a8_proc_141123/divergence_histogram.png",
+      "description": "The divergence (uncertainty) histogram on the validation set shows correct predictions cluster at low divergence, whereas incorrect predictions display a pronounced tail into higher divergence values (~0.15\u20130.40).",
+      "analysis": "Highlights that while high divergence correlates with errors, many errors lie in the low\u2010divergence region, limiting the recall of a simple threshold\u2010based detector."
+    },
+    {
+      "path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_fbb9e2bbad4e4649897bd7c1231d63a8_proc_141123/synthetic_loss_curve.png",
+      "description": "Training and validation loss curves both decrease smoothly from epoch 1 to epoch 10 for the MLP PIU baseline.",
+      "analysis": "Confirms stable convergence without overfitting (loss from ~0.80->0.20 train and ~0.60->0.23 val), indicating that low detection performance is not due to training instability."
+    },
+    {
+      "path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_7bc52d2190e34fa391c047ab21707aaa_proc_141122/synthetic_auc_curve.png",
+      "description": "Training AUC rises sharply to ~0.964, while validation AUC remains flat at ~0.972 for the logistic regression baseline.",
+      "analysis": "Demonstrates near\u2010perfect detection on synthetic divergences, in stark contrast to the MLP PIU results, underscoring that detection effectiveness depends critically on divergence distribution distinctiveness."
+    }
+  ],
+  "Key_numerical_results": [
+    {
+      "result": 0.5744,
+      "description": "Final training detection AUC (MLP PIU)",
+      "analysis": "Modest separation power of perturbation-induced uncertainty on the surrogate MLP."
+    },
+    {
+      "result": 0.5083,
+      "description": "Final validation detection AUC (MLP PIU)",
+      "analysis": "Barely above chance, indicating limited utility of raw Gaussian\u2010noise divergence for error detection without further enhancements."
+    },
+    {
+      "result": 0.603,
+      "description": "Peak validation AUC at epoch 9 (MLP PIU)",
+      "analysis": "Suggests slight benefit of additional epochs but overall low ceiling for divergence-based detection in this setup."
+    },
+    {
+      "result": 0.9639,
+      "description": "Final training AUC (logistic detector)",
+      "analysis": "Shows that a simple logistic model can almost perfectly separate idealized synthetic divergences."
+    },
+    {
+      "result": 0.9718,
+      "description": "Final validation AUC (logistic detector)",
+      "analysis": "Reflects high discriminative power when divergence distributions are well-separated, highlighting the gap to empirical PIU performance."
+    }
+  ]
+}

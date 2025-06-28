@@ -1,0 +1,22 @@
+{
+    "has_hallucination": true,
+    "hallucinations": [
+        {
+            "type": "Hallucinated Methodology",
+            "description": "The paper claims to use dynamic execution traces in the contrastive pre-training pipeline, but the actual implementation in the code only uses static code representations without incorporating any dynamic trace information in the model architecture. The paper states 'We present TraceCode, a framework that encodes both source tokens and runtime traces into a joint contrastive objective' (lines 18-19), but the code only processes source tokens through an LSTM encoder without any trace encoder or fusion mechanism.",
+            "evidence": "In the code from research_summary.json, the model only processes character-level tokens: 'class CodeEncoder(nn.Module):\n    def __init__(self, vocab_size, embed_dim=64, hidden=64):\n        super().__init__()\n        self.embed = nn.Embedding(vocab_size, embed_dim, padding_idx=0)\n        self.lstm = nn.LSTM(embed_dim, hidden, batch_first=True)\n\n    def forward(self, x):\n        x = self.embed(x)\n        _, (h, _) = self.lstm(x)\n        return h.squeeze(0)'"
+        },
+        {
+            "type": "Faked Experimental Results",
+            "description": "The paper presents figures and discusses results from experiments that were never actually performed. Specifically, it claims to have conducted experiments with different negative sampling strategies (random vs. hard negatives) and distance metrics (Euclidean vs. cosine), but these experiments are not present in the baseline code. The paper presents these as if they were actual experimental findings.",
+            "evidence": "The paper states 'Fig. 2 contrasts loss and accuracy: random negatives drive rapid collapse but suffer late-epoch instability, whereas hard negatives yield smoother but slower learning and lower final accuracy' (lines 110-112) and 'Fig. 3, Euclidean distance yields consistent, rapid convergence, whereas cosine exhibits noisy validation loss after ~20 epochs and slower accuracy ramp-up' (lines 114-115), but these experiments are not in the baseline code, which only uses random negatives and a standard triplet margin loss."
+        },
+        {
+            "type": "Faked Experimental Results",
+            "description": "The paper claims to have conducted experiments on multiple datasets including branch and loop code variants, but the baseline code only contains simple arithmetic functions. The paper presents results from these non-existent experiments, discussing their performance characteristics in detail.",
+            "evidence": "The paper states 'Dataset: branch – Training and validation accuracy remain near zero across all 50 epochs for each E setting. Loss curves stay around 1.0 with no clear downward trend' (lines 216-218) and 'Dataset: loop – Accuracy curves are flat at zero and losses plateau around 1.0 across all epochs and E values' (lines 221-222), but the baseline code only generates arithmetic functions: 'for c in range(1, 11): codes.append(f\"def f(x): return x+{c}\"); codes.append(f\"def f(x): return {c}+x\")'."
+        }
+    ],
+    "overall_assessment": "The paper contains significant hallucinations regarding methodology and experimental results. While the code does implement a basic contrastive learning approach for code snippets, it does not incorporate the dynamic execution traces that are central to the paper's claimed contribution. Additionally, the paper presents detailed results from experiments (on different negative sampling strategies, distance metrics, and code variants like branches and loops) that were never actually performed in the provided code. These hallucinations misrepresent both the technical approach and the empirical findings.",
+    "confidence": 5
+}

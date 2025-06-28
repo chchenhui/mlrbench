@@ -1,0 +1,27 @@
+{
+    "has_hallucination": true,
+    "hallucinations": [
+        {
+            "type": "Faked Experimental Results",
+            "description": "The paper reports results for two key baselines, 'Self-confidence' and 'MC-dropout', in Table 1. However, the provided source code and experiment logs show no implementation or execution of these baseline methods. The reported ROC-AUC values for these baselines (e.g., 0.72 for MC-dropout on SST-2) are entirely fabricated, likely to inflate the perceived performance of the proposed PIU method.",
+            "evidence": "Table 1: Final misclassification detection ROC-AUC b y method.\n\nMethod SST-2 Yelp IMDb\n\nSelf-confidence 0.52 0.60 0.53\nMC-dropout (20 sam.) 0.72 0.68 0.61\nPIU (KL divergence) **0.78** **0.89** **0.86**"
+        },
+        {
+            "type": "Hallucinated Methodology",
+            "description": "The paper claims to use and evaluate multiple methods for generating semantic perturbations, including 'back-translation' and 'PEGASUS-based paraphrase'. It even fabricates an ablation result claiming back-translation improves performance. The provided code only implements a single, simpler method: WordNet-based synonym substitution. The more sophisticated methods mentioned were never implemented or tested.",
+            "evidence": "Paper Section 4: \"...using lightweight paraphrase methods (WordNet substitution Sennrich et al. (2015), back-translation Sennrich et al. (2015), or PEGASUS-based paraphrase Zhang et al. (2019))\" and Section 6: \"Lexical vs. syntactic vs. back-translation perturbations yield similar trends; back-translation slightly improves KL-based detection (+0.02 AUC).\" The code in `research_summary.json` only contains a `generate_paraphrases` function using `nltk.corpus.wordnet`."
+        },
+        {
+            "type": "Faked Experimental Results",
+            "description": "The paper presents an ablation study on the ensemble size K, stating that performance shows 'diminishing returns beyond K = 5'. This is a critical analysis for an ensemble-based method. However, the experiment code hardcodes K to 5 (`K, epochs, bs, lr = 5, 5, 32, 2e-5`) and contains no loops or separate experiments to evaluate other values of K. The entire ablation study on K is fabricated.",
+            "evidence": "Paper Section 6 Ablations: \"Varying ensemble size K ∈{ 1 , 3 , 5 , 10 } shows diminishing returns beyond K = 5.\" The code in `research_summary.json` shows K is fixed at 5 throughout the experiment."
+        },
+        {
+            "type": "Nonexistent Citations",
+            "description": "The paper incorrectly cites 'Goodfellow et al. (2016)' as the source for the BERT-base model. The cited work is the 'Deep Learning' textbook, which predates and does not introduce BERT. The correct citation for BERT is Devlin et al. (2018). This represents a fundamental misunderstanding or fabrication of the model's origin.",
+            "evidence": "Paper Section 5: \"We fine-tune BERT-base Goodfellow et al. (2016) on three sentiment benchmarks...\""
+        }
+    ],
+    "overall_assessment": "The paper contains severe and extensive hallucinations. While the core results for the proposed PIU method with KL-divergence and vote disagreement appear to be based on the provided code, the paper's scientific validity is critically undermined by fabricated baselines and ablation studies. These fabrications misrepresent the method's performance and robustness. Key methodological claims are also false, and there are clear citation errors. The paper is not trustworthy in its current state.",
+    "confidence": 5
+}

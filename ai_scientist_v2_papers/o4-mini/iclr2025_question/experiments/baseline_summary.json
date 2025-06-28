@@ -1,0 +1,596 @@
+{
+  "best node": {
+    "overall_plan": "We aim to build and refine a divergence\u2010based hallucination detector using a one\u2010dimensional logistic regression trained under BCEWithLogitsLoss. Initially, we generated synthetic divergence scores for correct versus hallucinated outputs, split them into training and validation sets, and tracked per\u2010epoch loss and ROC AUC, organizing results in an experiment_data dictionary. We conducted a batch size hyperparameter sweep over [16, 32, 64, 128], retraining from scratch for each batch size and saving train/val losses, AUCs, and raw predictions and labels under a nested 'batch_size'\u2192'synthetic' key. Building on this baseline, we now fix an implementation bug by detaching logits before converting to numpy arrays to ensure proper data handling. We extend our experiments to two real\u2010world HuggingFace sentiment benchmarks (SST\u20102 and Yelp Polarity), extracting sentence/text length as a single numeric feature. We normalize inputs by the training set\u2019s mean and standard deviation, then conduct a combined hyperparameter sweep over learning rates [0.001, 0.01] and batch sizes [32, 64] for 20 epochs, printing and tracking validation loss and ROC AUC at each epoch. All metrics, predictions, and ground\u2010truth labels are stored in the experiment_data dictionary and saved with np.save(). This comprehensive approach refines our baseline detector, validates it on practical data, and analyzes how batch size, learning rate, and feature scaling impact uncertainty detection performance.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "train accuracy",
+            "lower_is_better": false,
+            "description": "Training accuracy",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 0.9522,
+                "best_value": 0.9522
+              },
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.5558,
+                "best_value": 0.5558
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.593,
+                "best_value": 0.593
+              }
+            ]
+          },
+          {
+            "metric_name": "validation accuracy",
+            "lower_is_better": false,
+            "description": "Validation accuracy",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 0.9572,
+                "best_value": 0.9572
+              },
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.584,
+                "best_value": 0.584
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.5828,
+                "best_value": 0.5828
+              }
+            ]
+          },
+          {
+            "metric_name": "train loss",
+            "lower_is_better": true,
+            "description": "Training loss",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 0.2641,
+                "best_value": 0.2641
+              },
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.6815,
+                "best_value": 0.6815
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.68,
+                "best_value": 0.68
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Validation loss",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 0.2876,
+                "best_value": 0.2876
+              },
+              {
+                "dataset_name": "sst2",
+                "final_value": 0.6891,
+                "best_value": 0.6891
+              },
+              {
+                "dataset_name": "yelp_polarity",
+                "final_value": 0.6924,
+                "best_value": 0.6924
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os\nimport torch\nimport numpy as np\nfrom torch import nn\nfrom torch.utils.data import DataLoader, TensorDataset\nfrom torch.optim import Adam\nfrom sklearn.metrics import roc_auc_score\nfrom datasets import load_dataset\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\n\n\n# synthetic data function\ndef sample_data(N):\n    N0 = N // 2\n    N1 = N - N0\n    d0 = np.clip(np.random.normal(0, 0.5, size=N0), 0, None)\n    d1 = np.clip(np.random.normal(2, 1.0, size=N1), 0, None)\n    xs = np.concatenate([d0, d1]).astype(np.float32).reshape(-1, 1)\n    ys = np.concatenate([np.zeros(N0), np.ones(N1)]).astype(np.float32)\n    idx = np.random.permutation(N)\n    return xs[idx], ys[idx]\n\n\n# Prepare datasets dict\ndatasets = {}\n\n# 1) Synthetic dataset\nx_tr_s, y_tr_s = sample_data(1000)\nx_val_s, y_val_s = sample_data(200)\nmean_s, std_s = x_tr_s.mean(), x_tr_s.std() + 1e-6\nx_tr_s = (x_tr_s - mean_s) / std_s\nx_val_s = (x_val_s - mean_s) / std_s\ntrain_ds_s = TensorDataset(torch.from_numpy(x_tr_s), torch.from_numpy(y_tr_s))\nval_ds_s = TensorDataset(torch.from_numpy(x_val_s), torch.from_numpy(y_val_s))\ndatasets[\"synthetic\"] = (train_ds_s, val_ds_s)\n\n# 2) SST-2 (sentence length as feature)\nsst2_train = load_dataset(\"glue\", \"sst2\", split=\"train\").shuffle(42).select(range(1000))\nsst2_val = (\n    load_dataset(\"glue\", \"sst2\", split=\"validation\").shuffle(42).select(range(200))\n)\nx_tr_st = np.array(\n    [len(s.split()) for s in sst2_train[\"sentence\"]], dtype=np.float32\n).reshape(-1, 1)\ny_tr_st = np.array(sst2_train[\"label\"], dtype=np.float32)\nx_val_st = np.array(\n    [len(s.split()) for s in sst2_val[\"sentence\"]], dtype=np.float32\n).reshape(-1, 1)\ny_val_st = np.array(sst2_val[\"label\"], dtype=np.float32)\nmean_st, std_st = x_tr_st.mean(), x_tr_st.std() + 1e-6\nx_tr_st = (x_tr_st - mean_st) / std_st\nx_val_st = (x_val_st - mean_st) / std_st\ntrain_ds_st = TensorDataset(torch.from_numpy(x_tr_st), torch.from_numpy(y_tr_st))\nval_ds_st = TensorDataset(torch.from_numpy(x_val_st), torch.from_numpy(y_val_st))\ndatasets[\"sst2\"] = (train_ds_st, val_ds_st)\n\n# 3) Yelp Polarity (text length as feature)\nyelp_train = (\n    load_dataset(\"yelp_polarity\", split=\"train\").shuffle(42).select(range(1000))\n)\nyelp_val = load_dataset(\"yelp_polarity\", split=\"test\").shuffle(42).select(range(200))\nx_tr_yp = np.array(\n    [len(t.split()) for t in yelp_train[\"text\"]], dtype=np.float32\n).reshape(-1, 1)\ny_tr_yp = np.array(yelp_train[\"label\"], dtype=np.float32)\nx_val_yp = np.array(\n    [len(t.split()) for t in yelp_val[\"text\"]], dtype=np.float32\n).reshape(-1, 1)\ny_val_yp = np.array(yelp_val[\"label\"], dtype=np.float32)\nmean_yp, std_yp = x_tr_yp.mean(), x_tr_yp.std() + 1e-6\nx_tr_yp = (x_tr_yp - mean_yp) / std_yp\nx_val_yp = (x_val_yp - mean_yp) / std_yp\ntrain_ds_yp = TensorDataset(torch.from_numpy(x_tr_yp), torch.from_numpy(y_tr_yp))\nval_ds_yp = TensorDataset(torch.from_numpy(x_val_yp), torch.from_numpy(y_val_yp))\ndatasets[\"yelp_polarity\"] = (train_ds_yp, val_ds_yp)\n\n# Hyperparameters\nbatch_sizes = [32, 64]\nlearning_rates = [0.001, 0.01]\nepochs = 20\n\n# Initialize experiment_data\nexperiment_data = {}\nfor name in datasets:\n    experiment_data[name] = {\n        \"metrics\": {\"train\": [], \"val\": []},\n        \"losses\": {\"train\": [], \"val\": []},\n        \"predictions\": [],\n        \"ground_truth\": [],\n    }\n\n# Training and evaluation\nfor name, (train_ds, val_ds) in datasets.items():\n    for lr in learning_rates:\n        for bs in batch_sizes:\n            train_loader = DataLoader(train_ds, batch_size=bs, shuffle=True)\n            val_loader = DataLoader(val_ds, batch_size=bs)\n            model = nn.Linear(1, 1).to(device)\n            optimizer = Adam(model.parameters(), lr=lr)\n            loss_fn = nn.BCEWithLogitsLoss()\n            for epoch in range(1, epochs + 1):\n                # training\n                model.train()\n                t_losses, t_preds, t_labels = [], [], []\n                for xb, yb in train_loader:\n                    xb, yb = xb.to(device), yb.to(device)\n                    logits = model(xb).squeeze(1)\n                    loss = loss_fn(logits, yb)\n                    optimizer.zero_grad()\n                    loss.backward()\n                    optimizer.step()\n                    t_losses.append(loss.item())\n                    t_preds.append(torch.sigmoid(logits).detach().cpu().numpy())\n                    t_labels.append(yb.cpu().numpy())\n                train_loss = np.mean(t_losses)\n                train_auc = roc_auc_score(\n                    np.concatenate(t_labels), np.concatenate(t_preds)\n                )\n                # validation\n                model.eval()\n                v_losses, v_preds, v_labels = [], [], []\n                with torch.no_grad():\n                    for xb, yb in val_loader:\n                        xb, yb = xb.to(device), yb.to(device)\n                        logits = model(xb).squeeze(1)\n                        loss = loss_fn(logits, yb)\n                        v_losses.append(loss.item())\n                        v_preds.append(torch.sigmoid(logits).detach().cpu().numpy())\n                        v_labels.append(yb.cpu().numpy())\n                val_loss = np.mean(v_losses)\n                val_preds = np.concatenate(v_preds)\n                val_labels = np.concatenate(v_labels)\n                val_auc = roc_auc_score(val_labels, val_preds)\n                print(f\"Epoch {epoch}: validation_loss = {val_loss:.4f}\")\n                # Record results\n                exp = experiment_data[name]\n                exp[\"metrics\"][\"train\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"auc\": train_auc}\n                )\n                exp[\"metrics\"][\"val\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"auc\": val_auc}\n                )\n                exp[\"losses\"][\"train\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"loss\": train_loss}\n                )\n                exp[\"losses\"][\"val\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"loss\": val_loss}\n                )\n                exp[\"predictions\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"preds\": val_preds}\n                )\n                exp[\"ground_truth\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"labels\": val_labels}\n                )\n\n# Save all experiment data\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\nelse:\n    for dataset, exp in experiment_data.items():\n        # find best hyperparams by max validation AUC\n        best_entry = max(exp[\"metrics\"][\"val\"], key=lambda x: x[\"auc\"])\n        bs, lr = best_entry[\"bs\"], best_entry[\"lr\"]\n        print(f\"{dataset}: Best Val AUC = {best_entry['auc']:.4f} at bs={bs}, lr={lr}\")\n        # collect losses\n        loss_train = [\n            (d[\"epoch\"], d[\"loss\"])\n            for d in exp[\"losses\"][\"train\"]\n            if d[\"bs\"] == bs and d[\"lr\"] == lr\n        ]\n        loss_val = [\n            (d[\"epoch\"], d[\"loss\"])\n            for d in exp[\"losses\"][\"val\"]\n            if d[\"bs\"] == bs and d[\"lr\"] == lr\n        ]\n        loss_train.sort()\n        loss_val.sort()\n        epochs = [e for e, _ in loss_train]\n        tr_loss = [l for _, l in loss_train]\n        vl_loss = [l for _, l in loss_val]\n        try:\n            plt.figure()\n            plt.plot(epochs, tr_loss, label=\"Train Loss\")\n            plt.plot(epochs, vl_loss, label=\"Val Loss\")\n            plt.xlabel(\"Epoch\")\n            plt.ylabel(\"Loss\")\n            plt.title(f\"{dataset} Loss Curve (Train vs Validation)\\nbs={bs}, lr={lr}\")\n            plt.legend()\n            plt.savefig(\n                os.path.join(working_dir, f\"{dataset}_loss_curve_bs{bs}_lr{lr}.png\")\n            )\n            plt.close()\n        except Exception as e:\n            print(f\"Error creating loss plot for {dataset}: {e}\")\n            plt.close()\n        # collect AUCs\n        auc_train = [\n            (d[\"epoch\"], d[\"auc\"])\n            for d in exp[\"metrics\"][\"train\"]\n            if d[\"bs\"] == bs and d[\"lr\"] == lr\n        ]\n        auc_val = [\n            (d[\"epoch\"], d[\"auc\"])\n            for d in exp[\"metrics\"][\"val\"]\n            if d[\"bs\"] == bs and d[\"lr\"] == lr\n        ]\n        auc_train.sort()\n        auc_val.sort()\n        epochs = [e for e, _ in auc_train]\n        tr_auc = [a for _, a in auc_train]\n        vl_auc = [a for _, a in auc_val]\n        try:\n            plt.figure()\n            plt.plot(epochs, tr_auc, label=\"Train AUC\")\n            plt.plot(epochs, vl_auc, label=\"Val AUC\")\n            plt.xlabel(\"Epoch\")\n            plt.ylabel(\"AUC\")\n            plt.title(f\"{dataset} AUC Curve (Train vs Validation)\\nbs={bs}, lr={lr}\")\n            plt.legend()\n            plt.savefig(\n                os.path.join(working_dir, f\"{dataset}_auc_curve_bs{bs}_lr{lr}.png\")\n            )\n            plt.close()\n        except Exception as e:\n            print(f\"Error creating AUC plot for {dataset}: {e}\")\n            plt.close()\n",
+    "plot_plan": "We will load the saved experiment data and for each dataset pick the hyperparameter combination that gave the highest validation AUC.  Then for that best (bs, lr) we extract the per\u2010epoch train and val losses and AUCs, and produce two separate line plots: one for loss curves and one for AUC curves across epochs.  Each plot is wrapped in its own try\u2010except to catch any errors and ensure the figure is closed.  Titles include the dataset name and the best hyperparameters, and the x/y labels and legends clarify train vs validation.  Plots are saved in the working directory under descriptive filenames.  Finally, we print out the best validation AUC and its hyperparameters for each dataset.",
+    "plot_analyses": [
+      {
+        "analysis": "SST2 AUC shows train performance stuck around 0.45\u20130.46 across 20 epochs, while validation AUC sits consistently near 0.585. This gap suggests the model is underfitting on SST2: it fails to improve embedding discriminability on train data and validation remains only slightly above chance. Adjusting learning rate or batch size may help, but additional regularization or data augmentation could be needed to raise train AUC first.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_55e8fb977bb9465aad39c197cfd1a278_proc_144143/sst2_auc_curve_bs32_lr0.001.png"
+      },
+      {
+        "analysis": "SST2 loss curves indicate smooth, continuous decrease for both train and validation, with validation loss always slightly lower. Neither curve plateaus sharply before epoch 20, but convergence is slow and overall loss remains high (around 0.69). The combination of underfitting AUC and lingering loss suggests that simply training longer may not suffice; consider increasing learning rate or using more aggressive optimizer scheduling.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_55e8fb977bb9465aad39c197cfd1a278_proc_144143/sst2_loss_curve_bs32_lr0.001.png"
+      },
+      {
+        "analysis": "Synthetic dataset AUC jumps from near chance (0.05) to over 0.90 by epoch 4 for both train and validation, then asymptotically approaches ~0.93 (train) and ~0.95 (val). This rapid learning and small generalization gap imply the synthetic task is too easy or too homogeneous. To better stress-test PIU, the synthetic generation process should be made more complex or noisy to avoid trivial memorization.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_55e8fb977bb9465aad39c197cfd1a278_proc_144143/synthetic_auc_curve_bs32_lr0.001.png"
+      },
+      {
+        "analysis": "Yelp Polarity loss curves steadily decrease from ~0.813 to ~0.705 on train and from ~0.785 to ~0.701 on validation over 20 epochs, with nearly parallel trajectories. This steady progress without divergence indicates the current hyperparameters allow balanced learning and no visible overfitting, but final loss remains relatively high. A slight increase in learning rate or modified batch size could accelerate convergence.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_55e8fb977bb9465aad39c197cfd1a278_proc_144143/yelp_polarity_loss_curve_bs32_lr0.001.png"
+      },
+      {
+        "analysis": "Synthetic loss declines smoothly from ~0.76 to ~0.54 on train and from ~0.75 to ~0.55 on validation with minimal gap. The consistency with AUC performance confirms the model fits synthetic data quickly and generalizes nearly perfectly, again suggesting the synthetic task lacks sufficient difficulty to benchmark PIU\u2019s uncertainty estimates in realistic settings.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_55e8fb977bb9465aad39c197cfd1a278_proc_144143/synthetic_loss_curve_bs32_lr0.001.png"
+      },
+      {
+        "analysis": "Yelp Polarity AUC remains flat around 0.405\u20130.415 through epoch 18, then abruptly jumps to ~0.445 for train and ~0.58 for validation at epochs 19\u201320. Such a sudden gain likely points to a metric computation anomaly (e.g. threshold reassignment or validation shuffle) rather than genuine learning. This should be investigated by verifying AUC calculations and keeping random seeds consistent.",
+        "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_55e8fb977bb9465aad39c197cfd1a278_proc_144143/yelp_polarity_auc_curve_bs32_lr0.001.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_55e8fb977bb9465aad39c197cfd1a278_proc_144143/sst2_auc_curve_bs32_lr0.001.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_55e8fb977bb9465aad39c197cfd1a278_proc_144143/sst2_loss_curve_bs32_lr0.001.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_55e8fb977bb9465aad39c197cfd1a278_proc_144143/synthetic_auc_curve_bs32_lr0.001.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_55e8fb977bb9465aad39c197cfd1a278_proc_144143/yelp_polarity_loss_curve_bs32_lr0.001.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_55e8fb977bb9465aad39c197cfd1a278_proc_144143/synthetic_loss_curve_bs32_lr0.001.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_55e8fb977bb9465aad39c197cfd1a278_proc_144143/yelp_polarity_auc_curve_bs32_lr0.001.png"
+    ],
+    "vlm_feedback_summary": "Overall, experiments reveal underfitting on real sentiment tasks (SST2, Yelp) and trivial performance on the synthetic dataset. Loss curves decrease but AUC on SST2 and Yelp stays near chance until a suspicious late jump. I recommend: 1) tuning learning rate schedules (e.g. warm restarts or cosine decay), 2) exploring data augmentations or paraphrase diversity to challenge the synthetic task, and 3) investigating metric calculation on Yelp. For broader evaluation, incorporate HuggingFace\u2019s \u201cimdb\u201d and \u201cag_news\u201d datasets to test generalization across different text classification scenarios.",
+    "exp_results_dir": "experiment_results/experiment_55e8fb977bb9465aad39c197cfd1a278_proc_144143",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_55e8fb977bb9465aad39c197cfd1a278_proc_144143/experiment_data.npy"
+    ]
+  },
+  "best node with different seeds": [
+    {
+      "overall_plan": "We aim to develop, refine, and validate a divergence\u2010based hallucination detector implemented as a one\u2010dimensional logistic regression trained under BCEWithLogitsLoss. First, we create synthetic divergence\u2010score datasets differentiating correct and hallucinated outputs, split into training and validation sets, and monitor per\u2010epoch loss and ROC AUC. We perform a hyperparameter sweep over batch sizes [16, 32, 64, 128], retraining from scratch each time and saving all metrics, predictions, and labels in a structured experiment_data dictionary. After identifying and fixing an implementation bug (detaching logits before numpy conversion), we extend experiments to two real-world HuggingFace sentiment benchmarks (SST-2 and Yelp Polarity). We extract sentence/text length as a numeric feature, normalize inputs using training\u2010set mean and standard deviation, and run a combined grid search over learning rates [0.001, 0.01] and batch sizes [32, 64] for 20 epochs, tracking validation loss and ROC AUC at each epoch. All results, including raw outputs and ground truths, are stored and saved. The current seed node plan introduces no additional changes, so this comprehensive approach remains our guiding roadmap.",
+      "analysis": "",
+      "metric": {
+        "value": {
+          "metric_names": [
+            {
+              "metric_name": "train accuracy",
+              "lower_is_better": false,
+              "description": "Model accuracy on the training set",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 0.9643,
+                  "best_value": 0.9643
+                },
+                {
+                  "dataset_name": "sst2",
+                  "final_value": 0.5528,
+                  "best_value": 0.5528
+                },
+                {
+                  "dataset_name": "yelp_polarity",
+                  "final_value": 0.5939,
+                  "best_value": 0.5939
+                }
+              ]
+            },
+            {
+              "metric_name": "validation accuracy",
+              "lower_is_better": false,
+              "description": "Model accuracy on the validation set",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 0.9718,
+                  "best_value": 0.9718
+                },
+                {
+                  "dataset_name": "sst2",
+                  "final_value": 0.584,
+                  "best_value": 0.584
+                },
+                {
+                  "dataset_name": "yelp_polarity",
+                  "final_value": 0.5828,
+                  "best_value": 0.5828
+                }
+              ]
+            },
+            {
+              "metric_name": "train loss",
+              "lower_is_better": true,
+              "description": "Model loss on the training set",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 0.236,
+                  "best_value": 0.236
+                },
+                {
+                  "dataset_name": "sst2",
+                  "final_value": 0.6825,
+                  "best_value": 0.6825
+                },
+                {
+                  "dataset_name": "yelp_polarity",
+                  "final_value": 0.6797,
+                  "best_value": 0.6797
+                }
+              ]
+            },
+            {
+              "metric_name": "validation loss",
+              "lower_is_better": true,
+              "description": "Model loss on the validation set",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 0.2255,
+                  "best_value": 0.2255
+                },
+                {
+                  "dataset_name": "sst2",
+                  "final_value": 0.6976,
+                  "best_value": 0.6976
+                },
+                {
+                  "dataset_name": "yelp_polarity",
+                  "final_value": 0.6915,
+                  "best_value": 0.6915
+                }
+              ]
+            }
+          ]
+        },
+        "maximize": null,
+        "name": null,
+        "description": null
+      },
+      "code": "# Set random seed\nimport random\nimport numpy as np\nimport torch\n\nseed = 0\nrandom.seed(seed)\nnp.random.seed(seed)\ntorch.manual_seed(seed)\nif torch.cuda.is_available():\n    torch.cuda.manual_seed(seed)\n\nimport os\nimport torch\nimport numpy as np\nfrom torch import nn\nfrom torch.utils.data import DataLoader, TensorDataset\nfrom torch.optim import Adam\nfrom sklearn.metrics import roc_auc_score\nfrom datasets import load_dataset\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\n\n\n# synthetic data function\ndef sample_data(N):\n    N0 = N // 2\n    N1 = N - N0\n    d0 = np.clip(np.random.normal(0, 0.5, size=N0), 0, None)\n    d1 = np.clip(np.random.normal(2, 1.0, size=N1), 0, None)\n    xs = np.concatenate([d0, d1]).astype(np.float32).reshape(-1, 1)\n    ys = np.concatenate([np.zeros(N0), np.ones(N1)]).astype(np.float32)\n    idx = np.random.permutation(N)\n    return xs[idx], ys[idx]\n\n\n# Prepare datasets dict\ndatasets = {}\n\n# 1) Synthetic dataset\nx_tr_s, y_tr_s = sample_data(1000)\nx_val_s, y_val_s = sample_data(200)\nmean_s, std_s = x_tr_s.mean(), x_tr_s.std() + 1e-6\nx_tr_s = (x_tr_s - mean_s) / std_s\nx_val_s = (x_val_s - mean_s) / std_s\ntrain_ds_s = TensorDataset(torch.from_numpy(x_tr_s), torch.from_numpy(y_tr_s))\nval_ds_s = TensorDataset(torch.from_numpy(x_val_s), torch.from_numpy(y_val_s))\ndatasets[\"synthetic\"] = (train_ds_s, val_ds_s)\n\n# 2) SST-2 (sentence length as feature)\nsst2_train = load_dataset(\"glue\", \"sst2\", split=\"train\").shuffle(42).select(range(1000))\nsst2_val = (\n    load_dataset(\"glue\", \"sst2\", split=\"validation\").shuffle(42).select(range(200))\n)\nx_tr_st = np.array(\n    [len(s.split()) for s in sst2_train[\"sentence\"]], dtype=np.float32\n).reshape(-1, 1)\ny_tr_st = np.array(sst2_train[\"label\"], dtype=np.float32)\nx_val_st = np.array(\n    [len(s.split()) for s in sst2_val[\"sentence\"]], dtype=np.float32\n).reshape(-1, 1)\ny_val_st = np.array(sst2_val[\"label\"], dtype=np.float32)\nmean_st, std_st = x_tr_st.mean(), x_tr_st.std() + 1e-6\nx_tr_st = (x_tr_st - mean_st) / std_st\nx_val_st = (x_val_st - mean_st) / std_st\ntrain_ds_st = TensorDataset(torch.from_numpy(x_tr_st), torch.from_numpy(y_tr_st))\nval_ds_st = TensorDataset(torch.from_numpy(x_val_st), torch.from_numpy(y_val_st))\ndatasets[\"sst2\"] = (train_ds_st, val_ds_st)\n\n# 3) Yelp Polarity (text length as feature)\nyelp_train = (\n    load_dataset(\"yelp_polarity\", split=\"train\").shuffle(42).select(range(1000))\n)\nyelp_val = load_dataset(\"yelp_polarity\", split=\"test\").shuffle(42).select(range(200))\nx_tr_yp = np.array(\n    [len(t.split()) for t in yelp_train[\"text\"]], dtype=np.float32\n).reshape(-1, 1)\ny_tr_yp = np.array(yelp_train[\"label\"], dtype=np.float32)\nx_val_yp = np.array(\n    [len(t.split()) for t in yelp_val[\"text\"]], dtype=np.float32\n).reshape(-1, 1)\ny_val_yp = np.array(yelp_val[\"label\"], dtype=np.float32)\nmean_yp, std_yp = x_tr_yp.mean(), x_tr_yp.std() + 1e-6\nx_tr_yp = (x_tr_yp - mean_yp) / std_yp\nx_val_yp = (x_val_yp - mean_yp) / std_yp\ntrain_ds_yp = TensorDataset(torch.from_numpy(x_tr_yp), torch.from_numpy(y_tr_yp))\nval_ds_yp = TensorDataset(torch.from_numpy(x_val_yp), torch.from_numpy(y_val_yp))\ndatasets[\"yelp_polarity\"] = (train_ds_yp, val_ds_yp)\n\n# Hyperparameters\nbatch_sizes = [32, 64]\nlearning_rates = [0.001, 0.01]\nepochs = 20\n\n# Initialize experiment_data\nexperiment_data = {}\nfor name in datasets:\n    experiment_data[name] = {\n        \"metrics\": {\"train\": [], \"val\": []},\n        \"losses\": {\"train\": [], \"val\": []},\n        \"predictions\": [],\n        \"ground_truth\": [],\n    }\n\n# Training and evaluation\nfor name, (train_ds, val_ds) in datasets.items():\n    for lr in learning_rates:\n        for bs in batch_sizes:\n            train_loader = DataLoader(train_ds, batch_size=bs, shuffle=True)\n            val_loader = DataLoader(val_ds, batch_size=bs)\n            model = nn.Linear(1, 1).to(device)\n            optimizer = Adam(model.parameters(), lr=lr)\n            loss_fn = nn.BCEWithLogitsLoss()\n            for epoch in range(1, epochs + 1):\n                # training\n                model.train()\n                t_losses, t_preds, t_labels = [], [], []\n                for xb, yb in train_loader:\n                    xb, yb = xb.to(device), yb.to(device)\n                    logits = model(xb).squeeze(1)\n                    loss = loss_fn(logits, yb)\n                    optimizer.zero_grad()\n                    loss.backward()\n                    optimizer.step()\n                    t_losses.append(loss.item())\n                    t_preds.append(torch.sigmoid(logits).detach().cpu().numpy())\n                    t_labels.append(yb.cpu().numpy())\n                train_loss = np.mean(t_losses)\n                train_auc = roc_auc_score(\n                    np.concatenate(t_labels), np.concatenate(t_preds)\n                )\n                # validation\n                model.eval()\n                v_losses, v_preds, v_labels = [], [], []\n                with torch.no_grad():\n                    for xb, yb in val_loader:\n                        xb, yb = xb.to(device), yb.to(device)\n                        logits = model(xb).squeeze(1)\n                        loss = loss_fn(logits, yb)\n                        v_losses.append(loss.item())\n                        v_preds.append(torch.sigmoid(logits).detach().cpu().numpy())\n                        v_labels.append(yb.cpu().numpy())\n                val_loss = np.mean(v_losses)\n                val_preds = np.concatenate(v_preds)\n                val_labels = np.concatenate(v_labels)\n                val_auc = roc_auc_score(val_labels, val_preds)\n                print(f\"Epoch {epoch}: validation_loss = {val_loss:.4f}\")\n                # Record results\n                exp = experiment_data[name]\n                exp[\"metrics\"][\"train\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"auc\": train_auc}\n                )\n                exp[\"metrics\"][\"val\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"auc\": val_auc}\n                )\n                exp[\"losses\"][\"train\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"loss\": train_loss}\n                )\n                exp[\"losses\"][\"val\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"loss\": val_loss}\n                )\n                exp[\"predictions\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"preds\": val_preds}\n                )\n                exp[\"ground_truth\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"labels\": val_labels}\n                )\n\n# Save all experiment data\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+      "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\nelse:\n    for dataset, exp in experiment_data.items():\n        # find best hyperparams by max validation AUC\n        best_entry = max(exp[\"metrics\"][\"val\"], key=lambda x: x[\"auc\"])\n        bs, lr = best_entry[\"bs\"], best_entry[\"lr\"]\n        print(f\"{dataset}: Best Val AUC = {best_entry['auc']:.4f} at bs={bs}, lr={lr}\")\n        # collect losses\n        loss_train = [\n            (d[\"epoch\"], d[\"loss\"])\n            for d in exp[\"losses\"][\"train\"]\n            if d[\"bs\"] == bs and d[\"lr\"] == lr\n        ]\n        loss_val = [\n            (d[\"epoch\"], d[\"loss\"])\n            for d in exp[\"losses\"][\"val\"]\n            if d[\"bs\"] == bs and d[\"lr\"] == lr\n        ]\n        loss_train.sort()\n        loss_val.sort()\n        epochs = [e for e, _ in loss_train]\n        tr_loss = [l for _, l in loss_train]\n        vl_loss = [l for _, l in loss_val]\n        try:\n            plt.figure()\n            plt.plot(epochs, tr_loss, label=\"Train Loss\")\n            plt.plot(epochs, vl_loss, label=\"Val Loss\")\n            plt.xlabel(\"Epoch\")\n            plt.ylabel(\"Loss\")\n            plt.title(f\"{dataset} Loss Curve (Train vs Validation)\\nbs={bs}, lr={lr}\")\n            plt.legend()\n            plt.savefig(\n                os.path.join(working_dir, f\"{dataset}_loss_curve_bs{bs}_lr{lr}.png\")\n            )\n            plt.close()\n        except Exception as e:\n            print(f\"Error creating loss plot for {dataset}: {e}\")\n            plt.close()\n        # collect AUCs\n        auc_train = [\n            (d[\"epoch\"], d[\"auc\"])\n            for d in exp[\"metrics\"][\"train\"]\n            if d[\"bs\"] == bs and d[\"lr\"] == lr\n        ]\n        auc_val = [\n            (d[\"epoch\"], d[\"auc\"])\n            for d in exp[\"metrics\"][\"val\"]\n            if d[\"bs\"] == bs and d[\"lr\"] == lr\n        ]\n        auc_train.sort()\n        auc_val.sort()\n        epochs = [e for e, _ in auc_train]\n        tr_auc = [a for _, a in auc_train]\n        vl_auc = [a for _, a in auc_val]\n        try:\n            plt.figure()\n            plt.plot(epochs, tr_auc, label=\"Train AUC\")\n            plt.plot(epochs, vl_auc, label=\"Val AUC\")\n            plt.xlabel(\"Epoch\")\n            plt.ylabel(\"AUC\")\n            plt.title(f\"{dataset} AUC Curve (Train vs Validation)\\nbs={bs}, lr={lr}\")\n            plt.legend()\n            plt.savefig(\n                os.path.join(working_dir, f\"{dataset}_auc_curve_bs{bs}_lr{lr}.png\")\n            )\n            plt.close()\n        except Exception as e:\n            print(f\"Error creating AUC plot for {dataset}: {e}\")\n            plt.close()\n",
+      "plot_analyses": [
+        {
+          "analysis": "Train AUC on SST2 starts around 0.45, dips at epoch 2, then jumps to ~0.53 by epoch 4 and gradually rises to ~0.55 before plateauing. Validation AUC begins high at ~0.58 but crashes to ~0.415 by epoch 3 and stays flat for the rest of training. This indicates severe overfitting or a possible issue in AUC computation on validation data after early epochs.",
+          "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_cde2566319a94c8ab6b12f9bf4bf3893_proc_144144/sst2_auc_curve_bs32_lr0.001.png"
+        },
+        {
+          "analysis": "SST2 train loss steadily decreases from ~0.722 to ~0.689 over 20 epochs, while validation loss mildly declines from ~0.709 to ~0.702 and then stagnates. The stable val loss coupled with collapsing val AUC suggests inconsistency between loss and metric evaluation or an overfitting phenomenon signaled by divergence in performance metrics.",
+          "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_cde2566319a94c8ab6b12f9bf4bf3893_proc_144144/sst2_loss_curve_bs32_lr0.001.png"
+        },
+        {
+          "analysis": "Synthetic dataset\u2019s train AUC leaps from 0.71 at epoch 1 to ~0.955 by epoch 3 and remains around 0.96 thereafter. Validation AUC holds at ~0.97 from start to finish, showing near-ceiling performance and minimal generalization gap. Model easily solves this synthetic task with stable behavior.",
+          "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_cde2566319a94c8ab6b12f9bf4bf3893_proc_144144/synthetic_auc_curve_bs32_lr0.001.png"
+        },
+        {
+          "analysis": "Yelp polarity train loss gently declines from ~0.694 to ~0.683 by epoch 20 with batch size 64. Validation loss decreases slightly until epoch 8 (~0.693) then steadily rises to ~0.695, indicating mild overfitting setting in mid-training.",
+          "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_cde2566319a94c8ab6b12f9bf4bf3893_proc_144144/yelp_polarity_loss_curve_bs64_lr0.001.png"
+        },
+        {
+          "analysis": "Synthetic dataset loss curves reveal smooth, consistent improvements: train loss drops from ~0.72 to ~0.515, and validation loss falls from ~0.707 to ~0.50 by epoch 20. No overfitting is evident, matching the high AUC scores.",
+          "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_cde2566319a94c8ab6b12f9bf4bf3893_proc_144144/synthetic_loss_curve_bs32_lr0.001.png"
+        },
+        {
+          "analysis": "Yelp polarity train AUC increases from ~0.581 to ~0.593 by epoch 4, dips at epoch 6, then recovers to ~0.593\u20130.594. Validation AUC remains flat at 0.582 throughout, signaling minimal generalization gains and suggesting hyperparameters or model capacity aren\u2019t well-tuned for this dataset.",
+          "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_cde2566319a94c8ab6b12f9bf4bf3893_proc_144144/yelp_polarity_auc_curve_bs64_lr0.001.png"
+        }
+      ],
+      "plot_paths": [
+        "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_cde2566319a94c8ab6b12f9bf4bf3893_proc_144144/sst2_auc_curve_bs32_lr0.001.png",
+        "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_cde2566319a94c8ab6b12f9bf4bf3893_proc_144144/sst2_loss_curve_bs32_lr0.001.png",
+        "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_cde2566319a94c8ab6b12f9bf4bf3893_proc_144144/synthetic_auc_curve_bs32_lr0.001.png",
+        "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_cde2566319a94c8ab6b12f9bf4bf3893_proc_144144/yelp_polarity_loss_curve_bs64_lr0.001.png",
+        "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_cde2566319a94c8ab6b12f9bf4bf3893_proc_144144/synthetic_loss_curve_bs32_lr0.001.png",
+        "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_cde2566319a94c8ab6b12f9bf4bf3893_proc_144144/yelp_polarity_auc_curve_bs64_lr0.001.png"
+      ],
+      "vlm_feedback_summary": "SST2 exhibits drastic validation AUC collapse despite stable validation loss, pointing to either a metric evaluation bug or severe overfitting with current lr=0.001 and batch size 32. Synthetic data is too easy, yielding near-perfect and stable metrics, allowing reduction in training budget. Yelp sentiment shows mild overfitting in loss and stagnant validation AUC with batch size 64, indicating that lr may be too high or batch size too large for meaningful generalization. Overall: lower learning rate for SST2 and Yelp, introduce regularization or early stopping, adjust batch sizes, and verify metric computations before further tuning.",
+      "exp_results_dir": "experiment_results/experiment_cde2566319a94c8ab6b12f9bf4bf3893_proc_144144",
+      "exp_results_npy_files": [
+        "experiment_results/experiment_cde2566319a94c8ab6b12f9bf4bf3893_proc_144144/experiment_data.npy"
+      ]
+    },
+    {
+      "overall_plan": "We aim to build and refine a divergence\u2010based hallucination detector using a one\u2010dimensional logistic regression model trained with BCEWithLogitsLoss. We will start by generating synthetic divergence scores for correct vs. hallucinated outputs, splitting them into training and validation sets, and tracking per\u2010epoch losses and ROC AUCs in an experiment_data dictionary. A hyperparameter sweep over batch sizes [16, 32, 64, 128] will be conducted, retraining from scratch each time and storing all metrics, raw predictions, and labels. We will fix the identified implementation bug by detaching logits before converting to NumPy arrays. Next, we will extend our approach to two real\u2010world sentiment benchmarks (SST-2 and Yelp Polarity), extracting sentence/text length as a numeric feature and normalizing inputs by the training mean and standard deviation. We will then perform a combined sweep over learning rates [0.001, 0.01] and batch sizes [32, 64] for 20 epochs, capturing validation loss and ROC AUC per epoch and saving everything with np.save(). The current seed node plan establishes the experiment\u2019s random seeds and initial directory/placeholder setup to support the detailed experiments outlined above.",
+      "analysis": "",
+      "metric": {
+        "value": {
+          "metric_names": [
+            {
+              "metric_name": "train accuracy",
+              "lower_is_better": false,
+              "description": "Accuracy on the training set",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 0.966,
+                  "best_value": 0.966
+                },
+                {
+                  "dataset_name": "sst2",
+                  "final_value": 0.5501,
+                  "best_value": 0.5501
+                },
+                {
+                  "dataset_name": "yelp_polarity",
+                  "final_value": 0.5933,
+                  "best_value": 0.5933
+                }
+              ]
+            },
+            {
+              "metric_name": "validation accuracy",
+              "lower_is_better": false,
+              "description": "Accuracy on the validation set",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 0.9624,
+                  "best_value": 0.9624
+                },
+                {
+                  "dataset_name": "sst2",
+                  "final_value": 0.584,
+                  "best_value": 0.584
+                },
+                {
+                  "dataset_name": "yelp_polarity",
+                  "final_value": 0.5828,
+                  "best_value": 0.5828
+                }
+              ]
+            },
+            {
+              "metric_name": "train loss",
+              "lower_is_better": true,
+              "description": "Loss on the training set",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 0.2492,
+                  "best_value": 0.2492
+                },
+                {
+                  "dataset_name": "sst2",
+                  "final_value": 0.683,
+                  "best_value": 0.683
+                },
+                {
+                  "dataset_name": "yelp_polarity",
+                  "final_value": 0.6797,
+                  "best_value": 0.6797
+                }
+              ]
+            },
+            {
+              "metric_name": "validation loss",
+              "lower_is_better": true,
+              "description": "Loss on the validation set",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 0.2761,
+                  "best_value": 0.2761
+                },
+                {
+                  "dataset_name": "sst2",
+                  "final_value": 0.6959,
+                  "best_value": 0.6959
+                },
+                {
+                  "dataset_name": "yelp_polarity",
+                  "final_value": 0.692,
+                  "best_value": 0.692
+                }
+              ]
+            }
+          ]
+        },
+        "maximize": null,
+        "name": null,
+        "description": null
+      },
+      "code": "# Set random seed\nimport random\nimport numpy as np\nimport torch\n\nseed = 1\nrandom.seed(seed)\nnp.random.seed(seed)\ntorch.manual_seed(seed)\nif torch.cuda.is_available():\n    torch.cuda.manual_seed(seed)\n\nimport os\nimport torch\nimport numpy as np\nfrom torch import nn\nfrom torch.utils.data import DataLoader, TensorDataset\nfrom torch.optim import Adam\nfrom sklearn.metrics import roc_auc_score\nfrom datasets import load_dataset\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\n\n\n# synthetic data function\ndef sample_data(N):\n    N0 = N // 2\n    N1 = N - N0\n    d0 = np.clip(np.random.normal(0, 0.5, size=N0), 0, None)\n    d1 = np.clip(np.random.normal(2, 1.0, size=N1), 0, None)\n    xs = np.concatenate([d0, d1]).astype(np.float32).reshape(-1, 1)\n    ys = np.concatenate([np.zeros(N0), np.ones(N1)]).astype(np.float32)\n    idx = np.random.permutation(N)\n    return xs[idx], ys[idx]\n\n\n# Prepare datasets dict\ndatasets = {}\n\n# 1) Synthetic dataset\nx_tr_s, y_tr_s = sample_data(1000)\nx_val_s, y_val_s = sample_data(200)\nmean_s, std_s = x_tr_s.mean(), x_tr_s.std() + 1e-6\nx_tr_s = (x_tr_s - mean_s) / std_s\nx_val_s = (x_val_s - mean_s) / std_s\ntrain_ds_s = TensorDataset(torch.from_numpy(x_tr_s), torch.from_numpy(y_tr_s))\nval_ds_s = TensorDataset(torch.from_numpy(x_val_s), torch.from_numpy(y_val_s))\ndatasets[\"synthetic\"] = (train_ds_s, val_ds_s)\n\n# 2) SST-2 (sentence length as feature)\nsst2_train = load_dataset(\"glue\", \"sst2\", split=\"train\").shuffle(42).select(range(1000))\nsst2_val = (\n    load_dataset(\"glue\", \"sst2\", split=\"validation\").shuffle(42).select(range(200))\n)\nx_tr_st = np.array(\n    [len(s.split()) for s in sst2_train[\"sentence\"]], dtype=np.float32\n).reshape(-1, 1)\ny_tr_st = np.array(sst2_train[\"label\"], dtype=np.float32)\nx_val_st = np.array(\n    [len(s.split()) for s in sst2_val[\"sentence\"]], dtype=np.float32\n).reshape(-1, 1)\ny_val_st = np.array(sst2_val[\"label\"], dtype=np.float32)\nmean_st, std_st = x_tr_st.mean(), x_tr_st.std() + 1e-6\nx_tr_st = (x_tr_st - mean_st) / std_st\nx_val_st = (x_val_st - mean_st) / std_st\ntrain_ds_st = TensorDataset(torch.from_numpy(x_tr_st), torch.from_numpy(y_tr_st))\nval_ds_st = TensorDataset(torch.from_numpy(x_val_st), torch.from_numpy(y_val_st))\ndatasets[\"sst2\"] = (train_ds_st, val_ds_st)\n\n# 3) Yelp Polarity (text length as feature)\nyelp_train = (\n    load_dataset(\"yelp_polarity\", split=\"train\").shuffle(42).select(range(1000))\n)\nyelp_val = load_dataset(\"yelp_polarity\", split=\"test\").shuffle(42).select(range(200))\nx_tr_yp = np.array(\n    [len(t.split()) for t in yelp_train[\"text\"]], dtype=np.float32\n).reshape(-1, 1)\ny_tr_yp = np.array(yelp_train[\"label\"], dtype=np.float32)\nx_val_yp = np.array(\n    [len(t.split()) for t in yelp_val[\"text\"]], dtype=np.float32\n).reshape(-1, 1)\ny_val_yp = np.array(yelp_val[\"label\"], dtype=np.float32)\nmean_yp, std_yp = x_tr_yp.mean(), x_tr_yp.std() + 1e-6\nx_tr_yp = (x_tr_yp - mean_yp) / std_yp\nx_val_yp = (x_val_yp - mean_yp) / std_yp\ntrain_ds_yp = TensorDataset(torch.from_numpy(x_tr_yp), torch.from_numpy(y_tr_yp))\nval_ds_yp = TensorDataset(torch.from_numpy(x_val_yp), torch.from_numpy(y_val_yp))\ndatasets[\"yelp_polarity\"] = (train_ds_yp, val_ds_yp)\n\n# Hyperparameters\nbatch_sizes = [32, 64]\nlearning_rates = [0.001, 0.01]\nepochs = 20\n\n# Initialize experiment_data\nexperiment_data = {}\nfor name in datasets:\n    experiment_data[name] = {\n        \"metrics\": {\"train\": [], \"val\": []},\n        \"losses\": {\"train\": [], \"val\": []},\n        \"predictions\": [],\n        \"ground_truth\": [],\n    }\n\n# Training and evaluation\nfor name, (train_ds, val_ds) in datasets.items():\n    for lr in learning_rates:\n        for bs in batch_sizes:\n            train_loader = DataLoader(train_ds, batch_size=bs, shuffle=True)\n            val_loader = DataLoader(val_ds, batch_size=bs)\n            model = nn.Linear(1, 1).to(device)\n            optimizer = Adam(model.parameters(), lr=lr)\n            loss_fn = nn.BCEWithLogitsLoss()\n            for epoch in range(1, epochs + 1):\n                # training\n                model.train()\n                t_losses, t_preds, t_labels = [], [], []\n                for xb, yb in train_loader:\n                    xb, yb = xb.to(device), yb.to(device)\n                    logits = model(xb).squeeze(1)\n                    loss = loss_fn(logits, yb)\n                    optimizer.zero_grad()\n                    loss.backward()\n                    optimizer.step()\n                    t_losses.append(loss.item())\n                    t_preds.append(torch.sigmoid(logits).detach().cpu().numpy())\n                    t_labels.append(yb.cpu().numpy())\n                train_loss = np.mean(t_losses)\n                train_auc = roc_auc_score(\n                    np.concatenate(t_labels), np.concatenate(t_preds)\n                )\n                # validation\n                model.eval()\n                v_losses, v_preds, v_labels = [], [], []\n                with torch.no_grad():\n                    for xb, yb in val_loader:\n                        xb, yb = xb.to(device), yb.to(device)\n                        logits = model(xb).squeeze(1)\n                        loss = loss_fn(logits, yb)\n                        v_losses.append(loss.item())\n                        v_preds.append(torch.sigmoid(logits).detach().cpu().numpy())\n                        v_labels.append(yb.cpu().numpy())\n                val_loss = np.mean(v_losses)\n                val_preds = np.concatenate(v_preds)\n                val_labels = np.concatenate(v_labels)\n                val_auc = roc_auc_score(val_labels, val_preds)\n                print(f\"Epoch {epoch}: validation_loss = {val_loss:.4f}\")\n                # Record results\n                exp = experiment_data[name]\n                exp[\"metrics\"][\"train\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"auc\": train_auc}\n                )\n                exp[\"metrics\"][\"val\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"auc\": val_auc}\n                )\n                exp[\"losses\"][\"train\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"loss\": train_loss}\n                )\n                exp[\"losses\"][\"val\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"loss\": val_loss}\n                )\n                exp[\"predictions\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"preds\": val_preds}\n                )\n                exp[\"ground_truth\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"labels\": val_labels}\n                )\n\n# Save all experiment data\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+      "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\nelse:\n    for dataset, exp in experiment_data.items():\n        # find best hyperparams by max validation AUC\n        best_entry = max(exp[\"metrics\"][\"val\"], key=lambda x: x[\"auc\"])\n        bs, lr = best_entry[\"bs\"], best_entry[\"lr\"]\n        print(f\"{dataset}: Best Val AUC = {best_entry['auc']:.4f} at bs={bs}, lr={lr}\")\n        # collect losses\n        loss_train = [\n            (d[\"epoch\"], d[\"loss\"])\n            for d in exp[\"losses\"][\"train\"]\n            if d[\"bs\"] == bs and d[\"lr\"] == lr\n        ]\n        loss_val = [\n            (d[\"epoch\"], d[\"loss\"])\n            for d in exp[\"losses\"][\"val\"]\n            if d[\"bs\"] == bs and d[\"lr\"] == lr\n        ]\n        loss_train.sort()\n        loss_val.sort()\n        epochs = [e for e, _ in loss_train]\n        tr_loss = [l for _, l in loss_train]\n        vl_loss = [l for _, l in loss_val]\n        try:\n            plt.figure()\n            plt.plot(epochs, tr_loss, label=\"Train Loss\")\n            plt.plot(epochs, vl_loss, label=\"Val Loss\")\n            plt.xlabel(\"Epoch\")\n            plt.ylabel(\"Loss\")\n            plt.title(f\"{dataset} Loss Curve (Train vs Validation)\\nbs={bs}, lr={lr}\")\n            plt.legend()\n            plt.savefig(\n                os.path.join(working_dir, f\"{dataset}_loss_curve_bs{bs}_lr{lr}.png\")\n            )\n            plt.close()\n        except Exception as e:\n            print(f\"Error creating loss plot for {dataset}: {e}\")\n            plt.close()\n        # collect AUCs\n        auc_train = [\n            (d[\"epoch\"], d[\"auc\"])\n            for d in exp[\"metrics\"][\"train\"]\n            if d[\"bs\"] == bs and d[\"lr\"] == lr\n        ]\n        auc_val = [\n            (d[\"epoch\"], d[\"auc\"])\n            for d in exp[\"metrics\"][\"val\"]\n            if d[\"bs\"] == bs and d[\"lr\"] == lr\n        ]\n        auc_train.sort()\n        auc_val.sort()\n        epochs = [e for e, _ in auc_train]\n        tr_auc = [a for _, a in auc_train]\n        vl_auc = [a for _, a in auc_val]\n        try:\n            plt.figure()\n            plt.plot(epochs, tr_auc, label=\"Train AUC\")\n            plt.plot(epochs, vl_auc, label=\"Val AUC\")\n            plt.xlabel(\"Epoch\")\n            plt.ylabel(\"AUC\")\n            plt.title(f\"{dataset} AUC Curve (Train vs Validation)\\nbs={bs}, lr={lr}\")\n            plt.legend()\n            plt.savefig(\n                os.path.join(working_dir, f\"{dataset}_auc_curve_bs{bs}_lr{lr}.png\")\n            )\n            plt.close()\n        except Exception as e:\n            print(f\"Error creating AUC plot for {dataset}: {e}\")\n            plt.close()\n",
+      "plot_analyses": [
+        {
+          "analysis": "Train AUC remains stuck around 0.45 while validation AUC is flat at roughly 0.585 over all epochs. The model struggles to separate positive/negative examples on SST-2 despite repeated training, and validation performance does not improve. This suggests underfitting on the training set or a mismatch in classification threshold or metric computation rather than overfitting, since neither split shows meaningful gains.",
+          "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_de20a07534e64095bd1e496b85c4cd9a_proc_144145/sst2_auc_curve_bs32_lr0.001.png"
+        },
+        {
+          "analysis": "Both training and validation losses decrease monotonically from ~0.72/0.785 down to ~0.69/0.695 by epoch 20. Loss curves indicate steady optimization, but the lack of corresponding AUC gains implies that reducing cross-entropy loss is not translating into better ranking or discrimination for SST-2. Possible causes include class imbalance, suboptimal thresholding, or the model learning to minimize loss without boosting its confidence on hard examples.",
+          "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_de20a07534e64095bd1e496b85c4cd9a_proc_144145/sst2_loss_curve_bs32_lr0.001.png"
+        },
+        {
+          "analysis": "Training AUC oscillates narrowly around 0.963\u20130.964 and validation AUC sits at a constant ~0.962. The tiny gap and minimal fluctuations indicate near-perfect discrimination on the synthetic dataset. This high, stable performance suggests minimal noise or difficulty in the synthetic task and low risk of overfitting despite 20 epochs.",
+          "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_de20a07534e64095bd1e496b85c4cd9a_proc_144145/synthetic_auc_curve_bs32_lr0.001.png"
+        },
+        {
+          "analysis": "Yelp polarity training loss declines smoothly from ~0.740 to ~0.689, with validation loss dropping from ~0.722 to ~0.692. The parallel trends and small gap show good convergence and no obvious overfitting or underfitting in terms of loss.",
+          "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_de20a07534e64095bd1e496b85c4cd9a_proc_144145/yelp_polarity_loss_curve_bs32_lr0.001.png"
+        },
+        {
+          "analysis": "On the synthetic task, training loss falls from about 0.54 to 0.41 and validation loss from 0.55 to 0.42, both in a nearly linear downward trend. The model continues to improve through all epochs, again confirming that this dataset is relatively easy and well-matched to the model capacity.",
+          "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_de20a07534e64095bd1e496b85c4cd9a_proc_144145/synthetic_loss_curve_bs32_lr0.001.png"
+        },
+        {
+          "analysis": "Both train and validation AUC on Yelp polarity linger around 0.405 for the first 13 epochs, then jump suddenly to ~0.58 at epoch 15 and remain near that level. This abrupt change points to an external factor\u2014possibly a learning-rate scheduler step, threshold recalibration, or evaluation bug\u2014rather than genuine model learning. It warrants checking training logs, scheduler milestones, and AUC-threshold logic around epoch 14.",
+          "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_de20a07534e64095bd1e496b85c4cd9a_proc_144145/yelp_polarity_auc_curve_bs32_lr0.001.png"
+        }
+      ],
+      "plot_paths": [
+        "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_de20a07534e64095bd1e496b85c4cd9a_proc_144145/sst2_auc_curve_bs32_lr0.001.png",
+        "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_de20a07534e64095bd1e496b85c4cd9a_proc_144145/sst2_loss_curve_bs32_lr0.001.png",
+        "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_de20a07534e64095bd1e496b85c4cd9a_proc_144145/synthetic_auc_curve_bs32_lr0.001.png",
+        "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_de20a07534e64095bd1e496b85c4cd9a_proc_144145/yelp_polarity_loss_curve_bs32_lr0.001.png",
+        "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_de20a07534e64095bd1e496b85c4cd9a_proc_144145/synthetic_loss_curve_bs32_lr0.001.png",
+        "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_de20a07534e64095bd1e496b85c4cd9a_proc_144145/yelp_polarity_auc_curve_bs32_lr0.001.png"
+      ],
+      "vlm_feedback_summary": "SST-2 shows decreasing loss but stagnant AUC, indicating underfitting or threshold issues. Synthetic data yields high, stable AUC and smoothly decreasing loss, suggesting low task difficulty. Yelp polarity loss converges well but its AUC exhibits an unexplained sudden jump mid-training, calling for debugging of schedulers or evaluation scripts. Recommendations: raise learning rate (e.g. to 2e-3) for SST-2 and Yelp, experiment with larger batch sizes (e.g. 64) and a warmup+cosine LR scheduler, apply early stopping on the synthetic task around epoch 5\u201310, and ensure AUC thresholds remain consistent. Additional datasets to test generalization: \u201cdbpedia_14\u201d (14-class topic classification) and \u201cag_news\u201d (4-class news categorization) from HuggingFace.",
+      "exp_results_dir": "experiment_results/experiment_de20a07534e64095bd1e496b85c4cd9a_proc_144145",
+      "exp_results_npy_files": [
+        "experiment_results/experiment_de20a07534e64095bd1e496b85c4cd9a_proc_144145/experiment_data.npy"
+      ]
+    },
+    {
+      "overall_plan": "We will continue to develop a divergence\u2010based hallucination detector by training a one\u2010dimensional logistic regression under BCEWithLogitsLoss. Initially, we will validate the approach on synthetic divergence scores\u2014separating correct versus hallucinated outputs\u2014performing a batch\u2010size sweep over [16, 32, 64, 128], tracking per\u2010epoch loss and ROC AUC, and saving all metrics, raw predictions, and labels. We will ensure proper data handling by detaching logits before conversion to numpy. Next, we extend the detector to two real\u2010world benchmarks (SST-2 and Yelp Polarity), using sentence/text length as a normalized numerical feature, and conduct a combined hyperparameter sweep over learning rates [0.001, 0.01] and batch sizes [32, 64] for 20 epochs, tracking validation loss and ROC AUC. All experiments are seeded at the start to guarantee reproducibility, and metrics are stored in a structured experiment_data dictionary and saved via np.save().",
+      "analysis": "",
+      "metric": {
+        "value": {
+          "metric_names": [
+            {
+              "metric_name": "train accuracy",
+              "lower_is_better": false,
+              "description": "Training accuracy",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 0.9598,
+                  "best_value": 0.9598
+                },
+                {
+                  "dataset_name": "sst2",
+                  "final_value": 0.5495,
+                  "best_value": 0.5495
+                },
+                {
+                  "dataset_name": "yelp_polarity",
+                  "final_value": 0.5968,
+                  "best_value": 0.5968
+                }
+              ]
+            },
+            {
+              "metric_name": "validation accuracy",
+              "lower_is_better": false,
+              "description": "Validation accuracy",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 0.9717,
+                  "best_value": 0.9717
+                },
+                {
+                  "dataset_name": "sst2",
+                  "final_value": 0.416,
+                  "best_value": 0.416
+                },
+                {
+                  "dataset_name": "yelp_polarity",
+                  "final_value": 0.5828,
+                  "best_value": 0.5828
+                }
+              ]
+            },
+            {
+              "metric_name": "train loss",
+              "lower_is_better": true,
+              "description": "Training loss",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 0.2391,
+                  "best_value": 0.2391
+                },
+                {
+                  "dataset_name": "sst2",
+                  "final_value": 0.6824,
+                  "best_value": 0.6824
+                },
+                {
+                  "dataset_name": "yelp_polarity",
+                  "final_value": 0.679,
+                  "best_value": 0.679
+                }
+              ]
+            },
+            {
+              "metric_name": "validation loss",
+              "lower_is_better": true,
+              "description": "Validation loss",
+              "data": [
+                {
+                  "dataset_name": "synthetic",
+                  "final_value": 0.1856,
+                  "best_value": 0.1856
+                },
+                {
+                  "dataset_name": "sst2",
+                  "final_value": 0.6931,
+                  "best_value": 0.6931
+                },
+                {
+                  "dataset_name": "yelp_polarity",
+                  "final_value": 0.6927,
+                  "best_value": 0.6927
+                }
+              ]
+            }
+          ]
+        },
+        "maximize": null,
+        "name": null,
+        "description": null
+      },
+      "code": "# Set random seed\nimport random\nimport numpy as np\nimport torch\n\nseed = 2\nrandom.seed(seed)\nnp.random.seed(seed)\ntorch.manual_seed(seed)\nif torch.cuda.is_available():\n    torch.cuda.manual_seed(seed)\n\nimport os\nimport torch\nimport numpy as np\nfrom torch import nn\nfrom torch.utils.data import DataLoader, TensorDataset\nfrom torch.optim import Adam\nfrom sklearn.metrics import roc_auc_score\nfrom datasets import load_dataset\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\n\n\n# synthetic data function\ndef sample_data(N):\n    N0 = N // 2\n    N1 = N - N0\n    d0 = np.clip(np.random.normal(0, 0.5, size=N0), 0, None)\n    d1 = np.clip(np.random.normal(2, 1.0, size=N1), 0, None)\n    xs = np.concatenate([d0, d1]).astype(np.float32).reshape(-1, 1)\n    ys = np.concatenate([np.zeros(N0), np.ones(N1)]).astype(np.float32)\n    idx = np.random.permutation(N)\n    return xs[idx], ys[idx]\n\n\n# Prepare datasets dict\ndatasets = {}\n\n# 1) Synthetic dataset\nx_tr_s, y_tr_s = sample_data(1000)\nx_val_s, y_val_s = sample_data(200)\nmean_s, std_s = x_tr_s.mean(), x_tr_s.std() + 1e-6\nx_tr_s = (x_tr_s - mean_s) / std_s\nx_val_s = (x_val_s - mean_s) / std_s\ntrain_ds_s = TensorDataset(torch.from_numpy(x_tr_s), torch.from_numpy(y_tr_s))\nval_ds_s = TensorDataset(torch.from_numpy(x_val_s), torch.from_numpy(y_val_s))\ndatasets[\"synthetic\"] = (train_ds_s, val_ds_s)\n\n# 2) SST-2 (sentence length as feature)\nsst2_train = load_dataset(\"glue\", \"sst2\", split=\"train\").shuffle(42).select(range(1000))\nsst2_val = (\n    load_dataset(\"glue\", \"sst2\", split=\"validation\").shuffle(42).select(range(200))\n)\nx_tr_st = np.array(\n    [len(s.split()) for s in sst2_train[\"sentence\"]], dtype=np.float32\n).reshape(-1, 1)\ny_tr_st = np.array(sst2_train[\"label\"], dtype=np.float32)\nx_val_st = np.array(\n    [len(s.split()) for s in sst2_val[\"sentence\"]], dtype=np.float32\n).reshape(-1, 1)\ny_val_st = np.array(sst2_val[\"label\"], dtype=np.float32)\nmean_st, std_st = x_tr_st.mean(), x_tr_st.std() + 1e-6\nx_tr_st = (x_tr_st - mean_st) / std_st\nx_val_st = (x_val_st - mean_st) / std_st\ntrain_ds_st = TensorDataset(torch.from_numpy(x_tr_st), torch.from_numpy(y_tr_st))\nval_ds_st = TensorDataset(torch.from_numpy(x_val_st), torch.from_numpy(y_val_st))\ndatasets[\"sst2\"] = (train_ds_st, val_ds_st)\n\n# 3) Yelp Polarity (text length as feature)\nyelp_train = (\n    load_dataset(\"yelp_polarity\", split=\"train\").shuffle(42).select(range(1000))\n)\nyelp_val = load_dataset(\"yelp_polarity\", split=\"test\").shuffle(42).select(range(200))\nx_tr_yp = np.array(\n    [len(t.split()) for t in yelp_train[\"text\"]], dtype=np.float32\n).reshape(-1, 1)\ny_tr_yp = np.array(yelp_train[\"label\"], dtype=np.float32)\nx_val_yp = np.array(\n    [len(t.split()) for t in yelp_val[\"text\"]], dtype=np.float32\n).reshape(-1, 1)\ny_val_yp = np.array(yelp_val[\"label\"], dtype=np.float32)\nmean_yp, std_yp = x_tr_yp.mean(), x_tr_yp.std() + 1e-6\nx_tr_yp = (x_tr_yp - mean_yp) / std_yp\nx_val_yp = (x_val_yp - mean_yp) / std_yp\ntrain_ds_yp = TensorDataset(torch.from_numpy(x_tr_yp), torch.from_numpy(y_tr_yp))\nval_ds_yp = TensorDataset(torch.from_numpy(x_val_yp), torch.from_numpy(y_val_yp))\ndatasets[\"yelp_polarity\"] = (train_ds_yp, val_ds_yp)\n\n# Hyperparameters\nbatch_sizes = [32, 64]\nlearning_rates = [0.001, 0.01]\nepochs = 20\n\n# Initialize experiment_data\nexperiment_data = {}\nfor name in datasets:\n    experiment_data[name] = {\n        \"metrics\": {\"train\": [], \"val\": []},\n        \"losses\": {\"train\": [], \"val\": []},\n        \"predictions\": [],\n        \"ground_truth\": [],\n    }\n\n# Training and evaluation\nfor name, (train_ds, val_ds) in datasets.items():\n    for lr in learning_rates:\n        for bs in batch_sizes:\n            train_loader = DataLoader(train_ds, batch_size=bs, shuffle=True)\n            val_loader = DataLoader(val_ds, batch_size=bs)\n            model = nn.Linear(1, 1).to(device)\n            optimizer = Adam(model.parameters(), lr=lr)\n            loss_fn = nn.BCEWithLogitsLoss()\n            for epoch in range(1, epochs + 1):\n                # training\n                model.train()\n                t_losses, t_preds, t_labels = [], [], []\n                for xb, yb in train_loader:\n                    xb, yb = xb.to(device), yb.to(device)\n                    logits = model(xb).squeeze(1)\n                    loss = loss_fn(logits, yb)\n                    optimizer.zero_grad()\n                    loss.backward()\n                    optimizer.step()\n                    t_losses.append(loss.item())\n                    t_preds.append(torch.sigmoid(logits).detach().cpu().numpy())\n                    t_labels.append(yb.cpu().numpy())\n                train_loss = np.mean(t_losses)\n                train_auc = roc_auc_score(\n                    np.concatenate(t_labels), np.concatenate(t_preds)\n                )\n                # validation\n                model.eval()\n                v_losses, v_preds, v_labels = [], [], []\n                with torch.no_grad():\n                    for xb, yb in val_loader:\n                        xb, yb = xb.to(device), yb.to(device)\n                        logits = model(xb).squeeze(1)\n                        loss = loss_fn(logits, yb)\n                        v_losses.append(loss.item())\n                        v_preds.append(torch.sigmoid(logits).detach().cpu().numpy())\n                        v_labels.append(yb.cpu().numpy())\n                val_loss = np.mean(v_losses)\n                val_preds = np.concatenate(v_preds)\n                val_labels = np.concatenate(v_labels)\n                val_auc = roc_auc_score(val_labels, val_preds)\n                print(f\"Epoch {epoch}: validation_loss = {val_loss:.4f}\")\n                # Record results\n                exp = experiment_data[name]\n                exp[\"metrics\"][\"train\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"auc\": train_auc}\n                )\n                exp[\"metrics\"][\"val\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"auc\": val_auc}\n                )\n                exp[\"losses\"][\"train\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"loss\": train_loss}\n                )\n                exp[\"losses\"][\"val\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"loss\": val_loss}\n                )\n                exp[\"predictions\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"preds\": val_preds}\n                )\n                exp[\"ground_truth\"].append(\n                    {\"bs\": bs, \"lr\": lr, \"epoch\": epoch, \"labels\": val_labels}\n                )\n\n# Save all experiment data\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+      "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\nelse:\n    for dataset, exp in experiment_data.items():\n        # find best hyperparams by max validation AUC\n        best_entry = max(exp[\"metrics\"][\"val\"], key=lambda x: x[\"auc\"])\n        bs, lr = best_entry[\"bs\"], best_entry[\"lr\"]\n        print(f\"{dataset}: Best Val AUC = {best_entry['auc']:.4f} at bs={bs}, lr={lr}\")\n        # collect losses\n        loss_train = [\n            (d[\"epoch\"], d[\"loss\"])\n            for d in exp[\"losses\"][\"train\"]\n            if d[\"bs\"] == bs and d[\"lr\"] == lr\n        ]\n        loss_val = [\n            (d[\"epoch\"], d[\"loss\"])\n            for d in exp[\"losses\"][\"val\"]\n            if d[\"bs\"] == bs and d[\"lr\"] == lr\n        ]\n        loss_train.sort()\n        loss_val.sort()\n        epochs = [e for e, _ in loss_train]\n        tr_loss = [l for _, l in loss_train]\n        vl_loss = [l for _, l in loss_val]\n        try:\n            plt.figure()\n            plt.plot(epochs, tr_loss, label=\"Train Loss\")\n            plt.plot(epochs, vl_loss, label=\"Val Loss\")\n            plt.xlabel(\"Epoch\")\n            plt.ylabel(\"Loss\")\n            plt.title(f\"{dataset} Loss Curve (Train vs Validation)\\nbs={bs}, lr={lr}\")\n            plt.legend()\n            plt.savefig(\n                os.path.join(working_dir, f\"{dataset}_loss_curve_bs{bs}_lr{lr}.png\")\n            )\n            plt.close()\n        except Exception as e:\n            print(f\"Error creating loss plot for {dataset}: {e}\")\n            plt.close()\n        # collect AUCs\n        auc_train = [\n            (d[\"epoch\"], d[\"auc\"])\n            for d in exp[\"metrics\"][\"train\"]\n            if d[\"bs\"] == bs and d[\"lr\"] == lr\n        ]\n        auc_val = [\n            (d[\"epoch\"], d[\"auc\"])\n            for d in exp[\"metrics\"][\"val\"]\n            if d[\"bs\"] == bs and d[\"lr\"] == lr\n        ]\n        auc_train.sort()\n        auc_val.sort()\n        epochs = [e for e, _ in auc_train]\n        tr_auc = [a for _, a in auc_train]\n        vl_auc = [a for _, a in auc_val]\n        try:\n            plt.figure()\n            plt.plot(epochs, tr_auc, label=\"Train AUC\")\n            plt.plot(epochs, vl_auc, label=\"Val AUC\")\n            plt.xlabel(\"Epoch\")\n            plt.ylabel(\"AUC\")\n            plt.title(f\"{dataset} AUC Curve (Train vs Validation)\\nbs={bs}, lr={lr}\")\n            plt.legend()\n            plt.savefig(\n                os.path.join(working_dir, f\"{dataset}_auc_curve_bs{bs}_lr{lr}.png\")\n            )\n            plt.close()\n        except Exception as e:\n            print(f\"Error creating AUC plot for {dataset}: {e}\")\n            plt.close()\n",
+      "plot_analyses": [
+        {
+          "analysis": "Train AUC hovers around 0.54\u20130.55 over 20 epochs, while validation AUC remains flat at \u22480.415. This gap indicates the model is learning subtle patterns on SST-2 but not generalizing to validation. Validation performance stuck near random suggests underfitting to downstream classification boundaries or that hyperparameters (lr=0.001, bs=32) may not be optimal for improving generalization on this dataset.",
+          "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_f1bbd7a781534559822427943d2c515a_proc_144143/sst2_auc_curve_bs32_lr0.001.png"
+        },
+        {
+          "analysis": "Both train and validation losses steadily decrease from \u22480.735 to \u22480.69 (train) and \u22480.735 to \u22480.704 (val). The smooth decline indicates stable optimization, but the modest gap between train and val loss implies limited capacity to reduce validation error further. Lowering lr or increasing epochs yields diminishing returns, so exploring a smaller lr or alternative schedulers might help.",
+          "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_f1bbd7a781534559822427943d2c515a_proc_144143/sst2_loss_curve_bs32_lr0.001.png"
+        },
+        {
+          "analysis": "On the synthetic dataset, train AUC fluctuates between 0.955 and 0.96, whereas validation AUC is consistently \u22480.972. High and stable validation AUC above train AUC suggests that the synthetic setup is easy for the model or that the validation set is not challenging enough. There is no sign of overfitting, but the plateau indicates limited room for improvement\u2014possibly due to dataset simplicity.",
+          "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_f1bbd7a781534559822427943d2c515a_proc_144143/synthetic_auc_curve_bs32_lr0.001.png"
+        },
+        {
+          "analysis": "Yelp polarity train loss falls from \u22480.714 to \u22480.682, while validation loss decreases from \u22480.699 to \u22480.692 by epoch 12, then slowly rises to \u22480.694 by epoch 20. The U-shaped validation loss curve suggests slight overfitting beyond epoch ~12. Early stopping around epoch 12\u201314 could prevent this. The modest training\u2013validation gap indicates that regularization (dropout or weight decay) might further close the gap.",
+          "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_f1bbd7a781534559822427943d2c515a_proc_144143/yelp_polarity_loss_curve_bs32_lr0.001.png"
+        },
+        {
+          "analysis": "Synthetic loss curves show smooth descent for both splits: train loss from \u22480.61 to \u22480.435, val loss from \u22480.60 to \u22480.438. No overfitting or divergence is observed. The consistent decrease implies the model is well-capacitated for this synthetic task; longer training or a slightly higher lr might further reduce loss but with diminishing impact on generalization.",
+          "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_f1bbd7a781534559822427943d2c515a_proc_144143/synthetic_loss_curve_bs32_lr0.001.png"
+        },
+        {
+          "analysis": "Yelp polarity train AUC jumps from 0.42 to \u22480.59 by epoch 5, then plateaus around \u22480.59\u20130.595. Validation AUC quickly rises to \u22480.58 by epoch 2 and stays around \u22480.58\u20130.583. The rapid convergence indicates that most learnable signal is captured within 5 epochs. The persistent gap of \u22480.01\u20130.015 suggests limited generalization improvements; tuning the lr schedule or augmenting data might help boost validation AUC further.",
+          "plot_path": "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_f1bbd7a781534559822427943d2c515a_proc_144143/yelp_polarity_auc_curve_bs32_lr0.001.png"
+        }
+      ],
+      "plot_paths": [
+        "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_f1bbd7a781534559822427943d2c515a_proc_144143/sst2_auc_curve_bs32_lr0.001.png",
+        "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_f1bbd7a781534559822427943d2c515a_proc_144143/sst2_loss_curve_bs32_lr0.001.png",
+        "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_f1bbd7a781534559822427943d2c515a_proc_144143/synthetic_auc_curve_bs32_lr0.001.png",
+        "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_f1bbd7a781534559822427943d2c515a_proc_144143/yelp_polarity_loss_curve_bs32_lr0.001.png",
+        "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_f1bbd7a781534559822427943d2c515a_proc_144143/synthetic_loss_curve_bs32_lr0.001.png",
+        "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_f1bbd7a781534559822427943d2c515a_proc_144143/yelp_polarity_auc_curve_bs32_lr0.001.png"
+      ],
+      "vlm_feedback_summary": "Across SST-2 and Yelp Polarity, training is stable but validation improvements plateau early; minor overfitting appears on Yelp beyond ~12 epochs. Synthetic dataset results show strong performance but little challenge. Suggest tuning learning rate schedule, employing early stopping or regularization, and testing on additional, more diverse datasets to better assess generalization.",
+      "exp_results_dir": "experiment_results/experiment_f1bbd7a781534559822427943d2c515a_proc_144143",
+      "exp_results_npy_files": [
+        "experiment_results/experiment_f1bbd7a781534559822427943d2c515a_proc_144143/experiment_data.npy"
+      ]
+    }
+  ],
+  "aggregated results of nodes with different seeds": {
+    "overall_plan": "We will develop and rigorously evaluate a divergence-based hallucination detector built as a one-dimensional logistic regression trained under BCEWithLogitsLoss. First, we establish a synthetic-data baseline by generating divergence scores for correct versus hallucinated outputs, splitting into train/validation sets, monitoring per-epoch loss and ROC AUC, and conducting a batch size sweep over [16, 32, 64, 128]. We fix a critical data-handling bug by detaching logits before NumPy conversion. Next, we extend to real-world HuggingFace benchmarks (SST-2 and Yelp Polarity) using sentence/text length as a feature, normalizing by training-set statistics, and perform a combined hyperparameter sweep over learning rates [0.001, 0.01] and batch sizes [32, 64] for 20 epochs, recording all metrics, predictions, and labels. Finally, we aggregate the results across multiple random seeds to assess robustness and reproducibility of our findings, storing all experiment data in a unified dictionary and saving outputs for downstream analysis.",
+    "metric": {
+      "value": null,
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "# plotting aggregation code",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\nexperiment_data_path_list = [\n    \"experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_cde2566319a94c8ab6b12f9bf4bf3893_proc_144144/experiment_data.npy\",\n    \"experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_de20a07534e64095bd1e496b85c4cd9a_proc_144145/experiment_data.npy\",\n    \"experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/experiment_f1bbd7a781534559822427943d2c515a_proc_144143/experiment_data.npy\",\n]\n\nall_experiment_data = []\ntry:\n    for rel_path in experiment_data_path_list:\n        path = os.path.join(os.getenv(\"AI_SCIENTIST_ROOT\"), rel_path)\n        exp = np.load(path, allow_pickle=True).item()\n        all_experiment_data.append(exp)\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n\nelse:\n    # Gather all dataset names\n    datasets = set()\n    for exp in all_experiment_data:\n        datasets.update(exp.keys())\n    for dataset in datasets:\n        # collect runs\n        train_loss_runs, val_loss_runs = [], []\n        train_auc_runs, val_auc_runs = [], []\n        epochs_loss, epochs_auc = None, None\n        for exp in all_experiment_data:\n            if dataset not in exp:\n                continue\n            data = exp[dataset]\n            best = max(data[\"metrics\"][\"val\"], key=lambda d: d[\"auc\"])\n            bs, lr = best[\"bs\"], best[\"lr\"]\n            # extract and sort curves\n            tl = sorted(\n                (d[\"epoch\"], d[\"loss\"])\n                for d in data[\"losses\"][\"train\"]\n                if d[\"bs\"] == bs and d[\"lr\"] == lr\n            )\n            vl = sorted(\n                (d[\"epoch\"], d[\"loss\"])\n                for d in data[\"losses\"][\"val\"]\n                if d[\"bs\"] == bs and d[\"lr\"] == lr\n            )\n            ta = sorted(\n                (d[\"epoch\"], d[\"auc\"])\n                for d in data[\"metrics\"][\"train\"]\n                if d[\"bs\"] == bs and d[\"lr\"] == lr\n            )\n            va = sorted(\n                (d[\"epoch\"], d[\"auc\"])\n                for d in data[\"metrics\"][\"val\"]\n                if d[\"bs\"] == bs and d[\"lr\"] == lr\n            )\n            el, sl = zip(*tl)\n            _, vsl = zip(*vl)\n            ea, sa = zip(*ta)\n            _, vsa = zip(*va)\n            if epochs_loss is None:\n                epochs_loss = el\n            if epochs_auc is None:\n                epochs_auc = ea\n            train_loss_runs.append(sl)\n            val_loss_runs.append(vsl)\n            train_auc_runs.append(sa)\n            val_auc_runs.append(vsa)\n        # aggregated loss plot\n        if train_loss_runs:\n            arr_tl = np.array(train_loss_runs)\n            arr_vl = np.array(val_loss_runs)\n            mean_tl = arr_tl.mean(axis=0)\n            sem_tl = arr_tl.std(axis=0, ddof=1) / np.sqrt(arr_tl.shape[0])\n            mean_vl = arr_vl.mean(axis=0)\n            sem_vl = arr_vl.std(axis=0, ddof=1) / np.sqrt(arr_vl.shape[0])\n            try:\n                plt.figure()\n                plt.errorbar(epochs_loss, mean_tl, yerr=sem_tl, label=\"Train Loss\")\n                plt.errorbar(epochs_loss, mean_vl, yerr=sem_vl, label=\"Val Loss\")\n                plt.xlabel(\"Epoch\")\n                plt.ylabel(\"Loss\")\n                plt.title(\n                    f\"{dataset} Loss Curve (Aggregated Mean \u00b1 SEM)\\nLeft: Train, Right: Validation\"\n                )\n                plt.legend()\n                plt.savefig(os.path.join(working_dir, f\"{dataset}_loss_aggregated.png\"))\n                plt.close()\n            except Exception as e:\n                print(f\"Error creating aggregated loss plot for {dataset}: {e}\")\n                plt.close()\n        # aggregated AUC plot\n        if train_auc_runs:\n            arr_ta = np.array(train_auc_runs)\n            arr_va = np.array(val_auc_runs)\n            mean_ta = arr_ta.mean(axis=0)\n            sem_ta = arr_ta.std(axis=0, ddof=1) / np.sqrt(arr_ta.shape[0])\n            mean_va = arr_va.mean(axis=0)\n            sem_va = arr_va.std(axis=0, ddof=1) / np.sqrt(arr_va.shape[0])\n            try:\n                plt.figure()\n                plt.errorbar(epochs_auc, mean_ta, yerr=sem_ta, label=\"Train AUC\")\n                plt.errorbar(epochs_auc, mean_va, yerr=sem_va, label=\"Val AUC\")\n                plt.xlabel(\"Epoch\")\n                plt.ylabel(\"AUC\")\n                plt.title(\n                    f\"{dataset} AUC Curve (Aggregated Mean \u00b1 SEM)\\nLeft: Train, Right: Validation\"\n                )\n                plt.legend()\n                plt.savefig(os.path.join(working_dir, f\"{dataset}_auc_aggregated.png\"))\n                plt.close()\n            except Exception as e:\n                print(f\"Error creating aggregated AUC plot for {dataset}: {e}\")\n                plt.close()\n",
+    "plot_analyses": [],
+    "plot_paths": [
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/seed_aggregation_f3aeb81b24de423b9d52a18cb3418593/sst2_loss_aggregated.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/seed_aggregation_f3aeb81b24de423b9d52a18cb3418593/synthetic_auc_aggregated.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/seed_aggregation_f3aeb81b24de423b9d52a18cb3418593/yelp_polarity_auc_aggregated.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/seed_aggregation_f3aeb81b24de423b9d52a18cb3418593/yelp_polarity_loss_aggregated.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/seed_aggregation_f3aeb81b24de423b9d52a18cb3418593/sst2_auc_aggregated.png",
+      "experiments/2025-06-07_22-20-29_perturbation_ensemble_uq_attempt_0/logs/0-run/experiment_results/seed_aggregation_f3aeb81b24de423b9d52a18cb3418593/synthetic_loss_aggregated.png"
+    ],
+    "vlm_feedback_summary": [],
+    "exp_results_dir": "experiment_results/seed_aggregation_f3aeb81b24de423b9d52a18cb3418593",
+    "exp_results_npy_files": []
+  }
+}

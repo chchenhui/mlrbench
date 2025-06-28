@@ -1,0 +1,36 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-structured and clearly written, with a logical flow from introduction to conclusion. The core concept of Perturbation-Induced Uncertainty (PIU) is explained concisely in the abstract and introduction. The method section effectively outlines the approach using three metrics (vote disagreement, token edit distance, and embedding KL divergence). The experimental setup is adequately described, covering the datasets (SST-2, Yelp Polarity, IMDb), model (BERT-base), and evaluation metrics (ROC-AUC, ECE). The results are presented clearly in tables and figures. However, there are some minor issues: the token edit distance metric is mentioned in Section 4 but not reported in the results, and the paper lacks details on the exact implementation of the paraphrase generation methods (only briefly mentioning WordNet substitution, back-translation, and PEGASUS-based paraphrase)."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper presents a novel approach to uncertainty quantification for language models by measuring output divergence across semantically equivalent prompt variants. While ensemble methods and prompt variations have been explored before, the specific application to uncertainty quantification in a model-agnostic way is relatively new. The paper's innovation lies in systematically using lightweight paraphrase methods to create prompt ensembles and quantifying uncertainty through simple divergence metrics, particularly the KL-divergence between embeddings. The approach is especially valuable for closed-source models where access to internal logits is not possible. However, the core techniques (ensemble methods, paraphrasing, KL-divergence) are well-established, and the paper builds incrementally on existing work rather than introducing fundamentally new concepts."
+    },
+    "Soundness": {
+        "score": 4,
+        "justification": "The paper has significant soundness issues. The provided code confirms that the PIU method itself (both vote-based and KL-divergence) is implemented as described and produces the reported results. However, there are critical problems with the experimental validation. The paper claims that PIU outperforms baselines including 'self-confidence' and 'MC-dropout (20 sam.)' in Table 1, but the code does not implement these baselines, making it impossible to verify these crucial comparative claims. The experiments are limited to sentiment classification tasks, which are relatively simple compared to the more complex tasks mentioned in the future work. The ablation studies mentioned in the supplementary material are not detailed in the main paper. Additionally, the paper does not adequately address potential limitations, such as how the quality of paraphrases might affect uncertainty estimates or how the method scales with more complex prompts. The validation loss curves in Figure 1 show clear overfitting after epoch 2, but the paper does not discuss how this affects the reliability of the uncertainty estimates."
+    },
+    "Significance": {
+        "score": 7,
+        "justification": "The paper addresses an important problem in AI safety and reliability - detecting when language models might be hallucinating or making errors. The proposed PIU method is practical and requires minimal computational overhead (only K+1 forward passes), making it applicable to real-world scenarios, especially with closed-source models. The reported results (ROC-AUC of 0.78-0.90) suggest good performance for misclassification detection. The method's model-agnostic nature is particularly valuable as it can be applied to any language model without requiring access to internal representations or additional training. The ablation studies provided in the code (though not detailed in the paper) show that the method works across different model configurations. However, the significance is limited by the focus on sentiment classification rather than more complex generation tasks where hallucination is a bigger concern, and by the lack of verifiable comparison to established baselines."
+    },
+    "Overall": {
+        "score": 6,
+        "strengths": [
+            "Proposes a practical, model-agnostic approach to uncertainty quantification that works with black-box models",
+            "Method is computationally efficient, requiring only K+1 forward passes",
+            "Demonstrates that KL-divergence of embeddings is an effective metric for detecting model errors",
+            "Addresses an important problem in AI safety and reliability",
+            "Provides extensive ablation studies (in the code) showing the method's robustness across different model configurations"
+        ],
+        "weaknesses": [
+            "Critical baseline comparisons (self-confidence, MC-dropout) cannot be verified as they are not implemented in the provided code",
+            "Experiments are limited to sentiment classification tasks rather than more complex generation tasks where hallucination is more prevalent",
+            "The paper does not adequately discuss the limitations of the approach or potential failure cases",
+            "The token edit distance metric is mentioned but not evaluated in the results",
+            "Overfitting is evident in the validation loss curves but not addressed in the discussion"
+        ]
+    },
+    "Confidence": 5
+}

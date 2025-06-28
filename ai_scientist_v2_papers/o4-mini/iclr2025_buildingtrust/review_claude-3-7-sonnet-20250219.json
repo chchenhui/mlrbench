@@ -1,0 +1,33 @@
+{
+    "Clarity": {
+        "score": 6,
+        "justification": "The paper presents its ideas in a structured manner with clear sections for introduction, related work, method, and experiments. The writing is concise and the figures effectively illustrate the results. However, there are several clarity issues: (1) The method section (Section 3) is extremely brief at just one paragraph, lacking sufficient detail on how MC-dropout is implemented for uncertainty estimation and how clarification questions are generated; (2) The paper references works from 2025 (e.g., SUGAR by Zubkova et al. 2025), which is confusing; (3) The experimental setup is not thoroughly explained - details about the implementation of the baseline methods are missing; (4) The paper mentions a 'Clarification Efficiency Score (CES)' but doesn't clearly define how it's calculated."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper presents a novel approach to improving retrieval-augmented LLMs by adding an interactive clarification step driven by uncertainty estimation. While uncertainty estimation in LLMs and retrieval augmentation are not new, the combination of these techniques with an interactive clarification step that engages the user before retrieval is innovative. The paper builds upon existing work like RAG (Lewis et al., 2020), SUGAR, and SKR, but extends them with the interactive component. The approach is straightforward but addresses a real gap in current systems, which typically remain one-shot even when uncertainty is detected."
+    },
+    "Soundness": {
+        "score": 1,
+        "justification": "The paper has critical soundness issues that undermine its validity. Examination of the provided code reveals that the main QA experiments are simulated rather than actual implementations of the described method. The code explicitly hardcodes results rather than measuring real performance: for AmbigQA, baseline accuracy is set to 0% and clarified accuracy to 100%, while for SQuAD and TriviaQA-rc, both are set to 100%. The claimed '6% absolute EM gains' and '30% fewer hallucinations' appear to be fabricated as they don't correspond to any measurements in the code. The synthetic XOR experiments seem to be implemented, but they're a toy problem that can't substantiate the main claims about LLM performance on complex QA tasks. The ablation studies are all simulations on this same hardcoded setup, rendering their conclusions invalid. The paper presents these simulated results as if they were empirical findings from a real implementation."
+    },
+    "Significance": {
+        "score": 3,
+        "justification": "The problem addressed by the paper—improving retrieval-augmented LLMs through interactive clarification—is significant and relevant to the workshop's focus on building trust in language models. If the approach were properly implemented and evaluated, it could potentially have meaningful impact on reducing hallucinations and improving answer accuracy. However, the significance is severely undermined by the lack of a real implementation and evaluation. The paper only demonstrates a proof-of-concept on a synthetic XOR task, which has limited relevance to real-world LLM applications. Without actual evidence that the method works on real QA tasks with real LLMs, the significance of the contribution is minimal."
+    },
+    "Overall": {
+        "score": 2,
+        "strengths": [
+            "The core idea of adding an interactive clarification step before retrieval is novel and potentially valuable for improving RAG systems",
+            "The paper addresses an important problem in the context of building trust in LLMs",
+            "The synthetic XOR experiments do demonstrate a real implementation of uncertainty-based clarification on a simple task"
+        ],
+        "weaknesses": [
+            "The main QA experiments are simulated with hardcoded results rather than actual implementations of the described method",
+            "The claimed performance improvements (6% EM gain, 30% fewer hallucinations) appear to be fabricated",
+            "The method section is extremely brief and lacks crucial implementation details",
+            "The ablation studies are all based on the same simulated setup, rendering their conclusions invalid"
+        ]
+    },
+    "Confidence": 5
+}

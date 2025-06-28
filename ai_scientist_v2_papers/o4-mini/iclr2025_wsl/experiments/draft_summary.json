@@ -1,0 +1,39 @@
+{
+  "Experiment_description": "Baseline synthetic dictionary\u2010learning pipeline: sparse reconstruction of weight vectors using a learnable dictionary of primitives and sparse codes, optimized with \u21132 reconstruction loss and \u21131 sparsity penalty, with per\u2010epoch logging of training and validation errors and MSE.",
+  "Significance": "These preliminary experiments verify that the optimization framework converges on training data but reveals a perplexing lack of validation improvement. Identifying this issue at an early stage is crucial to ensure meaningful generalization evaluation and to avoid misleading downstream conclusions.",
+  "Description": "Generate synthetic weight vectors by sparse combinations of a small ground\u2010truth set of weight primitives; split into training and validation sets. Parameterize dictionary atoms and sparse codes as PyTorch GPU Parameters. Jointly optimize via \u21132 reconstruction loss plus \u21131 sparsity penalty over 50 epochs. Record training and validation relative errors and reconstruction MSEs into a nested metrics dictionary and save as experiment_data.npy.",
+  "List_of_included_plots": [
+    {
+      "path": "experiments/2025-06-07_19-09-39_weight_primitives_attempt_0/logs/0-run/experiment_results/experiment_91521c88da8347558b30b105ff951d99_proc_103091/synthetic_losses_plot.png",
+      "description": "Training loss exhibits a smooth downwards trajectory from ~33 to under 10 across 50 epochs, while validation loss remains flat at ~3.0.",
+      "analysis": "Training reconstruction improves steadily, but the unchanged validation loss indicates either an evaluation bug or a trivial validation set preventing any observable generalization gains."
+    },
+    {
+      "path": "experiments/2025-06-07_19-09-39_weight_primitives_attempt_0/logs/0-run/experiment_results/experiment_91521c88da8347558b30b105ff951d99_proc_103091/synthetic_metrics_plot.png",
+      "description": "Training relative error declines from ~46% to ~21%, whereas validation error stays constant around ~1%.",
+      "analysis": "The divergence\u2014substantial training improvement vs. stagnant, near-zero validation error\u2014strongly suggests an issue in the validation\u2010error computation or an overly trivial validation set."
+    }
+  ],
+  "Key_numerical_results": [
+    {
+      "result": 8.8067,
+      "description": "Final training reconstruction MSE",
+      "analysis": "Substantial drop from initial ~33 indicates successful optimization on the training set."
+    },
+    {
+      "result": 2.9568,
+      "description": "Final validation reconstruction MSE",
+      "analysis": "Stagnation at ~2.96 despite training progress highlights validation\u2010side issues or a degenerate validation scenario."
+    },
+    {
+      "result": 21.287,
+      "description": "Final training relative error (%)",
+      "analysis": "Decline to ~21.3% confirms that the dictionary\u2010learning pipeline effectively reduces reconstruction error on training data."
+    },
+    {
+      "result": 0.9786,
+      "description": "Final validation relative error (%)",
+      "analysis": "Flat, near-zero error suggests either metric\u2010logging bugs or an overly simplistic validation set yielding a floor effect."
+    }
+  ]
+}

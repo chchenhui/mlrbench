@@ -1,0 +1,37 @@
+{
+    "Clarity": {
+        "score": 6,
+        "justification": "The paper presents its core idea clearly: using dynamic execution traces to enhance contrastive learning for code representations. The structure follows a standard format with clear sections. However, there are several clarity issues: (1) The method section (Section 3) is extremely brief and lacks crucial details about how execution traces are actually incorporated into the model architecture; (2) The experimental setup in Section 4 is minimal, with little explanation of the synthetic function generation process or how trace equivalence is determined; (3) The paper doesn't clearly distinguish between what was actually implemented versus what is proposed for future work; (4) Several figures lack sufficient explanation, particularly in the supplementary material where Figures 5-7 are not referenced in the main text."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper presents a novel approach by incorporating dynamic execution traces into contrastive pre-training for code representations. As noted in the related work section, prior approaches like ContraCode, ContraBERT, and CONCORD rely on static properties, while TraceCode leverages runtime behavior. The idea of using execution traces to create semantically equivalent code pairs for contrastive learning is innovative. The paper also introduces a synthetic function retrieval study as a diagnostic tool before large-scale pre-training, which is a methodologically useful contribution. However, the novelty is somewhat limited by the preliminary nature of the work and the fact that the paper primarily reports negative or inconclusive findings rather than a fully realized new method."
+    },
+    "Soundness": {
+        "score": 3,
+        "justification": "The paper has significant methodological issues that undermine its soundness: (1) The experimental evaluation is extremely limited, focusing only on tiny synthetic Python functions of the form 'def f(x): return x+c'; (2) The paper claims to fuse dynamic execution traces into the contrastive learning pipeline, but the actual implementation appears to only use traces to determine positive/negative pairs, not as direct inputs to the model; (3) The paper reports 'rapid overfitting' and 'noisy validation behavior' but doesn't adequately analyze or address these issues; (4) The experimental design lacks proper controls or comparisons to baseline methods; (5) The paper doesn't provide statistical significance tests for its findings; (6) There are inconsistencies between the claims in the paper and the experimental results shown in the supplementary material, particularly regarding Figure 6 (triplet margin sweep) and Figure 7 (variable renaming invariance), where the text claims different outcomes than what the data shows."
+    },
+    "Significance": {
+        "score": 4,
+        "justification": "The paper addresses an important problem in code representation learning by exploring the use of dynamic execution traces. If successful, this approach could lead to more robust code representations that better capture functional semantics. However, the significance is limited by several factors: (1) The paper only presents preliminary results on a very simple synthetic dataset, with no evaluation on real-world code or downstream tasks; (2) The main findings are negative or inconclusive, highlighting challenges rather than solutions; (3) The paper doesn't demonstrate clear advantages over existing static-based approaches; (4) The practical impact is limited without scaling to more complex code or demonstrating benefits on standard benchmarks like code search, clone detection, or program repair; (5) The paper doesn't provide clear guidance on how to overcome the identified challenges, limiting its usefulness for future research."
+    },
+    "Overall": {
+        "score": 4,
+        "strengths": [
+            "Novel approach of incorporating dynamic execution traces into contrastive pre-training for code representations",
+            "Honest reporting of negative and inconclusive findings, which can help guide future research",
+            "Clear identification of challenges in using execution traces for contrastive learning",
+            "Well-structured ablation studies examining different aspects of the model (epoch budget, negative sampling, distance metric, embedding dimension)"
+        ],
+        "weaknesses": [
+            "Extremely limited experimental evaluation using only tiny synthetic Python functions",
+            "Lack of clarity about how execution traces are actually incorporated into the model architecture",
+            "No evaluation on real-world code or standard benchmarks",
+            "Insufficient analysis of the causes of the observed issues (rapid overfitting, noisy validation)",
+            "No comparison to baseline methods or demonstration of advantages over static approaches",
+            "Inconsistencies between claims in the paper and the experimental results in the supplementary material",
+            "Lack of clear guidance on how to overcome the identified challenges"
+        ]
+    },
+    "Confidence": 4
+}

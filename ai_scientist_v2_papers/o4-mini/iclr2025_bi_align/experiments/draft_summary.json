@@ -1,0 +1,59 @@
+{
+  "Experiment_description": "Comparison between a plain MLP classifier with no explanations (and a fixed biased user model) versus a static explainer baseline where content-justification explanations are provided and a separate neural network is trained to mimic the AI\u2019s decisions.",
+  "Significance": "These experiments establish baseline trade-offs between predictive performance and user-model alignment: the no-explanation classifier achieves high accuracy but poor alignment, while the static explainer yields near-perfect user alignment. This underpins the need for explanation methods in human-AI systems and sets quantitative benchmarks for future co-adaptive approaches.",
+  "Description": "We generate a synthetic 2D binary classification dataset, split it into train/validation/test sets, and train a small two-layer MLP classifier. In the first setup, we simulate a user as a fixed, biased linear predictor and track alignment accuracy without providing explanations. In the second setup (static explainer baseline), we extract the classifier\u2019s predicted class probabilities as explanations and train a separate neural network user model that ingests original features plus these static explanations to predict the classifier\u2019s outputs. We monitor losses, accuracies, and alignment metrics at each epoch and evaluate on held-out data.",
+  "List_of_included_plots": [
+    {
+      "path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_c9d8d40bde1c4828964544ae7a8abf58_proc_2561564/synthetic_loss_curves.png",
+      "description": "Loss Curves illustrate smooth decrease in both training and validation loss from ~0.66/0.64 down to ~0.41/0.40 over ten epochs.",
+      "analysis": "Training and validation loss decrease in tandem, showing stable optimization without overfitting for the plain classifier."
+    },
+    {
+      "path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_c9d8d40bde1c4828964544ae7a8abf58_proc_2561564/synthetic_alignment_curves.png",
+      "description": "Alignment Metrics plot contrasts train versus validation alignment accuracy, peaking early (~54%) and then declining to ~47% by epoch 10.",
+      "analysis": "The plain classifier\u2019s alignment with the biased user falls to chance levels despite improving classification performance, highlighting the need for explanations."
+    },
+    {
+      "path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_c9d8d40bde1c4828964544ae7a8abf58_proc_2561564/synthetic_confusion_epoch10.png",
+      "description": "Confusion Matrix at epoch 10 shows 92 true negatives, 86 true positives, 14 false positives, and 8 false negatives (\u224889% accuracy).",
+      "analysis": "The classifier achieves balanced precision and recall by epoch 10 but this alone does not guarantee user-model alignment."
+    },
+    {
+      "path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_2ad53f5eba634a988a98ec655763bc43_proc_2561564/static_explainer_accuracy.png",
+      "description": "Accuracy curves reveal the static explainer model achieves >99% accuracy by epoch 3 and remains stable thereafter.",
+      "analysis": "Providing static explanations enables the user model to rapidly and robustly learn to predict the AI\u2019s outputs with near-perfect alignment."
+    },
+    {
+      "path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_2ad53f5eba634a988a98ec655763bc43_proc_2561564/static_explainer_loss.png",
+      "description": "Loss curves show training and validation losses drop below 0.05 by epoch 5 and plateau near zero.",
+      "analysis": "Minimal gap between training and validation loss confirms strong generalization of the static explainer user model."
+    }
+  ],
+  "Key_numerical_results": [
+    {
+      "result": 0.4054,
+      "description": "Classifier final validation loss (no explanations)",
+      "analysis": "Confirms stable convergence of the plain MLP to moderate loss without overfitting."
+    },
+    {
+      "result": 0.9,
+      "description": "Classifier validation accuracy at epoch 10",
+      "analysis": "High predictive performance of the plain classifier does not translate into user-model alignment."
+    },
+    {
+      "result": 0.47,
+      "description": "User-model alignment accuracy (validation) without explanations",
+      "analysis": "Alignment remains at chance, demonstrating failure of a biased user model to mimic AI decisions without explanations."
+    },
+    {
+      "result": 0.996,
+      "description": "Static explainer test accuracy",
+      "analysis": "Static explanations drive near-perfect alignment between the user model and AI decisions."
+    },
+    {
+      "result": 0.0112,
+      "description": "Static explainer validation loss",
+      "analysis": "Low validation loss indicates strong generalization and reliable explanation-based learning."
+    }
+  ]
+}

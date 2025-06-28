@@ -1,0 +1,420 @@
+{
+  "best node": {
+    "overall_plan": "We will develop and evaluate a memory\u2010aware Transformer\u2010XL style model that uses token\u2010level self\u2010attention entropy to guide memory compression for next\u2010token prediction on synthetic integer sequences. The pipeline includes data generation and splitting, a single transformer layer that concatenates past embeddings as memory, computation of per-token attention distributions to derive entropies, and a memory update step that retains the highest\u2010entropy tokens. We train the model by optimizing cross\u2010entropy loss over token chunks while tracking both loss and an Entropy Preservation Ratio on training and validation sets. Outputs include numpy files of metrics and an autoregressive generation with visualization. Building on this baseline, we now systematically tune the initial learning rate across four values. For each learning rate, we reinitialize the model and optimizer, train the full pipeline, record per\u2010epoch losses and entropy metrics under a nested key, generate and save validation predictions alongside ground truth, and produce per\u2010run generation plots. All experiment results and plots are saved to the working directory to enable comparison of how learning rate affects model performance and memory compression.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "train memory retention ratio",
+            "lower_is_better": false,
+            "description": "Memory retention ratio on the training split for the synthetic dataset",
+            "data": [
+              {
+                "dataset_name": "synthetic (learning rate: 0.0001)",
+                "final_value": 0.8202,
+                "best_value": 0.8202
+              },
+              {
+                "dataset_name": "synthetic (learning rate: 0.0005)",
+                "final_value": 0.8211,
+                "best_value": 0.8211
+              },
+              {
+                "dataset_name": "synthetic (learning rate: 0.001)",
+                "final_value": 0.8212,
+                "best_value": 0.8212
+              },
+              {
+                "dataset_name": "synthetic (learning rate: 0.005)",
+                "final_value": 0.8528,
+                "best_value": 0.8528
+              }
+            ]
+          },
+          {
+            "metric_name": "validation memory retention ratio",
+            "lower_is_better": false,
+            "description": "Memory retention ratio on the validation split for the synthetic dataset",
+            "data": [
+              {
+                "dataset_name": "synthetic (learning rate: 0.0001)",
+                "final_value": 0.8202,
+                "best_value": 0.8202
+              },
+              {
+                "dataset_name": "synthetic (learning rate: 0.0005)",
+                "final_value": 0.8216,
+                "best_value": 0.8216
+              },
+              {
+                "dataset_name": "synthetic (learning rate: 0.001)",
+                "final_value": 0.8211,
+                "best_value": 0.8211
+              },
+              {
+                "dataset_name": "synthetic (learning rate: 0.005)",
+                "final_value": 0.8555,
+                "best_value": 0.8555
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\nimport torch\nimport torch.nn as nn\nimport torch.optim as optim\nimport numpy as np\nfrom torch.utils.data import Dataset, DataLoader\nimport matplotlib.pyplot as plt\n\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\n\n\n# Synthetic dataset\nclass RandomSeqDataset(Dataset):\n    def __init__(self, num_seqs, total_len, vocab_size):\n        self.data = torch.randint(\n            1, vocab_size, (num_seqs, total_len), dtype=torch.long\n        )\n\n    def __len__(self):\n        return len(self.data)\n\n    def __getitem__(self, idx):\n        seq = self.data[idx]\n        return {\"input\": seq[:-1], \"target\": seq[1:]}\n\n\nvocab_size = 50\nseq_total = 51  # input 50, target 50\ntrain_ds = RandomSeqDataset(200, seq_total, vocab_size)\nval_ds = RandomSeqDataset(50, seq_total, vocab_size)\ntrain_loader = DataLoader(train_ds, batch_size=1, shuffle=True)\nval_loader = DataLoader(val_ds, batch_size=1)\n\n\n# Model with entropy\u2010aware memory\nclass MemoryTransformerLayer(nn.Module):\n    def __init__(self, embed_dim, num_heads, mem_size):\n        super().__init__()\n        self.attn = nn.MultiheadAttention(embed_dim, num_heads, batch_first=True)\n        self.norm1 = nn.LayerNorm(embed_dim)\n        self.ff = nn.Sequential(\n            nn.Linear(embed_dim, 4 * embed_dim),\n            nn.ReLU(),\n            nn.Linear(4 * embed_dim, embed_dim),\n        )\n        self.norm2 = nn.LayerNorm(embed_dim)\n        self.mem_size = mem_size\n\n    def forward(self, x, mem_x, mem_ent):\n        if mem_x is None:\n            k = v = x\n        else:\n            k = torch.cat([mem_x.unsqueeze(0), x], dim=1)\n            v = k\n        attn_out, attn_w = self.attn(\n            x, k, v, need_weights=True, average_attn_weights=False\n        )\n        x2 = self.norm1(x + attn_out)\n        out = self.norm2(x2 + self.ff(x2))\n        aw = attn_w.mean(dim=1)[0]  # (tgt_len, src_len)\n        eps = 1e-10\n        ent = -(aw * (aw + eps).log()).sum(dim=-1).detach()  # (tgt_len,)\n        x_det = x.detach()[0]\n        if mem_x is None:\n            mem_x_new = x_det\n            mem_ent_new = ent\n        else:\n            mem_x_new = torch.cat([mem_x, x_det], dim=0)\n            mem_ent_new = torch.cat([mem_ent, ent], dim=0)\n        total_ent = mem_ent_new.sum().item() + eps\n        if mem_x_new.size(0) > self.mem_size:\n            idx = torch.topk(mem_ent_new, self.mem_size).indices\n            kept_ent = mem_ent_new[idx].sum().item()\n            ratio = kept_ent / total_ent\n            mem_x_new = mem_x_new[idx]\n            mem_ent_new = mem_ent_new[idx]\n        else:\n            ratio = 1.0\n        return out, mem_x_new, mem_ent_new, ratio\n\n\nclass TransformerXLModel(nn.Module):\n    def __init__(self, vocab_size, embed_dim, num_heads, mem_size):\n        super().__init__()\n        self.embed = nn.Embedding(vocab_size, embed_dim)\n        self.mem_layer = MemoryTransformerLayer(embed_dim, num_heads, mem_size)\n        self.out = nn.Linear(embed_dim, vocab_size)\n\n    def forward(self, x, mem_x, mem_ent):\n        emb = self.embed(x)\n        out, mem_x_new, mem_ent_new, ratio = self.mem_layer(emb, mem_x, mem_ent)\n        logits = self.out(out)\n        return logits, mem_x_new, mem_ent_new, ratio\n\n\n# Hyperparameter tuning over learning rates\nlearning_rates = [1e-4, 5e-4, 1e-3, 5e-3]\nexperiment_data = {\"learning_rate\": {}}\n\nnum_epochs = 3\nchunk_size = 10\n\nfor lr in learning_rates:\n    key = f\"{lr}\"\n    print(f\"\\n=== Tuning learning rate: {key} ===\")\n    # initialize model, optimizer, criterion\n    model = TransformerXLModel(vocab_size, embed_dim=64, num_heads=2, mem_size=20).to(\n        device\n    )\n    optimizer = optim.Adam(model.parameters(), lr=lr)\n    criterion = nn.CrossEntropyLoss()\n    # prepare storage\n    exp = {\n        \"metrics\": {\"train\": [], \"val\": []},\n        \"losses\": {\"train\": [], \"val\": []},\n        \"predictions\": [],\n        \"ground_truth\": [],\n    }\n    # training loop\n    for epoch in range(num_epochs):\n        model.train()\n        train_loss, train_ratios = 0.0, []\n        for batch in train_loader:\n            batch = {k: v.to(device) for k, v in batch.items()}\n            inp, tgt = batch[\"input\"], batch[\"target\"]\n            mem_x = mem_ent = None\n            optimizer.zero_grad()\n            loss_accum = 0.0\n            for i in range(0, inp.size(1), chunk_size):\n                ic = inp[:, i : i + chunk_size]\n                tc = tgt[:, i : i + chunk_size]\n                logits, mem_x, mem_ent, ratio = model(ic, mem_x, mem_ent)\n                loss = criterion(logits.reshape(-1, vocab_size), tc.reshape(-1))\n                loss_accum += loss\n                train_ratios.append(ratio)\n            loss_accum.backward()\n            optimizer.step()\n            train_loss += loss_accum.item() / (inp.size(1) / chunk_size)\n        avg_train_loss = train_loss / len(train_loader)\n        avg_train_ratio = sum(train_ratios) / len(train_ratios)\n        exp[\"losses\"][\"train\"].append(avg_train_loss)\n        exp[\"metrics\"][\"train\"].append(avg_train_ratio)\n        # validation loop\n        model.eval()\n        val_loss, val_ratios = 0.0, []\n        with torch.no_grad():\n            for batch in val_loader:\n                batch = {k: v.to(device) for k, v in batch.items()}\n                inp, tgt = batch[\"input\"], batch[\"target\"]\n                mem_x = mem_ent = None\n                loss_acc = 0.0\n                for i in range(0, inp.size(1), chunk_size):\n                    ic = inp[:, i : i + chunk_size]\n                    tc = tgt[:, i : i + chunk_size]\n                    logits, mem_x, mem_ent, ratio = model(ic, mem_x, mem_ent)\n                    loss_acc += criterion(\n                        logits.reshape(-1, vocab_size), tc.reshape(-1)\n                    )\n                    val_ratios.append(ratio)\n                val_loss += loss_acc.item() / (inp.size(1) / chunk_size)\n        avg_val_loss = val_loss / len(val_loader)\n        avg_val_ratio = sum(val_ratios) / len(val_ratios)\n        exp[\"losses\"][\"val\"].append(avg_val_loss)\n        exp[\"metrics\"][\"val\"].append(avg_val_ratio)\n        print(f\"LR {key} Epoch {epoch} val_loss={avg_val_loss:.4f}\")\n    # generation on first val sequence\n    model.eval()\n    with torch.no_grad():\n        sample = val_ds[0][\"input\"].unsqueeze(0).to(device)\n        target = val_ds[0][\"target\"].tolist()\n        mem_x = mem_ent = None\n        preds = []\n        for t in range(sample.size(1)):\n            inp_t = sample[:, t].unsqueeze(1)\n            logits, mem_x, mem_ent, _ = model(inp_t, mem_x, mem_ent)\n            p = torch.softmax(logits.squeeze(0).squeeze(0), dim=-1)\n            preds.append(int(p.argmax().item()))\n        exp[\"predictions\"] = preds\n        exp[\"ground_truth\"] = target\n    # plot\n    plt.figure()\n    plt.plot(range(len(preds)), preds, label=\"predicted\")\n    plt.plot(range(len(target)), target, label=\"ground_truth\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, f\"synthetic_generation_{key}.png\"))\n    plt.close()\n    # store\n    experiment_data[\"learning_rate\"][key] = {\"synthetic\": exp}\n\n# save everything\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\ndata_path = os.path.join(working_dir, \"experiment_data.npy\")\nexperiment_data = np.load(data_path, allow_pickle=True).item()\n\n# Print final evaluation metrics for each learning rate\nfor lr, lr_data in experiment_data[\"learning_rate\"].items():\n    exp = lr_data[\"synthetic\"]\n    final_val_loss = exp[\"losses\"][\"val\"][-1]\n    final_val_ratio = exp[\"metrics\"][\"val\"][-1]\n    print(\n        f\"LR {lr} Final Val Loss: {final_val_loss:.4f}, Final Val Retention: {final_val_ratio:.4f}\"\n    )\n\n# Loss curves plot\ntry:\n    plt.figure()\n    for lr, lr_data in experiment_data[\"learning_rate\"].items():\n        losses = lr_data[\"synthetic\"][\"losses\"]\n        epochs = range(len(losses[\"train\"]))\n        plt.plot(epochs, losses[\"train\"], label=f\"train lr={lr}\")\n        plt.plot(epochs, losses[\"val\"], linestyle=\"--\", label=f\"val lr={lr}\")\n    plt.title(\"Synthetic Loss Curves Across Learning Rates\\nDataset: synthetic\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Loss\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_loss_curves.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating loss plot: {e}\")\n    plt.close()\n\n# Memory retention ratio plot\ntry:\n    plt.figure()\n    for lr, lr_data in experiment_data[\"learning_rate\"].items():\n        metrics = lr_data[\"synthetic\"][\"metrics\"]\n        epochs = range(len(metrics[\"train\"]))\n        plt.plot(epochs, metrics[\"train\"], label=f\"train lr={lr}\")\n        plt.plot(epochs, metrics[\"val\"], linestyle=\"--\", label=f\"val lr={lr}\")\n    plt.title(\n        \"Synthetic Memory Retention Ratios Across Learning Rates\\nDataset: synthetic\"\n    )\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Retention Ratio\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_retention_ratios.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating metric plot: {e}\")\n    plt.close()\n",
+    "plot_plan": "We import matplotlib, numpy, and os, then set our working directory and load the saved `experiment_data.npy` as a Python dict. We loop over each learning rate entry to print the final validation loss and retention ratio to get quick numerical summaries. In the first try-except block, we create a figure and iterate through each learning rate to plot the training and validation loss curves across epochs. We label each line, set a title that specifies \u201cSynthetic Loss Curves\u201d and the dataset, add axis labels and a legend, then save the figure to the working directory and close it. The second try-except block mirrors this for the memory retention ratio metric: we plot both train and validation ratios per epoch, give the plot a descriptive title \u201cSynthetic Memory Retention Ratios,\u201d set labels and a legend, save the figure under a clear filename, and ensure the figure is closed on success or exception.",
+    "plot_analyses": [
+      {
+        "analysis": "Overlay of predicted vs ground truth values across 50 time steps shows large misalignments and erratic behavior. The model occasionally captures peaks in the ground truth (e.g., around steps 1\u20135 and 30\u201335) but frequently misses significant spikes or predicts flat regions when the truth is high. Noise in the predictions suggests underfitting or insufficient context retention by the baseline compressive memory. High-amplitude fluctuations are not consistently tracked, indicating the need for stronger signal preservation or longer training.",
+        "plot_path": "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_8273d6e974284392a0c9b70b5ac911a4_proc_3949279/synthetic_generation_0.0005.png"
+      },
+      {
+        "analysis": "Memory retention ratios measured on the synthetic dataset across three epochs reveal a strong dependence on learning rate. Low learning rates (1e-4, 5e-4) and moderate rate (1e-3) yield nearly constant retention around 0.82 on both train and validation, indicating minimal adaptation of the compressive memory. A higher rate (5e-3) drives retention upward from ~0.84 to ~0.856 on validation, showing the strongest improvement in stored information. However, stability in retention is flat for other rates, suggesting that only the largest rate effectively allows the entropy-based controller to update memory targets within three epochs.",
+        "plot_path": "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_8273d6e974284392a0c9b70b5ac911a4_proc_3949279/synthetic_retention_ratios.png"
+      },
+      {
+        "analysis": "Overlay of predicted vs ground truth values over 50 steps for a second synthetic run again reveals large discrepancies. Although some local alignment occurs in early segments (steps ~0\u20136), the model drifts for mid- and long-range tokens, failing to track sudden increases beyond ~40 or sudden drops below ~10. Variability remains uncontrolled, pointing to inconsistency across random seeds or training settings. A tuning of batch size or gradient noise scale may help stabilize these predictions.",
+        "plot_path": "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_8273d6e974284392a0c9b70b5ac911a4_proc_3949279/synthetic_generation_0.0001.png"
+      },
+      {
+        "analysis": "Loss curves on the synthetic dataset across three epochs show that the learning rate of 1e-3 achieves the steepest training loss drop (from ~3.95 to ~3.67) and corresponding validation decrease (from ~3.90 to ~3.80). A lower rate (5e-4) also reduces loss but more slowly, while the smallest rate (1e-4) barely moves and higher rate (5e-3) yields flat or plateaued validation loss around ~3.90, hinting at suboptimal convergence or potential overfitting on train without validation gain. The sweet spot appears around 1e-3 for loss minimization within the three-epoch window.",
+        "plot_path": "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_8273d6e974284392a0c9b70b5ac911a4_proc_3949279/synthetic_loss_curves.png"
+      },
+      {
+        "analysis": "Overlay of predicted vs ground truth values for a third synthetic sequence run continues to show misalignment in peak magnitudes and positions. Very few matching peaks are observed, and the trajectory remains jittery. This consistent pattern across multiple seeds underscores that hyperparameter changes so far have not significantly improved sequence tracking. More epochs or a curriculum on synthetic sequence complexity may be needed.",
+        "plot_path": "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_8273d6e974284392a0c9b70b5ac911a4_proc_3949279/synthetic_generation_0.001.png"
+      },
+      {
+        "analysis": "Overlay of predicted vs ground truth for a fourth run again exhibits erratic alignment: the model correctly tracks some mid-range values (~20\u201335) but fails dramatically on large spikes (~45\u201350) and low troughs (~0\u20135). Prediction noise persists across runs, suggesting that retention improvements observed in retention ratio plots have not translated into faithful sequence reconstruction.",
+        "plot_path": "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_8273d6e974284392a0c9b70b5ac911a4_proc_3949279/synthetic_generation_0.005.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_8273d6e974284392a0c9b70b5ac911a4_proc_3949279/synthetic_generation_0.0005.png",
+      "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_8273d6e974284392a0c9b70b5ac911a4_proc_3949279/synthetic_retention_ratios.png",
+      "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_8273d6e974284392a0c9b70b5ac911a4_proc_3949279/synthetic_generation_0.0001.png",
+      "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_8273d6e974284392a0c9b70b5ac911a4_proc_3949279/synthetic_loss_curves.png",
+      "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_8273d6e974284392a0c9b70b5ac911a4_proc_3949279/synthetic_generation_0.001.png",
+      "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_8273d6e974284392a0c9b70b5ac911a4_proc_3949279/synthetic_generation_0.005.png"
+    ],
+    "vlm_feedback_summary": "Retention and loss curves indicate that learning rate ~1e-3\u20135e-3 yields strongest improvements in compressive memory retention and perplexity within three epochs, but generation quality on synthetic sequences remains poor and inconsistent across seeds. Further tuning of learning rate, longer training, or batch size adjustment is required to translate retention gains into reliable sequence prediction.",
+    "exp_results_dir": "experiment_results/experiment_8273d6e974284392a0c9b70b5ac911a4_proc_3949279",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_8273d6e974284392a0c9b70b5ac911a4_proc_3949279/experiment_data.npy"
+    ]
+  },
+  "best node with different seeds": [
+    {
+      "overall_plan": "We will develop and evaluate a memory\u2010aware Transformer\u2010XL\u2013style model for next\u2010token prediction on synthetic integer sequences, where each step concatenates past token embeddings as memory and computes token\u2010level self\u2010attention entropies to guide a memory compression that retains the most informative tokens. The pipeline covers data generation and splitting, a single transformer layer with entropy\u2010based memory updates, training via cross\u2010entropy loss while tracking both loss and an Entropy Preservation Ratio on training and validation sets, and outputs that include numpy metrics files and autoregressive generation visualizations. Building on this baseline, we will systematically tune the initial learning rate across four values. For each learning rate, we will reinitialize the model and optimizer, train the full pipeline, record per\u2010epoch losses and entropy metrics under nested keys, generate and save validation predictions alongside ground truth, and produce per\u2010run generation plots. All experiment results and visualizations will be saved in the working directory to enable direct comparison of how different learning rates affect model performance and memory compression. The current node serves as the seed initialization for these experiments.",
+      "analysis": "The script executed without runtime errors. Validation loss steadily decreased across all learning rates, with the best performance at lr=1e-3 (final val_loss=3.8065). Memory compression ratios defaulted to 1.0 (since mem_size \u2265 chunk size) and were stored but not printed. Recommend: (1) log the per-epoch/learning-rate compression ratios to monitor the EA-ACM behavior, (2) integrate the two new HuggingFace datasets per sub-stage goals (e.g., PG19 and WikiText-2 or ArXiv subset) for additional evaluation, and (3) replace the placeholder execution-time print with actual timing measurements.",
+      "metric": {
+        "value": {
+          "metric_names": [
+            {
+              "metric_name": "train memory retention ratio",
+              "lower_is_better": false,
+              "description": "Memory retention ratio on the training dataset.",
+              "data": [
+                {
+                  "dataset_name": "synthetic (learning rate: 0.0001)",
+                  "final_value": 0.8202,
+                  "best_value": 0.8202
+                },
+                {
+                  "dataset_name": "synthetic (learning rate: 0.0005)",
+                  "final_value": 0.8214,
+                  "best_value": 0.8214
+                },
+                {
+                  "dataset_name": "synthetic (learning rate: 0.001)",
+                  "final_value": 0.8214,
+                  "best_value": 0.8214
+                },
+                {
+                  "dataset_name": "synthetic (learning rate: 0.005)",
+                  "final_value": 0.8546,
+                  "best_value": 0.8546
+                }
+              ]
+            },
+            {
+              "metric_name": "validation memory retention ratio",
+              "lower_is_better": false,
+              "description": "Memory retention ratio on the validation dataset.",
+              "data": [
+                {
+                  "dataset_name": "synthetic (learning rate: 0.0001)",
+                  "final_value": 0.8203,
+                  "best_value": 0.8203
+                },
+                {
+                  "dataset_name": "synthetic (learning rate: 0.0005)",
+                  "final_value": 0.822,
+                  "best_value": 0.822
+                },
+                {
+                  "dataset_name": "synthetic (learning rate: 0.001)",
+                  "final_value": 0.8211,
+                  "best_value": 0.8211
+                },
+                {
+                  "dataset_name": "synthetic (learning rate: 0.005)",
+                  "final_value": 0.8572,
+                  "best_value": 0.8572
+                }
+              ]
+            }
+          ]
+        },
+        "maximize": null,
+        "name": null,
+        "description": null
+      },
+      "code": "# Set random seed\nimport random\nimport numpy as np\nimport torch\n\nseed = 1\nrandom.seed(seed)\nnp.random.seed(seed)\ntorch.manual_seed(seed)\nif torch.cuda.is_available():\n    torch.cuda.manual_seed(seed)\n\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\nimport torch\nimport torch.nn as nn\nimport torch.optim as optim\nimport numpy as np\nfrom torch.utils.data import Dataset, DataLoader\nimport matplotlib.pyplot as plt\n\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\n\n\n# Synthetic dataset\nclass RandomSeqDataset(Dataset):\n    def __init__(self, num_seqs, total_len, vocab_size):\n        self.data = torch.randint(\n            1, vocab_size, (num_seqs, total_len), dtype=torch.long\n        )\n\n    def __len__(self):\n        return len(self.data)\n\n    def __getitem__(self, idx):\n        seq = self.data[idx]\n        return {\"input\": seq[:-1], \"target\": seq[1:]}\n\n\nvocab_size = 50\nseq_total = 51  # input 50, target 50\ntrain_ds = RandomSeqDataset(200, seq_total, vocab_size)\nval_ds = RandomSeqDataset(50, seq_total, vocab_size)\ntrain_loader = DataLoader(train_ds, batch_size=1, shuffle=True)\nval_loader = DataLoader(val_ds, batch_size=1)\n\n\n# Model with entropy\u2010aware memory\nclass MemoryTransformerLayer(nn.Module):\n    def __init__(self, embed_dim, num_heads, mem_size):\n        super().__init__()\n        self.attn = nn.MultiheadAttention(embed_dim, num_heads, batch_first=True)\n        self.norm1 = nn.LayerNorm(embed_dim)\n        self.ff = nn.Sequential(\n            nn.Linear(embed_dim, 4 * embed_dim),\n            nn.ReLU(),\n            nn.Linear(4 * embed_dim, embed_dim),\n        )\n        self.norm2 = nn.LayerNorm(embed_dim)\n        self.mem_size = mem_size\n\n    def forward(self, x, mem_x, mem_ent):\n        if mem_x is None:\n            k = v = x\n        else:\n            k = torch.cat([mem_x.unsqueeze(0), x], dim=1)\n            v = k\n        attn_out, attn_w = self.attn(\n            x, k, v, need_weights=True, average_attn_weights=False\n        )\n        x2 = self.norm1(x + attn_out)\n        out = self.norm2(x2 + self.ff(x2))\n        aw = attn_w.mean(dim=1)[0]  # (tgt_len, src_len)\n        eps = 1e-10\n        ent = -(aw * (aw + eps).log()).sum(dim=-1).detach()  # (tgt_len,)\n        x_det = x.detach()[0]\n        if mem_x is None:\n            mem_x_new = x_det\n            mem_ent_new = ent\n        else:\n            mem_x_new = torch.cat([mem_x, x_det], dim=0)\n            mem_ent_new = torch.cat([mem_ent, ent], dim=0)\n        total_ent = mem_ent_new.sum().item() + eps\n        if mem_x_new.size(0) > self.mem_size:\n            idx = torch.topk(mem_ent_new, self.mem_size).indices\n            kept_ent = mem_ent_new[idx].sum().item()\n            ratio = kept_ent / total_ent\n            mem_x_new = mem_x_new[idx]\n            mem_ent_new = mem_ent_new[idx]\n        else:\n            ratio = 1.0\n        return out, mem_x_new, mem_ent_new, ratio\n\n\nclass TransformerXLModel(nn.Module):\n    def __init__(self, vocab_size, embed_dim, num_heads, mem_size):\n        super().__init__()\n        self.embed = nn.Embedding(vocab_size, embed_dim)\n        self.mem_layer = MemoryTransformerLayer(embed_dim, num_heads, mem_size)\n        self.out = nn.Linear(embed_dim, vocab_size)\n\n    def forward(self, x, mem_x, mem_ent):\n        emb = self.embed(x)\n        out, mem_x_new, mem_ent_new, ratio = self.mem_layer(emb, mem_x, mem_ent)\n        logits = self.out(out)\n        return logits, mem_x_new, mem_ent_new, ratio\n\n\n# Hyperparameter tuning over learning rates\nlearning_rates = [1e-4, 5e-4, 1e-3, 5e-3]\nexperiment_data = {\"learning_rate\": {}}\n\nnum_epochs = 3\nchunk_size = 10\n\nfor lr in learning_rates:\n    key = f\"{lr}\"\n    print(f\"\\n=== Tuning learning rate: {key} ===\")\n    # initialize model, optimizer, criterion\n    model = TransformerXLModel(vocab_size, embed_dim=64, num_heads=2, mem_size=20).to(\n        device\n    )\n    optimizer = optim.Adam(model.parameters(), lr=lr)\n    criterion = nn.CrossEntropyLoss()\n    # prepare storage\n    exp = {\n        \"metrics\": {\"train\": [], \"val\": []},\n        \"losses\": {\"train\": [], \"val\": []},\n        \"predictions\": [],\n        \"ground_truth\": [],\n    }\n    # training loop\n    for epoch in range(num_epochs):\n        model.train()\n        train_loss, train_ratios = 0.0, []\n        for batch in train_loader:\n            batch = {k: v.to(device) for k, v in batch.items()}\n            inp, tgt = batch[\"input\"], batch[\"target\"]\n            mem_x = mem_ent = None\n            optimizer.zero_grad()\n            loss_accum = 0.0\n            for i in range(0, inp.size(1), chunk_size):\n                ic = inp[:, i : i + chunk_size]\n                tc = tgt[:, i : i + chunk_size]\n                logits, mem_x, mem_ent, ratio = model(ic, mem_x, mem_ent)\n                loss = criterion(logits.reshape(-1, vocab_size), tc.reshape(-1))\n                loss_accum += loss\n                train_ratios.append(ratio)\n            loss_accum.backward()\n            optimizer.step()\n            train_loss += loss_accum.item() / (inp.size(1) / chunk_size)\n        avg_train_loss = train_loss / len(train_loader)\n        avg_train_ratio = sum(train_ratios) / len(train_ratios)\n        exp[\"losses\"][\"train\"].append(avg_train_loss)\n        exp[\"metrics\"][\"train\"].append(avg_train_ratio)\n        # validation loop\n        model.eval()\n        val_loss, val_ratios = 0.0, []\n        with torch.no_grad():\n            for batch in val_loader:\n                batch = {k: v.to(device) for k, v in batch.items()}\n                inp, tgt = batch[\"input\"], batch[\"target\"]\n                mem_x = mem_ent = None\n                loss_acc = 0.0\n                for i in range(0, inp.size(1), chunk_size):\n                    ic = inp[:, i : i + chunk_size]\n                    tc = tgt[:, i : i + chunk_size]\n                    logits, mem_x, mem_ent, ratio = model(ic, mem_x, mem_ent)\n                    loss_acc += criterion(\n                        logits.reshape(-1, vocab_size), tc.reshape(-1)\n                    )\n                    val_ratios.append(ratio)\n                val_loss += loss_acc.item() / (inp.size(1) / chunk_size)\n        avg_val_loss = val_loss / len(val_loader)\n        avg_val_ratio = sum(val_ratios) / len(val_ratios)\n        exp[\"losses\"][\"val\"].append(avg_val_loss)\n        exp[\"metrics\"][\"val\"].append(avg_val_ratio)\n        print(f\"LR {key} Epoch {epoch} val_loss={avg_val_loss:.4f}\")\n    # generation on first val sequence\n    model.eval()\n    with torch.no_grad():\n        sample = val_ds[0][\"input\"].unsqueeze(0).to(device)\n        target = val_ds[0][\"target\"].tolist()\n        mem_x = mem_ent = None\n        preds = []\n        for t in range(sample.size(1)):\n            inp_t = sample[:, t].unsqueeze(1)\n            logits, mem_x, mem_ent, _ = model(inp_t, mem_x, mem_ent)\n            p = torch.softmax(logits.squeeze(0).squeeze(0), dim=-1)\n            preds.append(int(p.argmax().item()))\n        exp[\"predictions\"] = preds\n        exp[\"ground_truth\"] = target\n    # plot\n    plt.figure()\n    plt.plot(range(len(preds)), preds, label=\"predicted\")\n    plt.plot(range(len(target)), target, label=\"ground_truth\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, f\"synthetic_generation_{key}.png\"))\n    plt.close()\n    # store\n    experiment_data[\"learning_rate\"][key] = {\"synthetic\": exp}\n\n# save everything\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+      "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\ndata_path = os.path.join(working_dir, \"experiment_data.npy\")\nexperiment_data = np.load(data_path, allow_pickle=True).item()\n\n# Print final evaluation metrics for each learning rate\nfor lr, lr_data in experiment_data[\"learning_rate\"].items():\n    exp = lr_data[\"synthetic\"]\n    final_val_loss = exp[\"losses\"][\"val\"][-1]\n    final_val_ratio = exp[\"metrics\"][\"val\"][-1]\n    print(\n        f\"LR {lr} Final Val Loss: {final_val_loss:.4f}, Final Val Retention: {final_val_ratio:.4f}\"\n    )\n\n# Loss curves plot\ntry:\n    plt.figure()\n    for lr, lr_data in experiment_data[\"learning_rate\"].items():\n        losses = lr_data[\"synthetic\"][\"losses\"]\n        epochs = range(len(losses[\"train\"]))\n        plt.plot(epochs, losses[\"train\"], label=f\"train lr={lr}\")\n        plt.plot(epochs, losses[\"val\"], linestyle=\"--\", label=f\"val lr={lr}\")\n    plt.title(\"Synthetic Loss Curves Across Learning Rates\\nDataset: synthetic\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Loss\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_loss_curves.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating loss plot: {e}\")\n    plt.close()\n\n# Memory retention ratio plot\ntry:\n    plt.figure()\n    for lr, lr_data in experiment_data[\"learning_rate\"].items():\n        metrics = lr_data[\"synthetic\"][\"metrics\"]\n        epochs = range(len(metrics[\"train\"]))\n        plt.plot(epochs, metrics[\"train\"], label=f\"train lr={lr}\")\n        plt.plot(epochs, metrics[\"val\"], linestyle=\"--\", label=f\"val lr={lr}\")\n    plt.title(\n        \"Synthetic Memory Retention Ratios Across Learning Rates\\nDataset: synthetic\"\n    )\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Retention Ratio\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_retention_ratios.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating metric plot: {e}\")\n    plt.close()\n",
+      "plot_analyses": [
+        {
+          "analysis": "predicted values show minimal alignment with ground truth; many predicted tokens are flat or at low values whereas ground truth has high variation; indicates the model under current hyperparameters struggles to capture token-level novelty and fails to preserve salient information accurately.",
+          "plot_path": "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_ef7f284c309a41b18eb6941e48ff0218_proc_3949278/synthetic_generation_0.0005.png"
+        },
+        {
+          "analysis": "Memory retention ratios for the synthetic dataset remain near 0.82 for lr=0.0001 and lr=0.0005, with only marginal gains over epochs. Learning rate 0.001 yields slight improvement (~0.820 to ~0.822), while lr=0.005 drives the largest boost in both training (0.835 to 0.854) and validation (0.840 to 0.857) retention. This suggests that a higher learning rate accelerates adaptation of the entropy-aware compression but may risk instability if taken beyond epoch 2.",
+          "plot_path": "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_ef7f284c309a41b18eb6941e48ff0218_proc_3949278/synthetic_retention_ratios.png"
+        },
+        {
+          "analysis": "predicted sequence shows more variance but still misses many peaks of the ground truth; while some high values are captured, the model output often lags or underestimates salient tokens, indicating underfitting or insufficient training time under this hyperparameter setting.",
+          "plot_path": "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_ef7f284c309a41b18eb6941e48ff0218_proc_3949278/synthetic_generation_0.0001.png"
+        },
+        {
+          "analysis": "Loss curves reveal that lr=0.001 achieves the fastest and most consistent reduction in both training (3.95\u21923.68) and validation loss (3.89\u21923.80) over three epochs. Although lr=0.005 quickly lowers training loss, its validation loss plateaus around 3.90, signaling potential overfitting. Lower rates (0.0001, 0.0005) converge too slowly for practical tuning.",
+          "plot_path": "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_ef7f284c309a41b18eb6941e48ff0218_proc_3949278/synthetic_loss_curves.png"
+        },
+        {
+          "analysis": "predicted vs ground truth values still show underestimation of peaks and noisy alignment; the model\u2019s retention mechanism has not yet generalized to fully capture the synthetic pattern, suggesting a need for further hyperparameter adjustments or longer training.",
+          "plot_path": "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_ef7f284c309a41b18eb6941e48ff0218_proc_3949278/synthetic_generation_0.001.png"
+        },
+        {
+          "analysis": "predictions remain noisy with frequent divergence from the ground truth peaks; the model fails to maintain consistent signal over the sequence, highlighting that current learning rate and epoch count may be insufficient for robust long-range retention on this dataset.",
+          "plot_path": "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_ef7f284c309a41b18eb6941e48ff0218_proc_3949278/synthetic_generation_0.005.png"
+        }
+      ],
+      "plot_paths": [
+        "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_ef7f284c309a41b18eb6941e48ff0218_proc_3949278/synthetic_generation_0.0005.png",
+        "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_ef7f284c309a41b18eb6941e48ff0218_proc_3949278/synthetic_retention_ratios.png",
+        "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_ef7f284c309a41b18eb6941e48ff0218_proc_3949278/synthetic_generation_0.0001.png",
+        "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_ef7f284c309a41b18eb6941e48ff0218_proc_3949278/synthetic_loss_curves.png",
+        "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_ef7f284c309a41b18eb6941e48ff0218_proc_3949278/synthetic_generation_0.001.png",
+        "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_ef7f284c309a41b18eb6941e48ff0218_proc_3949278/synthetic_generation_0.005.png"
+      ],
+      "vlm_feedback_summary": "Highest learning rate (0.005) maximizes memory retention but fails to improve validation loss beyond early epochs. Learning rate 0.001 offers the best trade-off, yielding significant validation loss reduction and moderate retention gains. Predicted vs ground truth plots consistently reveal underfitting of salient token patterns, indicating that more epochs or refined hyperparameters are needed. For further testing of EA-ACM, two new Hugging Face datasets are recommended: WikiText-103 for long-range language modeling and NaturalQuestions for retrieval-augmented QA to challenge the adaptive memory mechanism on diverse, real-world contexts.",
+      "exp_results_dir": "experiment_results/experiment_ef7f284c309a41b18eb6941e48ff0218_proc_3949278",
+      "exp_results_npy_files": [
+        "experiment_results/experiment_ef7f284c309a41b18eb6941e48ff0218_proc_3949278/experiment_data.npy"
+      ]
+    },
+    {
+      "overall_plan": "We will develop a memory\u2010aware Transformer\u2010XL\u2013style model for next\u2010token prediction on synthetic integer sequences, where token\u2010level self\u2010attention entropy guides which past tokens are kept in memory. The pipeline covers data generation and splitting, a single transformer layer that concatenates past embeddings as memory, computation of per\u2010token attention distributions to derive entropies, and a memory update step that retains the highest\u2010entropy tokens. We train the model by optimizing cross\u2010entropy loss on token chunks while tracking both prediction loss and an Entropy Preservation Ratio on training and validation sets. Outputs include numpy files of metrics and autoregressive generation visualizations. Building on this baseline, we will systematically tune the initial learning rate across four values. For each rate, we reinitialize the model and optimizer, run the full training pipeline, record per\u2010epoch losses and entropy metrics under distinct run keys, generate and save validation predictions with ground truth, and produce per\u2010run generation plots. All metrics and figures are saved to enable a comprehensive comparison of how learning rate affects model performance and memory compression.",
+      "analysis": "",
+      "metric": {
+        "value": {
+          "metric_names": [
+            {
+              "metric_name": "training memory retention ratio",
+              "lower_is_better": false,
+              "description": "Ratio of memory retained by the model on the training dataset",
+              "data": [
+                {
+                  "dataset_name": "synthetic (lr=0.0001)",
+                  "final_value": 0.8202,
+                  "best_value": 0.8202
+                },
+                {
+                  "dataset_name": "synthetic (lr=0.0005)",
+                  "final_value": 0.8214,
+                  "best_value": 0.8214
+                },
+                {
+                  "dataset_name": "synthetic (lr=0.001)",
+                  "final_value": 0.8214,
+                  "best_value": 0.8214
+                },
+                {
+                  "dataset_name": "synthetic (lr=0.005)",
+                  "final_value": 0.8546,
+                  "best_value": 0.8546
+                }
+              ]
+            },
+            {
+              "metric_name": "validation memory retention ratio",
+              "lower_is_better": false,
+              "description": "Ratio of memory retained by the model on the validation dataset",
+              "data": [
+                {
+                  "dataset_name": "synthetic (lr=0.0001)",
+                  "final_value": 0.8203,
+                  "best_value": 0.8203
+                },
+                {
+                  "dataset_name": "synthetic (lr=0.0005)",
+                  "final_value": 0.822,
+                  "best_value": 0.822
+                },
+                {
+                  "dataset_name": "synthetic (lr=0.001)",
+                  "final_value": 0.8211,
+                  "best_value": 0.8211
+                },
+                {
+                  "dataset_name": "synthetic (lr=0.005)",
+                  "final_value": 0.8572,
+                  "best_value": 0.8572
+                }
+              ]
+            }
+          ]
+        },
+        "maximize": null,
+        "name": null,
+        "description": null
+      },
+      "code": "# Set random seed\nimport random\nimport numpy as np\nimport torch\n\nseed = 1\nrandom.seed(seed)\nnp.random.seed(seed)\ntorch.manual_seed(seed)\nif torch.cuda.is_available():\n    torch.cuda.manual_seed(seed)\n\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\nimport torch\nimport torch.nn as nn\nimport torch.optim as optim\nimport numpy as np\nfrom torch.utils.data import Dataset, DataLoader\nimport matplotlib.pyplot as plt\n\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\n\n\n# Synthetic dataset\nclass RandomSeqDataset(Dataset):\n    def __init__(self, num_seqs, total_len, vocab_size):\n        self.data = torch.randint(\n            1, vocab_size, (num_seqs, total_len), dtype=torch.long\n        )\n\n    def __len__(self):\n        return len(self.data)\n\n    def __getitem__(self, idx):\n        seq = self.data[idx]\n        return {\"input\": seq[:-1], \"target\": seq[1:]}\n\n\nvocab_size = 50\nseq_total = 51  # input 50, target 50\ntrain_ds = RandomSeqDataset(200, seq_total, vocab_size)\nval_ds = RandomSeqDataset(50, seq_total, vocab_size)\ntrain_loader = DataLoader(train_ds, batch_size=1, shuffle=True)\nval_loader = DataLoader(val_ds, batch_size=1)\n\n\n# Model with entropy\u2010aware memory\nclass MemoryTransformerLayer(nn.Module):\n    def __init__(self, embed_dim, num_heads, mem_size):\n        super().__init__()\n        self.attn = nn.MultiheadAttention(embed_dim, num_heads, batch_first=True)\n        self.norm1 = nn.LayerNorm(embed_dim)\n        self.ff = nn.Sequential(\n            nn.Linear(embed_dim, 4 * embed_dim),\n            nn.ReLU(),\n            nn.Linear(4 * embed_dim, embed_dim),\n        )\n        self.norm2 = nn.LayerNorm(embed_dim)\n        self.mem_size = mem_size\n\n    def forward(self, x, mem_x, mem_ent):\n        if mem_x is None:\n            k = v = x\n        else:\n            k = torch.cat([mem_x.unsqueeze(0), x], dim=1)\n            v = k\n        attn_out, attn_w = self.attn(\n            x, k, v, need_weights=True, average_attn_weights=False\n        )\n        x2 = self.norm1(x + attn_out)\n        out = self.norm2(x2 + self.ff(x2))\n        aw = attn_w.mean(dim=1)[0]  # (tgt_len, src_len)\n        eps = 1e-10\n        ent = -(aw * (aw + eps).log()).sum(dim=-1).detach()  # (tgt_len,)\n        x_det = x.detach()[0]\n        if mem_x is None:\n            mem_x_new = x_det\n            mem_ent_new = ent\n        else:\n            mem_x_new = torch.cat([mem_x, x_det], dim=0)\n            mem_ent_new = torch.cat([mem_ent, ent], dim=0)\n        total_ent = mem_ent_new.sum().item() + eps\n        if mem_x_new.size(0) > self.mem_size:\n            idx = torch.topk(mem_ent_new, self.mem_size).indices\n            kept_ent = mem_ent_new[idx].sum().item()\n            ratio = kept_ent / total_ent\n            mem_x_new = mem_x_new[idx]\n            mem_ent_new = mem_ent_new[idx]\n        else:\n            ratio = 1.0\n        return out, mem_x_new, mem_ent_new, ratio\n\n\nclass TransformerXLModel(nn.Module):\n    def __init__(self, vocab_size, embed_dim, num_heads, mem_size):\n        super().__init__()\n        self.embed = nn.Embedding(vocab_size, embed_dim)\n        self.mem_layer = MemoryTransformerLayer(embed_dim, num_heads, mem_size)\n        self.out = nn.Linear(embed_dim, vocab_size)\n\n    def forward(self, x, mem_x, mem_ent):\n        emb = self.embed(x)\n        out, mem_x_new, mem_ent_new, ratio = self.mem_layer(emb, mem_x, mem_ent)\n        logits = self.out(out)\n        return logits, mem_x_new, mem_ent_new, ratio\n\n\n# Hyperparameter tuning over learning rates\nlearning_rates = [1e-4, 5e-4, 1e-3, 5e-3]\nexperiment_data = {\"learning_rate\": {}}\n\nnum_epochs = 3\nchunk_size = 10\n\nfor lr in learning_rates:\n    key = f\"{lr}\"\n    print(f\"\\n=== Tuning learning rate: {key} ===\")\n    # initialize model, optimizer, criterion\n    model = TransformerXLModel(vocab_size, embed_dim=64, num_heads=2, mem_size=20).to(\n        device\n    )\n    optimizer = optim.Adam(model.parameters(), lr=lr)\n    criterion = nn.CrossEntropyLoss()\n    # prepare storage\n    exp = {\n        \"metrics\": {\"train\": [], \"val\": []},\n        \"losses\": {\"train\": [], \"val\": []},\n        \"predictions\": [],\n        \"ground_truth\": [],\n    }\n    # training loop\n    for epoch in range(num_epochs):\n        model.train()\n        train_loss, train_ratios = 0.0, []\n        for batch in train_loader:\n            batch = {k: v.to(device) for k, v in batch.items()}\n            inp, tgt = batch[\"input\"], batch[\"target\"]\n            mem_x = mem_ent = None\n            optimizer.zero_grad()\n            loss_accum = 0.0\n            for i in range(0, inp.size(1), chunk_size):\n                ic = inp[:, i : i + chunk_size]\n                tc = tgt[:, i : i + chunk_size]\n                logits, mem_x, mem_ent, ratio = model(ic, mem_x, mem_ent)\n                loss = criterion(logits.reshape(-1, vocab_size), tc.reshape(-1))\n                loss_accum += loss\n                train_ratios.append(ratio)\n            loss_accum.backward()\n            optimizer.step()\n            train_loss += loss_accum.item() / (inp.size(1) / chunk_size)\n        avg_train_loss = train_loss / len(train_loader)\n        avg_train_ratio = sum(train_ratios) / len(train_ratios)\n        exp[\"losses\"][\"train\"].append(avg_train_loss)\n        exp[\"metrics\"][\"train\"].append(avg_train_ratio)\n        # validation loop\n        model.eval()\n        val_loss, val_ratios = 0.0, []\n        with torch.no_grad():\n            for batch in val_loader:\n                batch = {k: v.to(device) for k, v in batch.items()}\n                inp, tgt = batch[\"input\"], batch[\"target\"]\n                mem_x = mem_ent = None\n                loss_acc = 0.0\n                for i in range(0, inp.size(1), chunk_size):\n                    ic = inp[:, i : i + chunk_size]\n                    tc = tgt[:, i : i + chunk_size]\n                    logits, mem_x, mem_ent, ratio = model(ic, mem_x, mem_ent)\n                    loss_acc += criterion(\n                        logits.reshape(-1, vocab_size), tc.reshape(-1)\n                    )\n                    val_ratios.append(ratio)\n                val_loss += loss_acc.item() / (inp.size(1) / chunk_size)\n        avg_val_loss = val_loss / len(val_loader)\n        avg_val_ratio = sum(val_ratios) / len(val_ratios)\n        exp[\"losses\"][\"val\"].append(avg_val_loss)\n        exp[\"metrics\"][\"val\"].append(avg_val_ratio)\n        print(f\"LR {key} Epoch {epoch} val_loss={avg_val_loss:.4f}\")\n    # generation on first val sequence\n    model.eval()\n    with torch.no_grad():\n        sample = val_ds[0][\"input\"].unsqueeze(0).to(device)\n        target = val_ds[0][\"target\"].tolist()\n        mem_x = mem_ent = None\n        preds = []\n        for t in range(sample.size(1)):\n            inp_t = sample[:, t].unsqueeze(1)\n            logits, mem_x, mem_ent, _ = model(inp_t, mem_x, mem_ent)\n            p = torch.softmax(logits.squeeze(0).squeeze(0), dim=-1)\n            preds.append(int(p.argmax().item()))\n        exp[\"predictions\"] = preds\n        exp[\"ground_truth\"] = target\n    # plot\n    plt.figure()\n    plt.plot(range(len(preds)), preds, label=\"predicted\")\n    plt.plot(range(len(target)), target, label=\"ground_truth\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, f\"synthetic_generation_{key}.png\"))\n    plt.close()\n    # store\n    experiment_data[\"learning_rate\"][key] = {\"synthetic\": exp}\n\n# save everything\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+      "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\ndata_path = os.path.join(working_dir, \"experiment_data.npy\")\nexperiment_data = np.load(data_path, allow_pickle=True).item()\n\n# Print final evaluation metrics for each learning rate\nfor lr, lr_data in experiment_data[\"learning_rate\"].items():\n    exp = lr_data[\"synthetic\"]\n    final_val_loss = exp[\"losses\"][\"val\"][-1]\n    final_val_ratio = exp[\"metrics\"][\"val\"][-1]\n    print(\n        f\"LR {lr} Final Val Loss: {final_val_loss:.4f}, Final Val Retention: {final_val_ratio:.4f}\"\n    )\n\n# Loss curves plot\ntry:\n    plt.figure()\n    for lr, lr_data in experiment_data[\"learning_rate\"].items():\n        losses = lr_data[\"synthetic\"][\"losses\"]\n        epochs = range(len(losses[\"train\"]))\n        plt.plot(epochs, losses[\"train\"], label=f\"train lr={lr}\")\n        plt.plot(epochs, losses[\"val\"], linestyle=\"--\", label=f\"val lr={lr}\")\n    plt.title(\"Synthetic Loss Curves Across Learning Rates\\nDataset: synthetic\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Loss\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_loss_curves.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating loss plot: {e}\")\n    plt.close()\n\n# Memory retention ratio plot\ntry:\n    plt.figure()\n    for lr, lr_data in experiment_data[\"learning_rate\"].items():\n        metrics = lr_data[\"synthetic\"][\"metrics\"]\n        epochs = range(len(metrics[\"train\"]))\n        plt.plot(epochs, metrics[\"train\"], label=f\"train lr={lr}\")\n        plt.plot(epochs, metrics[\"val\"], linestyle=\"--\", label=f\"val lr={lr}\")\n    plt.title(\n        \"Synthetic Memory Retention Ratios Across Learning Rates\\nDataset: synthetic\"\n    )\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Retention Ratio\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_retention_ratios.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating metric plot: {e}\")\n    plt.close()\n",
+      "plot_analyses": [
+        {
+          "analysis": "Uploaded image 1 shows model predictions versus ground truth across 50 time steps. The predicted values fluctuate substantially but often fail to capture the peaks of the ground truth series. Periods of alignment are interspersed with large deviations, suggesting the current hyperparameters yield an undertrained compressive memory that cannot consistently recall salient tokens.",
+          "plot_path": "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_1e189401527a4907a1c4e2288e4f1b00_proc_3949279/synthetic_generation_0.0005.png"
+        },
+        {
+          "analysis": "Uploaded image 2 plots synthetic memory retention ratios on training and validation sets over three epochs, across four learning rates. All retention curves rise over epochs, but a learning rate of 0.005 yields the highest increase, with validation retention climbing from ~0.84 to ~0.857 by epoch 2. Lower learning rates plateau around ~0.82\u20130.822. This indicates that higher learning rates boost the entropy-aware module\u2019s ability to preserve informative tokens, though stability and overcompression risk at very high rates should be monitored.",
+          "plot_path": "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_1e189401527a4907a1c4e2288e4f1b00_proc_3949279/synthetic_retention_ratios.png"
+        },
+        {
+          "analysis": "Uploaded image 3 presents another run of predicted versus ground truth values. Similar to the first sequence, the model outputs sporadic matches but misses many ground truth spikes, indicating inconsistent retention of novel tokens. Slightly closer tracking in mid-range values suggests marginal improvement, but extreme values still slip through the compressive memory mechanism.",
+          "plot_path": "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_1e189401527a4907a1c4e2288e4f1b00_proc_3949279/synthetic_generation_0.0001.png"
+        },
+        {
+          "analysis": "Uploaded image 4 displays training and validation loss curves across the same four learning rates. The learning rate of 0.001 shows the steepest train loss decrease (from ~3.95 to ~3.68) and also yields solid validation loss improvement (from ~3.90 to ~3.80). In contrast, the highest learning rate (0.005) achieves minimal validation loss drop, indicating potential overstep of optimal step size. Very low learning rates (0.0001, 0.0005) underperform, converging slowly.",
+          "plot_path": "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_1e189401527a4907a1c4e2288e4f1b00_proc_3949279/synthetic_loss_curves.png"
+        },
+        {
+          "analysis": "Uploaded image 5 shows a third predicted-versus-actual sequence with similar misalignment. Predictions remain concentrated in mid-to-lower ranges and regularly miss ground truth extremes. This further highlights that current tuning fails to robustly capture high-entropy tokens deemed important by the EA-ACM module.",
+          "plot_path": "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_1e189401527a4907a1c4e2288e4f1b00_proc_3949279/synthetic_generation_0.001.png"
+        },
+        {
+          "analysis": "Uploaded image 6 yields the same pattern: predicted trajectories lack the full dynamic range of the ground truth, with many salient peaks discarded. The consistency of these mismatches across multiple runs underscores that further hyperparameter tuning (e.g., exploring intermediate learning rates around 0.001, or adjusting batch size) is needed to stabilize the entropy-aware memory compression.",
+          "plot_path": "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_1e189401527a4907a1c4e2288e4f1b00_proc_3949279/synthetic_generation_0.005.png"
+        }
+      ],
+      "plot_paths": [
+        "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_1e189401527a4907a1c4e2288e4f1b00_proc_3949279/synthetic_generation_0.0005.png",
+        "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_1e189401527a4907a1c4e2288e4f1b00_proc_3949279/synthetic_retention_ratios.png",
+        "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_1e189401527a4907a1c4e2288e4f1b00_proc_3949279/synthetic_generation_0.0001.png",
+        "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_1e189401527a4907a1c4e2288e4f1b00_proc_3949279/synthetic_loss_curves.png",
+        "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_1e189401527a4907a1c4e2288e4f1b00_proc_3949279/synthetic_generation_0.001.png",
+        "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_1e189401527a4907a1c4e2288e4f1b00_proc_3949279/synthetic_generation_0.005.png"
+      ],
+      "vlm_feedback_summary": "Validation retention and loss curves suggest learning rate of 0.001 is optimal among those tested. Predicted versus ground truth traces reveal persistent failure to retain extreme token signals, indicating the need for further tuning of learning rate around 1e-3 and possibly memory compression thresholds. For the next baseline tuning stage, maintain current architecture, adopt lr=1e-3, extend training to more epochs, and test on two additional Hugging Face datasets: wikitext-103-raw-v1 for long-range language modeling and hotpot_qa for retrieval-augmented question answering.",
+      "exp_results_dir": "experiment_results/experiment_1e189401527a4907a1c4e2288e4f1b00_proc_3949279",
+      "exp_results_npy_files": [
+        "experiment_results/experiment_1e189401527a4907a1c4e2288e4f1b00_proc_3949279/experiment_data.npy"
+      ]
+    },
+    {
+      "overall_plan": "We will build and evaluate a memory-aware Transformer-XL\u2013style model that leverages token-level self-attention entropy to guide memory compression in next-token prediction tasks on synthetic integer sequences. The experimental pipeline includes synthetic data generation and splitting; a single transformer layer with concatenated past embeddings as memory; computation of per-token attention distributions to derive entropies; and a memory update step retaining the highest-entropy tokens. We train the model end-to-end using cross-entropy loss, while also tracking an Entropy Preservation Ratio metric on training and validation sets. Outputs include per-epoch metrics saved as numpy files, autoregressive sequence generations, and visualization plots. Building on this baseline, we then systematically tune the initial learning rate across four values. For each learning rate, we reinitialize the model and optimizer, train the full pipeline, record per-epoch losses and entropy metrics under nested experiment keys, generate and save validation predictions alongside ground truth, and produce per-run generation plots. All experiment results and plots are saved to the working directory to facilitate comparative analysis. The current node serves as a seed checkpoint with no additional modifications.",
+      "analysis": "The experiment only uses a synthetic random sequence dataset and never integrates the two new Hugging Face datasets required by the sub-stage goals. To fix this, import and preprocess two real text datasets (e.g. PG19 and ArXiv abstracts, or Wikitext-103 and BookCorpus) via the \ud83e\udd17 Datasets library, create corresponding Dataset and DataLoader objects, and add training/validation/evaluation loops for these datasets alongside the synthetic data.",
+      "metric": {
+        "value": {
+          "metric_names": [
+            {
+              "metric_name": "training memory retention ratio",
+              "lower_is_better": false,
+              "description": "The ratio of memory retained on the training dataset.",
+              "data": [
+                {
+                  "dataset_name": "synthetic (learning rate: 0.0001)",
+                  "final_value": 0.8202,
+                  "best_value": 0.8202
+                },
+                {
+                  "dataset_name": "synthetic (learning rate: 0.0005)",
+                  "final_value": 0.8219,
+                  "best_value": 0.8219
+                },
+                {
+                  "dataset_name": "synthetic (learning rate: 0.001)",
+                  "final_value": 0.822,
+                  "best_value": 0.822
+                },
+                {
+                  "dataset_name": "synthetic (learning rate: 0.005)",
+                  "final_value": 0.8544,
+                  "best_value": 0.8544
+                }
+              ]
+            },
+            {
+              "metric_name": "validation memory retention ratio",
+              "lower_is_better": false,
+              "description": "The ratio of memory retained on the validation dataset.",
+              "data": [
+                {
+                  "dataset_name": "synthetic (learning rate: 0.0001)",
+                  "final_value": 0.8201,
+                  "best_value": 0.8201
+                },
+                {
+                  "dataset_name": "synthetic (learning rate: 0.0005)",
+                  "final_value": 0.8217,
+                  "best_value": 0.8217
+                },
+                {
+                  "dataset_name": "synthetic (learning rate: 0.001)",
+                  "final_value": 0.8216,
+                  "best_value": 0.8216
+                },
+                {
+                  "dataset_name": "synthetic (learning rate: 0.005)",
+                  "final_value": 0.8573,
+                  "best_value": 0.8573
+                }
+              ]
+            }
+          ]
+        },
+        "maximize": null,
+        "name": null,
+        "description": null
+      },
+      "code": "# Set random seed\nimport random\nimport numpy as np\nimport torch\n\nseed = 2\nrandom.seed(seed)\nnp.random.seed(seed)\ntorch.manual_seed(seed)\nif torch.cuda.is_available():\n    torch.cuda.manual_seed(seed)\n\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\nimport torch\nimport torch.nn as nn\nimport torch.optim as optim\nimport numpy as np\nfrom torch.utils.data import Dataset, DataLoader\nimport matplotlib.pyplot as plt\n\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\n\n\n# Synthetic dataset\nclass RandomSeqDataset(Dataset):\n    def __init__(self, num_seqs, total_len, vocab_size):\n        self.data = torch.randint(\n            1, vocab_size, (num_seqs, total_len), dtype=torch.long\n        )\n\n    def __len__(self):\n        return len(self.data)\n\n    def __getitem__(self, idx):\n        seq = self.data[idx]\n        return {\"input\": seq[:-1], \"target\": seq[1:]}\n\n\nvocab_size = 50\nseq_total = 51  # input 50, target 50\ntrain_ds = RandomSeqDataset(200, seq_total, vocab_size)\nval_ds = RandomSeqDataset(50, seq_total, vocab_size)\ntrain_loader = DataLoader(train_ds, batch_size=1, shuffle=True)\nval_loader = DataLoader(val_ds, batch_size=1)\n\n\n# Model with entropy\u2010aware memory\nclass MemoryTransformerLayer(nn.Module):\n    def __init__(self, embed_dim, num_heads, mem_size):\n        super().__init__()\n        self.attn = nn.MultiheadAttention(embed_dim, num_heads, batch_first=True)\n        self.norm1 = nn.LayerNorm(embed_dim)\n        self.ff = nn.Sequential(\n            nn.Linear(embed_dim, 4 * embed_dim),\n            nn.ReLU(),\n            nn.Linear(4 * embed_dim, embed_dim),\n        )\n        self.norm2 = nn.LayerNorm(embed_dim)\n        self.mem_size = mem_size\n\n    def forward(self, x, mem_x, mem_ent):\n        if mem_x is None:\n            k = v = x\n        else:\n            k = torch.cat([mem_x.unsqueeze(0), x], dim=1)\n            v = k\n        attn_out, attn_w = self.attn(\n            x, k, v, need_weights=True, average_attn_weights=False\n        )\n        x2 = self.norm1(x + attn_out)\n        out = self.norm2(x2 + self.ff(x2))\n        aw = attn_w.mean(dim=1)[0]  # (tgt_len, src_len)\n        eps = 1e-10\n        ent = -(aw * (aw + eps).log()).sum(dim=-1).detach()  # (tgt_len,)\n        x_det = x.detach()[0]\n        if mem_x is None:\n            mem_x_new = x_det\n            mem_ent_new = ent\n        else:\n            mem_x_new = torch.cat([mem_x, x_det], dim=0)\n            mem_ent_new = torch.cat([mem_ent, ent], dim=0)\n        total_ent = mem_ent_new.sum().item() + eps\n        if mem_x_new.size(0) > self.mem_size:\n            idx = torch.topk(mem_ent_new, self.mem_size).indices\n            kept_ent = mem_ent_new[idx].sum().item()\n            ratio = kept_ent / total_ent\n            mem_x_new = mem_x_new[idx]\n            mem_ent_new = mem_ent_new[idx]\n        else:\n            ratio = 1.0\n        return out, mem_x_new, mem_ent_new, ratio\n\n\nclass TransformerXLModel(nn.Module):\n    def __init__(self, vocab_size, embed_dim, num_heads, mem_size):\n        super().__init__()\n        self.embed = nn.Embedding(vocab_size, embed_dim)\n        self.mem_layer = MemoryTransformerLayer(embed_dim, num_heads, mem_size)\n        self.out = nn.Linear(embed_dim, vocab_size)\n\n    def forward(self, x, mem_x, mem_ent):\n        emb = self.embed(x)\n        out, mem_x_new, mem_ent_new, ratio = self.mem_layer(emb, mem_x, mem_ent)\n        logits = self.out(out)\n        return logits, mem_x_new, mem_ent_new, ratio\n\n\n# Hyperparameter tuning over learning rates\nlearning_rates = [1e-4, 5e-4, 1e-3, 5e-3]\nexperiment_data = {\"learning_rate\": {}}\n\nnum_epochs = 3\nchunk_size = 10\n\nfor lr in learning_rates:\n    key = f\"{lr}\"\n    print(f\"\\n=== Tuning learning rate: {key} ===\")\n    # initialize model, optimizer, criterion\n    model = TransformerXLModel(vocab_size, embed_dim=64, num_heads=2, mem_size=20).to(\n        device\n    )\n    optimizer = optim.Adam(model.parameters(), lr=lr)\n    criterion = nn.CrossEntropyLoss()\n    # prepare storage\n    exp = {\n        \"metrics\": {\"train\": [], \"val\": []},\n        \"losses\": {\"train\": [], \"val\": []},\n        \"predictions\": [],\n        \"ground_truth\": [],\n    }\n    # training loop\n    for epoch in range(num_epochs):\n        model.train()\n        train_loss, train_ratios = 0.0, []\n        for batch in train_loader:\n            batch = {k: v.to(device) for k, v in batch.items()}\n            inp, tgt = batch[\"input\"], batch[\"target\"]\n            mem_x = mem_ent = None\n            optimizer.zero_grad()\n            loss_accum = 0.0\n            for i in range(0, inp.size(1), chunk_size):\n                ic = inp[:, i : i + chunk_size]\n                tc = tgt[:, i : i + chunk_size]\n                logits, mem_x, mem_ent, ratio = model(ic, mem_x, mem_ent)\n                loss = criterion(logits.reshape(-1, vocab_size), tc.reshape(-1))\n                loss_accum += loss\n                train_ratios.append(ratio)\n            loss_accum.backward()\n            optimizer.step()\n            train_loss += loss_accum.item() / (inp.size(1) / chunk_size)\n        avg_train_loss = train_loss / len(train_loader)\n        avg_train_ratio = sum(train_ratios) / len(train_ratios)\n        exp[\"losses\"][\"train\"].append(avg_train_loss)\n        exp[\"metrics\"][\"train\"].append(avg_train_ratio)\n        # validation loop\n        model.eval()\n        val_loss, val_ratios = 0.0, []\n        with torch.no_grad():\n            for batch in val_loader:\n                batch = {k: v.to(device) for k, v in batch.items()}\n                inp, tgt = batch[\"input\"], batch[\"target\"]\n                mem_x = mem_ent = None\n                loss_acc = 0.0\n                for i in range(0, inp.size(1), chunk_size):\n                    ic = inp[:, i : i + chunk_size]\n                    tc = tgt[:, i : i + chunk_size]\n                    logits, mem_x, mem_ent, ratio = model(ic, mem_x, mem_ent)\n                    loss_acc += criterion(\n                        logits.reshape(-1, vocab_size), tc.reshape(-1)\n                    )\n                    val_ratios.append(ratio)\n                val_loss += loss_acc.item() / (inp.size(1) / chunk_size)\n        avg_val_loss = val_loss / len(val_loader)\n        avg_val_ratio = sum(val_ratios) / len(val_ratios)\n        exp[\"losses\"][\"val\"].append(avg_val_loss)\n        exp[\"metrics\"][\"val\"].append(avg_val_ratio)\n        print(f\"LR {key} Epoch {epoch} val_loss={avg_val_loss:.4f}\")\n    # generation on first val sequence\n    model.eval()\n    with torch.no_grad():\n        sample = val_ds[0][\"input\"].unsqueeze(0).to(device)\n        target = val_ds[0][\"target\"].tolist()\n        mem_x = mem_ent = None\n        preds = []\n        for t in range(sample.size(1)):\n            inp_t = sample[:, t].unsqueeze(1)\n            logits, mem_x, mem_ent, _ = model(inp_t, mem_x, mem_ent)\n            p = torch.softmax(logits.squeeze(0).squeeze(0), dim=-1)\n            preds.append(int(p.argmax().item()))\n        exp[\"predictions\"] = preds\n        exp[\"ground_truth\"] = target\n    # plot\n    plt.figure()\n    plt.plot(range(len(preds)), preds, label=\"predicted\")\n    plt.plot(range(len(target)), target, label=\"ground_truth\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, f\"synthetic_generation_{key}.png\"))\n    plt.close()\n    # store\n    experiment_data[\"learning_rate\"][key] = {\"synthetic\": exp}\n\n# save everything\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+      "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\ndata_path = os.path.join(working_dir, \"experiment_data.npy\")\nexperiment_data = np.load(data_path, allow_pickle=True).item()\n\n# Print final evaluation metrics for each learning rate\nfor lr, lr_data in experiment_data[\"learning_rate\"].items():\n    exp = lr_data[\"synthetic\"]\n    final_val_loss = exp[\"losses\"][\"val\"][-1]\n    final_val_ratio = exp[\"metrics\"][\"val\"][-1]\n    print(\n        f\"LR {lr} Final Val Loss: {final_val_loss:.4f}, Final Val Retention: {final_val_ratio:.4f}\"\n    )\n\n# Loss curves plot\ntry:\n    plt.figure()\n    for lr, lr_data in experiment_data[\"learning_rate\"].items():\n        losses = lr_data[\"synthetic\"][\"losses\"]\n        epochs = range(len(losses[\"train\"]))\n        plt.plot(epochs, losses[\"train\"], label=f\"train lr={lr}\")\n        plt.plot(epochs, losses[\"val\"], linestyle=\"--\", label=f\"val lr={lr}\")\n    plt.title(\"Synthetic Loss Curves Across Learning Rates\\nDataset: synthetic\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Loss\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_loss_curves.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating loss plot: {e}\")\n    plt.close()\n\n# Memory retention ratio plot\ntry:\n    plt.figure()\n    for lr, lr_data in experiment_data[\"learning_rate\"].items():\n        metrics = lr_data[\"synthetic\"][\"metrics\"]\n        epochs = range(len(metrics[\"train\"]))\n        plt.plot(epochs, metrics[\"train\"], label=f\"train lr={lr}\")\n        plt.plot(epochs, metrics[\"val\"], linestyle=\"--\", label=f\"val lr={lr}\")\n    plt.title(\n        \"Synthetic Memory Retention Ratios Across Learning Rates\\nDataset: synthetic\"\n    )\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Retention Ratio\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_retention_ratios.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating metric plot: {e}\")\n    plt.close()\n",
+      "plot_analyses": [],
+      "plot_paths": [],
+      "vlm_feedback_summary": []
+    }
+  ],
+  "aggregated results of nodes with different seeds": {
+    "overall_plan": "We will develop and evaluate a memory\u2010aware Transformer-XL\u2013style model for next-token prediction on synthetic integer sequences, using token-level self-attention entropy to guide memory compression by retaining the highest-entropy tokens. The pipeline includes generating and splitting data, applying a transformer layer with memory concatenation, computing per-token attention distributions and entropies, updating memory based on entropy, and training with cross-entropy loss while tracking both loss and an Entropy Preservation Ratio. We will then systematically tune the initial learning rate across four values, reinitializing the model and optimizer for each, recording per-epoch losses and entropy metrics, and generating validation predictions and visualizations. Building on this hyperparameter sweep, we will replicate each learning-rate experiment across multiple random seeds, aggregate the resulting metrics by computing summary statistics (means, standard deviations, and confidence intervals), and produce consolidated plots and tables. All individual and aggregated results and visualizations will be saved to enable comprehensive comparison of learning-rate effects and the robustness of memory compression guided by attention entropy.",
+    "metric": {
+      "value": null,
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "# plotting aggregation code",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# Load all experiment data\ntry:\n    experiment_data_path_list = [\n        \"experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_ef7f284c309a41b18eb6941e48ff0218_proc_3949278/experiment_data.npy\",\n        \"experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/experiment_1e189401527a4907a1c4e2288e4f1b00_proc_3949279/experiment_data.npy\",\n        \"None/experiment_data.npy\",\n    ]\n    all_experiment_data = []\n    for experiment_data_path in experiment_data_path_list:\n        try:\n            exp = np.load(\n                os.path.join(os.getenv(\"AI_SCIENTIST_ROOT\"), experiment_data_path),\n                allow_pickle=True,\n            ).item()\n            all_experiment_data.append(exp)\n        except Exception as e:\n            print(f\"Error loading {experiment_data_path}: {e}\")\n    # Determine unique learning rates\n    lr_keys = set()\n    for exp in all_experiment_data:\n        lr_keys.update(exp.get(\"learning_rate\", {}).keys())\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n    all_experiment_data = []\n    lr_keys = set()\n\n# Print aggregated final validation metrics (mean \u00b1 SE)\nfor lr in sorted(lr_keys, key=lambda x: float(x)):\n    final_losses, final_rets = [], []\n    for exp in all_experiment_data:\n        lr_data = exp[\"learning_rate\"].get(lr, {})\n        ds = lr_data.get(\"synthetic\", {})\n        if ds:\n            final_losses.append(ds[\"losses\"][\"val\"][-1])\n            final_rets.append(ds[\"metrics\"][\"val\"][-1])\n    if final_losses:\n        vals = np.array(final_losses)\n        rets = np.array(final_rets)\n        mean_loss = vals.mean()\n        sem_loss = vals.std(ddof=1) / np.sqrt(len(vals))\n        mean_ret = rets.mean()\n        sem_ret = rets.std(ddof=1) / np.sqrt(len(rets))\n        print(\n            f\"LR {lr} Mean Final Val Loss: {mean_loss:.4f} \u00b1 {sem_loss:.4f}, Mean Final Val Retention: {mean_ret:.4f} \u00b1 {sem_ret:.4f}\"\n        )\n\n# Plot mean \u00b1 SE loss curves\ntry:\n    plt.figure()\n    for lr in sorted(lr_keys, key=lambda x: float(x)):\n        train_runs, val_runs = [], []\n        for exp in all_experiment_data:\n            lr_data = exp[\"learning_rate\"].get(lr, {})\n            ds = lr_data.get(\"synthetic\", {})\n            if ds:\n                train_runs.append(ds[\"losses\"][\"train\"])\n                val_runs.append(ds[\"losses\"][\"val\"])\n        if not train_runs:\n            continue\n        min_len = min(len(r) for r in train_runs)\n        train_arr = np.array([r[:min_len] for r in train_runs])\n        val_arr = np.array([r[:min_len] for r in val_runs])\n        epochs = np.arange(min_len)\n        mean_train = train_arr.mean(axis=0)\n        sem_train = train_arr.std(axis=0, ddof=1) / np.sqrt(train_arr.shape[0])\n        mean_val = val_arr.mean(axis=0)\n        sem_val = val_arr.std(axis=0, ddof=1) / np.sqrt(val_arr.shape[0])\n        plt.errorbar(epochs, mean_train, yerr=sem_train, label=f\"train lr={lr}\")\n        plt.errorbar(\n            epochs, mean_val, yerr=sem_val, linestyle=\"--\", label=f\"val lr={lr}\"\n        )\n    plt.title(\"Mean \u00b1 SE Loss Curves Across Learning Rates\\nDataset: synthetic\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Loss\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_mean_se_loss_curves.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating loss curves plot: {e}\")\n    plt.close()\n\n# Plot mean \u00b1 SE memory retention ratios\ntry:\n    plt.figure()\n    for lr in sorted(lr_keys, key=lambda x: float(x)):\n        train_runs, val_runs = [], []\n        for exp in all_experiment_data:\n            lr_data = exp[\"learning_rate\"].get(lr, {})\n            ds = lr_data.get(\"synthetic\", {})\n            if ds:\n                train_runs.append(ds[\"metrics\"][\"train\"])\n                val_runs.append(ds[\"metrics\"][\"val\"])\n        if not train_runs:\n            continue\n        min_len = min(len(r) for r in train_runs)\n        train_arr = np.array([r[:min_len] for r in train_runs])\n        val_arr = np.array([r[:min_len] for r in val_runs])\n        epochs = np.arange(min_len)\n        mean_train = train_arr.mean(axis=0)\n        sem_train = train_arr.std(axis=0, ddof=1) / np.sqrt(train_arr.shape[0])\n        mean_val = val_arr.mean(axis=0)\n        sem_val = val_arr.std(axis=0, ddof=1) / np.sqrt(val_arr.shape[0])\n        plt.errorbar(epochs, mean_train, yerr=sem_train, label=f\"train lr={lr}\")\n        plt.errorbar(\n            epochs, mean_val, yerr=sem_val, linestyle=\"--\", label=f\"val lr={lr}\"\n        )\n    plt.title(\n        \"Mean \u00b1 SE Memory Retention Ratios Across Learning Rates\\nDataset: synthetic\"\n    )\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Retention Ratio\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_mean_se_retention_ratios.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating retention ratio plot: {e}\")\n    plt.close()\n",
+    "plot_analyses": [],
+    "plot_paths": [
+      "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/seed_aggregation_cc790f09990a4d609c46667caf865249/synthetic_mean_se_loss_curves.png",
+      "experiments/2025-06-05_23-06-44_novelty_aware_compress_attempt_0/logs/0-run/experiment_results/seed_aggregation_cc790f09990a4d609c46667caf865249/synthetic_mean_se_retention_ratios.png"
+    ],
+    "vlm_feedback_summary": [],
+    "exp_results_dir": "experiment_results/seed_aggregation_cc790f09990a4d609c46667caf865249",
+    "exp_results_npy_files": []
+  }
+}

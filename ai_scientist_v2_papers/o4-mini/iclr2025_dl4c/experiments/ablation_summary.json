@@ -1,0 +1,1080 @@
+[
+  {
+    "overall_plan": "We will systematically evaluate an LSTM\u2010based encoder\u2019s retrieval performance across varying training durations and synthetic dataset complexities. First, we hyperparameter tune the number of epochs (10, 30, 50), training the encoder from scratch for each setting and recording per\u2010epoch losses, retrieval accuracies, and final validation predictions. We then extend this by conducting a multi\u2010dataset synthetic ablation: generating three code distributions (arithmetic, branching, loops) with semantically equivalent variants, grouping snippets via identical execution traces, encoding them as character sequences, and forming triplet\u2010based train/validation splits. Using the same epoch loop, we record triplet losses, retrieval accuracies, and top\u20101 predictions. All experimental metrics, losses, predictions, and ground truths are stored in unified NumPy files under clearly labeled keys (\u2018EPOCHS\u2019 and \u2018multi_dataset_synthetic_ablation\u2019). This integrated plan allows us to dissect the effects of training duration and dataset diversity on retrieval accuracy and generalization.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "train accuracy",
+            "lower_is_better": false,
+            "description": "Training accuracy",
+            "data": [
+              {
+                "dataset_name": "arith",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "branch",
+                "final_value": 0.0,
+                "best_value": 0.0
+              },
+              {
+                "dataset_name": "loop",
+                "final_value": 0.0,
+                "best_value": 0.0
+              }
+            ]
+          },
+          {
+            "metric_name": "validation accuracy",
+            "lower_is_better": false,
+            "description": "Validation accuracy",
+            "data": [
+              {
+                "dataset_name": "arith",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "branch",
+                "final_value": 0.5,
+                "best_value": 0.5
+              },
+              {
+                "dataset_name": "loop",
+                "final_value": 0.0,
+                "best_value": 0.0
+              }
+            ]
+          },
+          {
+            "metric_name": "train loss",
+            "lower_is_better": true,
+            "description": "Training loss",
+            "data": [
+              {
+                "dataset_name": "arith",
+                "final_value": 0.0,
+                "best_value": 0.0
+              },
+              {
+                "dataset_name": "branch",
+                "final_value": 0.6874,
+                "best_value": 0.6874
+              },
+              {
+                "dataset_name": "loop",
+                "final_value": 1.0042,
+                "best_value": 1.0042
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Validation loss",
+            "data": [
+              {
+                "dataset_name": "arith",
+                "final_value": 0.138,
+                "best_value": 0.138
+              },
+              {
+                "dataset_name": "branch",
+                "final_value": 0.0,
+                "best_value": 0.0
+              },
+              {
+                "dataset_name": "loop",
+                "final_value": 1.2961,
+                "best_value": 1.2961
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os, random\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.nn.functional as F\nfrom torch.utils.data import Dataset, DataLoader, Subset\nfrom torch.optim import Adam\n\n# set up working directory\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\n\n# reproducibility\nrandom.seed(0)\nnp.random.seed(0)\ntorch.manual_seed(0)\n\n# hyperparameters\nEPOCH_LIST = [10, 30, 50]\nexperiment_data = {\"multi_dataset_synthetic_ablation\": {}}\n\n# shared input set for tracing\ninput_set = np.random.randint(0, 20, size=100)\n\n# define dataset names\ndataset_names = [\"arith\", \"branch\", \"loop\"]\n\n\n# triplet dataset\nclass CodeDataset(Dataset):\n    def __init__(self, encoded, group_to_indices, index_to_gid):\n        self.encoded = encoded\n        self.group_to_indices = group_to_indices\n        self.index_to_gid = index_to_gid\n\n    def __len__(self):\n        return len(self.index_to_gid)\n\n    def __getitem__(self, idx):\n        anchor = self.encoded[idx]\n        gid = self.index_to_gid[idx]\n        pos = idx\n        while pos == idx:\n            pos = random.choice(self.group_to_indices[gid])\n        neg_gid = random.choice([g for g in self.group_to_indices if g != gid])\n        neg = random.choice(self.group_to_indices[neg_gid])\n        return anchor, self.encoded[pos], self.encoded[neg]\n\n\n# LSTM encoder\nclass CodeEncoder(nn.Module):\n    def __init__(self, vocab_size, embed_dim=64, hidden=64):\n        super().__init__()\n        self.embed = nn.Embedding(vocab_size, embed_dim, padding_idx=0)\n        self.lstm = nn.LSTM(embed_dim, hidden, batch_first=True)\n\n    def forward(self, x):\n        x = self.embed(x)\n        _, (h, _) = self.lstm(x)\n        return h.squeeze(0)\n\n\n# run ablation across datasets\nfor name in dataset_names:\n    # generate synthetic code variants\n    codes = []\n    if name == \"arith\":\n        for c in range(1, 11):\n            codes.append(f\"def f(x): return x+{c}\")\n            codes.append(f\"def f(x): return {c}+x\")\n    elif name == \"branch\":\n        for c in range(1, 11):\n            codes.append(\n                f\"def f(x):\\n\"\n                f\"    if x%{c}==0:\\n\"\n                f\"        return x//{c}\\n\"\n                f\"    else:\\n\"\n                f\"        return {c}*x\"\n            )\n            codes.append(f\"def f(x): return (x//{c} if x%{c}==0 else {c}*x)\")\n    elif name == \"loop\":\n        for c in range(1, 11):\n            codes.append(\n                f\"def f(x):\\n\"\n                f\"    s=0\\n\"\n                f\"    for i in range(x):\\n\"\n                f\"        s+=i*{c}\\n\"\n                f\"    return s\"\n            )\n            codes.append(\n                f\"def f(x):\\n\"\n                f\"    s=0\\n\"\n                f\"    i=0\\n\"\n                f\"    while i<x:\\n\"\n                f\"        s+=i*{c}\\n\"\n                f\"        i+=1\\n\"\n                f\"    return s\"\n            )\n    # execute and record traces\n    traces = []\n    for code in codes:\n        env = {}\n        exec(code, env)\n        f = env[\"f\"]\n        traces.append(tuple(f(int(x)) for x in input_set))\n    # group by identical trace\n    trace_to_indices = {}\n    for idx, t in enumerate(traces):\n        trace_to_indices.setdefault(t, []).append(idx)\n    group_to_indices = {\n        gid: idxs for gid, (_, idxs) in enumerate(trace_to_indices.items())\n    }\n    index_to_gid = [None] * len(codes)\n    for gid, idxs in group_to_indices.items():\n        for i in idxs:\n            index_to_gid[i] = gid\n    # encode as character sequences\n    vocab = sorted(set(\"\".join(codes)))\n    stoi = {c: i + 1 for i, c in enumerate(vocab)}\n    stoi[\"PAD\"] = 0\n    max_len = max(len(s) for s in codes)\n    encoded = torch.LongTensor(\n        [[stoi[ch] for ch in s] + [0] * (max_len - len(s)) for s in codes]\n    )\n    # train/val split on groups\n    all_gids = list(group_to_indices.keys())\n    random.shuffle(all_gids)\n    split = int(0.8 * len(all_gids))\n    train_gids, val_gids = all_gids[:split], all_gids[split:]\n    train_indices = [i for g in train_gids for i in group_to_indices[g]]\n    val_indices = [i for g in val_gids for i in group_to_indices[g]]\n    train_loader = DataLoader(\n        Subset(CodeDataset(encoded, group_to_indices, index_to_gid), train_indices),\n        batch_size=8,\n        shuffle=True,\n    )\n    val_loader = DataLoader(\n        Subset(CodeDataset(encoded, group_to_indices, index_to_gid), val_indices),\n        batch_size=8,\n        shuffle=False,\n    )\n    # run experiments for each epoch count\n    per_epoch = {}\n    for E in EPOCH_LIST:\n        model = CodeEncoder(len(stoi), 64, 64).to(device)\n        optimizer = Adam(model.parameters(), lr=1e-3)\n        loss_fn = nn.TripletMarginLoss(margin=1.0)\n        data = {\n            \"metrics\": {\"train\": [], \"val\": []},\n            \"losses\": {\"train\": [], \"val\": []},\n            \"predictions\": [],\n            \"ground_truth\": [],\n        }\n        # train & validate\n        for epoch in range(E):\n            model.train()\n            tot = 0.0\n            for a, p, n in train_loader:\n                a, p, n = a.to(device), p.to(device), n.to(device)\n                la, lp, ln = model(a), model(p), model(n)\n                loss = loss_fn(la, lp, ln)\n                optimizer.zero_grad()\n                loss.backward()\n                optimizer.step()\n                tot += loss.item()\n            data[\"losses\"][\"train\"].append(tot / len(train_loader))\n            # val loss\n            model.eval()\n            totv = 0.0\n            with torch.no_grad():\n                for a, p, n in val_loader:\n                    totv += loss_fn(\n                        model(a.to(device)), model(p.to(device)), model(n.to(device))\n                    ).item()\n            data[\"losses\"][\"val\"].append(totv / len(val_loader))\n            # retrieval acc\n            with torch.no_grad():\n                emb_all = model(encoded.to(device))\n                emb_n = F.normalize(emb_all, dim=1)\n                sims = emb_n @ emb_n.T\n\n                def get_acc(idxs):\n                    c = 0\n                    for i in idxs:\n                        v = sims[i].clone()\n                        v[i] = -1e9\n                        if index_to_gid[torch.argmax(v).item()] == index_to_gid[i]:\n                            c += 1\n                    return c / len(idxs)\n\n                data[\"metrics\"][\"train\"].append(get_acc(train_indices))\n                data[\"metrics\"][\"val\"].append(get_acc(val_indices))\n        # final top-1 predictions\n        model.eval()\n        with torch.no_grad():\n            emb_all = model(encoded.to(device))\n            emb_n = F.normalize(emb_all, dim=1)\n            sims = emb_n @ emb_n.T\n            for i in val_indices:\n                v = sims[i].clone()\n                v[i] = -1e9\n                data[\"predictions\"].append(index_to_gid[torch.argmax(v).item()])\n                data[\"ground_truth\"].append(index_to_gid[i])\n        per_epoch[E] = data\n        print(\n            f\"Dataset={name}, EPOCHS={E}, final val_acc={data['metrics']['val'][-1]:.4f}\"\n        )\n    experiment_data[\"multi_dataset_synthetic_ablation\"][name] = {\"EPOCHS\": per_epoch}\n\n# save results\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\nprint(\"Saved experiment_data.npy\")\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\n# Load experiment data\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n    experiment_data = {}\n\n# Extract ablation results\ndata_root = experiment_data.get(\"multi_dataset_synthetic_ablation\", {})\n\n# Print final validation accuracies\nfor name, ds in data_root.items():\n    for E, d in sorted(ds[\"EPOCHS\"].items()):\n        val_acc = d[\"metrics\"][\"val\"][-1]\n        print(f\"Dataset={name}, EPOCHS={E}, final val_acc={val_acc:.4f}\")\n\n# Plot for each dataset\nfor name, ds in data_root.items():\n    try:\n        per_epoch = ds[\"EPOCHS\"]\n        fig, axes = plt.subplots(1, 2, figsize=(12, 4))\n        # Left subplot: Accuracy\n        for E, d in sorted(per_epoch.items()):\n            axes[0].plot(\n                range(1, len(d[\"metrics\"][\"train\"]) + 1),\n                d[\"metrics\"][\"train\"],\n                label=f\"Train E={E}\",\n            )\n            axes[0].plot(\n                range(1, len(d[\"metrics\"][\"val\"]) + 1),\n                d[\"metrics\"][\"val\"],\n                linestyle=\"--\",\n                label=f\"Val E={E}\",\n            )\n        axes[0].set_title(\"Left: Training & Validation Accuracy\")\n        axes[0].set_xlabel(\"Epoch\")\n        axes[0].set_ylabel(\"Accuracy\")\n        axes[0].legend()\n\n        # Right subplot: Loss\n        for E, d in sorted(per_epoch.items()):\n            axes[1].plot(\n                range(1, len(d[\"losses\"][\"train\"]) + 1),\n                d[\"losses\"][\"train\"],\n                label=f\"Train E={E}\",\n            )\n            axes[1].plot(\n                range(1, len(d[\"losses\"][\"val\"]) + 1),\n                d[\"losses\"][\"val\"],\n                linestyle=\"--\",\n                label=f\"Val E={E}\",\n            )\n        axes[1].set_title(\"Right: Training & Validation Loss\")\n        axes[1].set_xlabel(\"Epoch\")\n        axes[1].set_ylabel(\"Loss\")\n        axes[1].legend()\n\n        fig.suptitle(f\"Dataset: {name}\")\n        save_path = os.path.join(working_dir, f\"{name}_train_val_acc_loss.png\")\n        plt.savefig(save_path)\n        plt.close()\n    except Exception as e:\n        print(f\"Error creating plot for dataset {name}: {e}\")\n        plt.close()  # Ensure figure is closed even on error\n",
+    "plot_plan": "We will load the saved experiment data from the working directory and then extract per\u2010epoch training and validation metrics for each synthetic dataset. First, we loop through each dataset (arith, branch, loop) and print out the final validation accuracy for each training length. Then for each dataset we create one figure containing two subplots: the left subplot shows training and validation accuracy curves for all epoch settings (10, 30, 50), and the right subplot shows the corresponding training and validation loss curves. We add clear subplot titles \u201cLeft: Training & Validation Accuracy\u201d and \u201cRight: Training & Validation Loss\u201d, and a figure title indicating the dataset name. Each figure is wrapped in its own try/except block to catch errors, saved into the working directory with a descriptive filename including the dataset name and plot type, and closed after saving. Finally, all prints report the key evaluation metrics.",
+    "plot_analyses": [
+      {
+        "analysis": "Dataset: branch \u2013 Training and validation accuracy remain near zero across all 50 epochs for each E setting. Loss curves stay around 1.0 with no clear downward trend. The model fails to learn any meaningful decision boundary on branch\u2010based functions despite varying the trace\u2010length hyperparameter E, indicating that the dynamic traces collected under random inputs do not provide sufficient discriminative signal for branching semantics in contrastive pre\u2010training.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_5221f873ef9f49acba79f917e212757c_proc_400996/branch_train_val_acc_loss.png"
+      },
+      {
+        "analysis": "Dataset: loop \u2013 Accuracy curves are flat at zero and losses plateau around 1.0 across all epochs and E values. There is no sign of improvement or overfitting. This suggests that the current pipeline for generating and encoding loop traces does not capture iterative behavior patterns well, again leading to a breakdown of the contrastive objective for loop\u2010centric functions.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_5221f873ef9f49acba79f917e212757c_proc_400996/loop_train_val_acc_loss.png"
+      },
+      {
+        "analysis": "Dataset: arith \u2013 Training accuracy reaches 100% by epoch ~5 for all E values, and validation accuracy follows rapidly. Loss drops to near zero by epoch ~15. The primary effect of varying E is on convergence speed: smaller E yields slightly faster and more stable training and validation curves, while larger E introduces more noise and slower early convergence but ultimately achieves perfect performance. This demonstrates that for simple arithmetic functions, dynamic traces deliver a strong learning signal, and trace\u2010length mainly affects optimization dynamics rather than final quality.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_5221f873ef9f49acba79f917e212757c_proc_400996/arith_train_val_acc_loss.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_5221f873ef9f49acba79f917e212757c_proc_400996/branch_train_val_acc_loss.png",
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_5221f873ef9f49acba79f917e212757c_proc_400996/loop_train_val_acc_loss.png",
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_5221f873ef9f49acba79f917e212757c_proc_400996/arith_train_val_acc_loss.png"
+    ],
+    "vlm_feedback_summary": "Dynamic execution traces as used here fail to benefit branching and loop tasks\u2014likely due to poor path coverage or insufficient encoding of control structures\u2014while they succeed on arithmetic functions, achieving perfect generalization. The trace\u2010length hyperparameter E has negligible influence on final metrics but does affect convergence speed on simpler tasks. Future work should target richer input generation for branch/loop patterns or hybridize static and dynamic information to strengthen the contrastive signal where dynamic traces alone are insufficient.",
+    "exp_results_dir": "experiment_results/experiment_5221f873ef9f49acba79f917e212757c_proc_400996",
+    "ablation_name": "Multi\u2010Dataset Synthetic Ablation",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_5221f873ef9f49acba79f917e212757c_proc_400996/experiment_data.npy"
+    ]
+  },
+  {
+    "overall_plan": "Our overall plan comprises two interconnected experimental stages. First, we conduct a hyperparameter sweep over the number of training epochs (e.g., 10, 30, 50), retraining an LSTM encoder from scratch for each setting. We record per\u2010epoch train and validation losses, retrieval accuracies, and final validation predictions, saving all results under the key \u201cEPOCHS\u201d for later analysis. Second, we perform a negative sampling hardness ablation by comparing random negative sampling against semi\u2010hard negative mining. For each sampling regime, we repeat the epoch sweeps, tracking the same metrics. In the semi\u2010hard variant, we dynamically compute embeddings each batch to select the most challenging negatives. Results are stored in a nested experiment_data structure keyed by ablation type and epoch count and saved as 'experiment_data.npy'. This integrated approach allows us to quantify how training duration and negative sampling strategy each influence code retrieval performance.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "train accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the training set.",
+            "data": [
+              {
+                "dataset_name": "random_negative",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "hard_negative",
+                "final_value": 1.0,
+                "best_value": 1.0
+              }
+            ]
+          },
+          {
+            "metric_name": "validation accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the validation set.",
+            "data": [
+              {
+                "dataset_name": "random_negative",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "hard_negative",
+                "final_value": 1.0,
+                "best_value": 1.0
+              }
+            ]
+          },
+          {
+            "metric_name": "train loss",
+            "lower_is_better": true,
+            "description": "Loss on the training set.",
+            "data": [
+              {
+                "dataset_name": "random_negative",
+                "final_value": 0.0,
+                "best_value": 0.0
+              },
+              {
+                "dataset_name": "hard_negative",
+                "final_value": 0.0,
+                "best_value": 0.0
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Loss on the validation set.",
+            "data": [
+              {
+                "dataset_name": "random_negative",
+                "final_value": 0.0,
+                "best_value": 0.0
+              },
+              {
+                "dataset_name": "hard_negative",
+                "final_value": 0.3422,
+                "best_value": 0.2762
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os\nimport random\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.nn.functional as F\nfrom torch.utils.data import Dataset, DataLoader, Subset\nfrom torch.optim import Adam\n\n# set up working directory\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\n\n# generate synthetic code snippets and traces\ncodes = []\nfor c in range(1, 11):\n    codes.append(f\"def f(x): return x+{c}\")\n    codes.append(f\"def f(x): return {c}+x\")\ninput_set = np.random.randint(-10, 10, size=100)\ntraces = []\nfor code in codes:\n    env = {}\n    exec(code, env)\n    f = env[\"f\"]\n    traces.append(tuple(f(int(x)) for x in input_set))\n\n# group snippets by trace\ntrace_to_indices = {}\nfor idx, trace in enumerate(traces):\n    trace_to_indices.setdefault(trace, []).append(idx)\ngroup_to_indices = {gid: ids for gid, ids in enumerate(trace_to_indices.values())}\nindex_to_gid = [None] * len(codes)\nfor gid, idxs in group_to_indices.items():\n    for idx in idxs:\n        index_to_gid[idx] = gid\n\n# encode snippets as character sequences\nvocab = sorted(set(\"\".join(codes)))\nstoi = {c: i + 1 for i, c in enumerate(vocab)}\nstoi[\"PAD\"] = 0\nmax_len = max(len(s) for s in codes)\nencoded = []\nfor s in codes:\n    seq = [stoi[c] for c in s] + [0] * (max_len - len(s))\n    encoded.append(seq)\nencoded = torch.LongTensor(encoded)\n\n# train/val split at group level\nall_gids = list(group_to_indices.keys())\nrandom.shuffle(all_gids)\nsplit = int(0.8 * len(all_gids))\ntrain_gids, val_gids = all_gids[:split], all_gids[split:]\ntrain_indices = [i for g in train_gids for i in group_to_indices[g]]\nval_indices = [i for g in val_gids for i in group_to_indices[g]]\n\n\n# baseline random-negative dataset\nclass CodeDataset(Dataset):\n    def __init__(self, encoded, group_to_indices, index_to_gid):\n        self.encoded = encoded\n        self.group_to_indices = group_to_indices\n        self.index_to_gid = index_to_gid\n\n    def __len__(self):\n        return len(self.index_to_gid)\n\n    def __getitem__(self, idx):\n        anchor = self.encoded[idx]\n        gid = self.index_to_gid[idx]\n        pos = idx\n        while pos == idx:\n            pos = random.choice(self.group_to_indices[gid])\n        neg_gid = random.choice([g for g in self.group_to_indices if g != gid])\n        neg = random.choice(self.group_to_indices[neg_gid])\n        return anchor, self.encoded[pos], self.encoded[neg]\n\n\n# hard-negative dataset returns only anchor+pos+idx\nclass HardCodeDataset(Dataset):\n    def __init__(self, encoded, group_to_indices, index_to_gid):\n        self.encoded = encoded\n        self.group_to_indices = group_to_indices\n        self.index_to_gid = index_to_gid\n\n    def __len__(self):\n        return len(self.index_to_gid)\n\n    def __getitem__(self, idx):\n        anchor = self.encoded[idx]\n        gid = self.index_to_gid[idx]\n        pos = idx\n        while pos == idx:\n            pos = random.choice(self.group_to_indices[gid])\n        return torch.tensor(idx), anchor, self.encoded[pos]\n\n\n# prepare dataloaders\nbatch_size = 8\nrandom_dataset = CodeDataset(encoded, group_to_indices, index_to_gid)\nrandom_train_loader = DataLoader(\n    Subset(random_dataset, train_indices), batch_size=batch_size, shuffle=True\n)\nrandom_val_loader = DataLoader(\n    Subset(random_dataset, val_indices), batch_size=batch_size, shuffle=False\n)\n\nhard_dataset = HardCodeDataset(encoded, group_to_indices, index_to_gid)\nhard_train_loader = DataLoader(\n    Subset(hard_dataset, train_indices), batch_size=batch_size, shuffle=True\n)\nhard_val_loader = DataLoader(\n    Subset(hard_dataset, val_indices), batch_size=batch_size, shuffle=False\n)\n\n\n# model definition\nclass CodeEncoder(nn.Module):\n    def __init__(self, vocab_size, embed_dim=64, hidden=64):\n        super().__init__()\n        self.embed = nn.Embedding(vocab_size, embed_dim, padding_idx=0)\n        self.lstm = nn.LSTM(embed_dim, hidden, batch_first=True)\n\n    def forward(self, x):\n        x = self.embed(x)\n        _, (h, _) = self.lstm(x)\n        return h.squeeze(0)\n\n\n# experiment setup\nEPOCH_LIST = [10, 30, 50]\nexperiment_data = {\n    \"random_negative\": {\"synthetic\": {}},\n    \"hard_negative\": {\"synthetic\": {}},\n}\n\n# run experiments\nfor ablation in experiment_data:\n    print(f\"Starting ablation: {ablation}\")\n    for E in EPOCH_LIST:\n        model = CodeEncoder(len(stoi), 64, 64).to(device)\n        optimizer = Adam(model.parameters(), lr=1e-3)\n        loss_fn = nn.TripletMarginLoss(margin=1.0)\n        data = {\n            \"metrics\": {\"train\": [], \"val\": []},\n            \"losses\": {\"train\": [], \"val\": []},\n            \"predictions\": [],\n            \"ground_truth\": [],\n        }\n        # training + validation\n        for epoch in range(E):\n            model.train()\n            total_train_loss = 0.0\n            if ablation == \"random_negative\":\n                for a, p, n in random_train_loader:\n                    a, p, n = a.to(device), p.to(device), n.to(device)\n                    emb_a, emb_p, emb_n = model(a), model(p), model(n)\n                    loss = loss_fn(emb_a, emb_p, emb_n)\n                    optimizer.zero_grad()\n                    loss.backward()\n                    optimizer.step()\n                    total_train_loss += loss.item()\n                train_batches = len(random_train_loader)\n            else:\n                for idxs, a, p in hard_train_loader:\n                    idxs = idxs.tolist()\n                    a, p = a.to(device), p.to(device)\n                    emb_a, emb_p = model(a), model(p)\n                    enc_dev = encoded.to(device)\n                    emb_all = model(enc_dev)\n                    emb_n = torch.zeros_like(emb_a)\n                    for i, idx in enumerate(idxs):\n                        dist = torch.norm(emb_all - emb_a[i].unsqueeze(0), p=2, dim=1)\n                        gid = index_to_gid[idx]\n                        for j, jgid in enumerate(index_to_gid):\n                            if jgid == gid:\n                                dist[j] = float(\"inf\")\n                        neg_idx = torch.argmin(dist).item()\n                        emb_n[i] = emb_all[neg_idx]\n                    loss = loss_fn(emb_a, emb_p, emb_n)\n                    optimizer.zero_grad()\n                    loss.backward()\n                    optimizer.step()\n                    total_train_loss += loss.item()\n                train_batches = len(hard_train_loader)\n            avg_train_loss = total_train_loss / train_batches\n            data[\"losses\"][\"train\"].append(avg_train_loss)\n\n            model.eval()\n            total_val_loss = 0.0\n            with torch.no_grad():\n                if ablation == \"random_negative\":\n                    for a, p, n in random_val_loader:\n                        a, p, n = a.to(device), p.to(device), n.to(device)\n                        total_val_loss += loss_fn(model(a), model(p), model(n)).item()\n                    val_batches = len(random_val_loader)\n                else:\n                    for idxs, a, p in hard_val_loader:\n                        idxs = idxs.tolist()\n                        a, p = a.to(device), p.to(device)\n                        emb_a, emb_p = model(a), model(p)\n                        enc_dev = encoded.to(device)\n                        emb_all = model(enc_dev)\n                        emb_n = torch.zeros_like(emb_a)\n                        for i, idx in enumerate(idxs):\n                            dist = torch.norm(\n                                emb_all - emb_a[i].unsqueeze(0), p=2, dim=1\n                            )\n                            gid = index_to_gid[idx]\n                            for j, jgid in enumerate(index_to_gid):\n                                if jgid == gid:\n                                    dist[j] = float(\"inf\")\n                            neg_idx = torch.argmin(dist).item()\n                            emb_n[i] = emb_all[neg_idx]\n                        total_val_loss += loss_fn(emb_a, emb_p, emb_n).item()\n                    val_batches = len(hard_val_loader)\n            avg_val_loss = total_val_loss / max(val_batches, 1)\n            data[\"losses\"][\"val\"].append(avg_val_loss)\n\n            # retrieval accuracies\n            with torch.no_grad():\n                emb_all = model(encoded.to(device))\n                emb_norm = F.normalize(emb_all, dim=1)\n                sims = emb_norm @ emb_norm.T\n\n                def compute_acc(indices):\n                    correct = 0\n                    for i in indices:\n                        sim = sims[i].clone()\n                        sim[i] = -float(\"inf\")\n                        top1 = torch.argmax(sim).item()\n                        if index_to_gid[top1] == index_to_gid[i]:\n                            correct += 1\n                    return correct / len(indices)\n\n                train_acc = compute_acc(train_indices)\n                val_acc = compute_acc(val_indices)\n            data[\"metrics\"][\"train\"].append(train_acc)\n            data[\"metrics\"][\"val\"].append(val_acc)\n\n        # final predictions on validation\n        model.eval()\n        with torch.no_grad():\n            emb_all = model(encoded.to(device))\n            emb_norm = F.normalize(emb_all, dim=1)\n            sims = emb_norm @ emb_norm.T\n            for i in val_indices:\n                sim = sims[i].clone()\n                sim[i] = -float(\"inf\")\n                top1 = torch.argmax(sim).item()\n                data[\"predictions\"].append(index_to_gid[top1])\n                data[\"ground_truth\"].append(index_to_gid[i])\n\n        experiment_data[ablation][\"synthetic\"][E] = data\n        print(f\"Finished {ablation}, EPOCHS={E}: final val_acc={val_acc:.4f}\")\n\n# save all results\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\nprint(\"Saved experiment_data.npy\")\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n# Load experiment data\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n\n# For each ablation, plot loss and accuracy curves\nfor ablation in [\"random_negative\", \"hard_negative\"]:\n    # Loss curves\n    try:\n        plt.figure()\n        for E, data in experiment_data[ablation][\"synthetic\"].items():\n            epochs = list(range(1, len(data[\"losses\"][\"train\"]) + 1))\n            plt.plot(epochs, data[\"losses\"][\"train\"], label=f\"train E={E}\")\n            plt.plot(epochs, data[\"losses\"][\"val\"], label=f\"val E={E}\")\n        plt.title(f\"{ablation}: Loss Curves (Synthetic)\")\n        plt.xlabel(\"Epoch\")\n        plt.ylabel(\"Loss\")\n        plt.legend()\n        fname = f\"{ablation}_loss_curves.png\"\n        plt.savefig(os.path.join(working_dir, fname))\n        plt.close()\n    except Exception as e:\n        print(f\"Error creating loss plot for {ablation}: {e}\")\n        plt.close()\n\n    # Accuracy curves\n    try:\n        plt.figure()\n        for E, data in experiment_data[ablation][\"synthetic\"].items():\n            epochs = list(range(1, len(data[\"metrics\"][\"train\"]) + 1))\n            plt.plot(epochs, data[\"metrics\"][\"train\"], label=f\"train E={E}\")\n            plt.plot(epochs, data[\"metrics\"][\"val\"], label=f\"val E={E}\")\n        plt.title(f\"{ablation}: Retrieval Accuracy vs Epoch (Synthetic)\")\n        plt.xlabel(\"Epoch\")\n        plt.ylabel(\"Accuracy\")\n        plt.legend()\n        fname = f\"{ablation}_accuracy_curves.png\"\n        plt.savefig(os.path.join(working_dir, fname))\n        plt.close()\n    except Exception as e:\n        print(f\"Error creating accuracy plot for {ablation}: {e}\")\n        plt.close()\n",
+    "plot_plan": "I will load the saved experiment data and then plot training and validation curves for both loss and retrieval accuracy. To avoid too many similar figures, I will aggregate all epoch settings (E=10,30,50) into one figure per metric per ablation, yielding four plots total. Each plotting block is wrapped in try-except, figures are closed after saving, and filenames include ablation name and metric type. The title specifies the ablation and the dataset (synthetic).",
+    "plot_analyses": [
+      {
+        "analysis": "hard_negative: Retrieval Accuracy vs Epoch (Synthetic) shows very rapid training convergence across all refresh intervals (E=10, 30, 50), with training accuracy reaching 100% by epoch 10 or earlier. Validation curves differ sharply: E=30 achieves perfect retrieval by epoch 4, E=10 by epoch 10, and E=50 only by epoch 18. This indicates that a moderate refresh interval (30) yields the fastest generalization, while too-infrequent updates (E=50) slow down validation performance, and too-frequent updates (E=10) offer less stable negatives early on.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_dcb9f657828c4f6dbf6d7dafa8238d07_proc_400997/hard_negative_accuracy_curves.png"
+      },
+      {
+        "analysis": "random_negative: Loss Curves (Synthetic) reveal that all training losses descend smoothly to zero by roughly epoch 12 or earlier for each refresh interval. Validation losses similarly fall to near zero by epoch 15, though occasional spikes appear for E=50 beyond epoch 20\u201350, likely due to sampling noise. Overall, random negatives constitute an easy task, saturating quickly across all configurations with minimal discrepancy between refresh intervals.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_dcb9f657828c4f6dbf6d7dafa8238d07_proc_400997/random_negative_loss_curves.png"
+      },
+      {
+        "analysis": "random_negative: Retrieval Accuracy vs Epoch (Synthetic) confirms the ease of random negative mining, with training accuracies reaching 100% by epoch 5 across the board. Validation accuracies hit 75% by epochs 3\u20134 and perfect retrieval by epochs 8 (E=10), 6 (E=30), and 15 (E=50). Similar trends to hard negatives emerge\u2014moderate refresh (E=30) converges fastest, and stale negatives (E=50) lag behind, but overall convergence is faster and more uniform than with hard negatives.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_dcb9f657828c4f6dbf6d7dafa8238d07_proc_400997/random_negative_accuracy_curves.png"
+      },
+      {
+        "analysis": "hard_negative: Loss Curves (Synthetic) indicate that all training losses drop to zero around epoch 10\u201312, demonstrating effective fitting of contrastive objectives with hard negatives. Validation losses plateau above zero (around 0.27\u20130.35) after ~20\u201330 epochs, reflecting the intrinsic difficulty of hard-negative discrimination. Among intervals, E=30 yields the lowest final validation loss (~0.27), E=10 slightly higher, and E=50 the highest. This highlights that moderate refresh frequency balances negative freshness and training stability to minimize validation loss.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_dcb9f657828c4f6dbf6d7dafa8238d07_proc_400997/hard_negative_loss_curves.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_dcb9f657828c4f6dbf6d7dafa8238d07_proc_400997/hard_negative_accuracy_curves.png",
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_dcb9f657828c4f6dbf6d7dafa8238d07_proc_400997/random_negative_loss_curves.png",
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_dcb9f657828c4f6dbf6d7dafa8238d07_proc_400997/random_negative_accuracy_curves.png",
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_dcb9f657828c4f6dbf6d7dafa8238d07_proc_400997/hard_negative_loss_curves.png"
+    ],
+    "vlm_feedback_summary": "Hard negatives present a challenging learning signal that does not fully collapse on validation, whereas random negatives produce trivial tasks with rapid saturation; a medium refresh interval (E=30) consistently achieves the fastest convergence and best validation metrics across both loss and retrieval curves, outperforming both very frequent (E=10) and very infrequent (E=50) negative updates.",
+    "exp_results_dir": "experiment_results/experiment_dcb9f657828c4f6dbf6d7dafa8238d07_proc_400997",
+    "ablation_name": "Negative Sampling Hardness Ablation",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_dcb9f657828c4f6dbf6d7dafa8238d07_proc_400997/experiment_data.npy"
+    ]
+  },
+  {
+    "overall_plan": "We plan to conduct a two\u2010phase hyperparameter study on our LSTM encoder for a retrieval task. In Phase 1 (EPOCHS ablation), we will loop over epoch settings (e.g., 10, 30, 50), reinitialize and train the model from scratch for each, record per\u2010epoch losses and retrieval accuracies, and save all results under the key \u201cEPOCHS\u201d in a NumPy file for later analysis. In Phase 2 (Triplet Margin Hyperparameter Ablation), we will fix the number of epochs (e.g., 30) and iterate over margin values [0.1, 0.5, 1.0, 2.0]. For each margin, we will reinitialize the model and optimizer, train on the synthetic code experiment, record average training/validation losses and retrieval accuracies per epoch, collect top\u20101 validation predictions, and store all metrics, losses, predictions, and ground truths in a nested dictionary keyed by margin. All data will be saved as `experiment_data.npy` to enable comprehensive downstream plotting and comparison of how both training duration and triplet loss margin affect model performance.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "train accuracy",
+            "lower_is_better": false,
+            "description": "Training dataset accuracy",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 1.0,
+                "best_value": 1.0
+              }
+            ]
+          },
+          {
+            "metric_name": "validation accuracy",
+            "lower_is_better": false,
+            "description": "Validation dataset accuracy",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 1.0,
+                "best_value": 1.0
+              }
+            ]
+          },
+          {
+            "metric_name": "train loss",
+            "lower_is_better": true,
+            "description": "Training dataset loss",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 0.0,
+                "best_value": 0.0
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Validation dataset loss",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 0.0,
+                "best_value": 0.0
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os\nimport random\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.nn.functional as F\nfrom torch.utils.data import Dataset, DataLoader, Subset\nfrom torch.optim import Adam\n\n# set up working directory\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\n\n# generate synthetic code snippets and traces\ncodes = []\nfor c in range(1, 11):\n    codes.append(f\"def f(x): return x+{c}\")\n    codes.append(f\"def f(x): return {c}+x\")\ninput_set = np.random.randint(-10, 10, size=100)\ntraces = []\nfor code in codes:\n    env = {}\n    exec(code, env)\n    f = env[\"f\"]\n    traces.append(tuple(f(int(x)) for x in input_set))\n\n# group snippets by trace\ntrace_to_indices = {}\nfor idx, trace in enumerate(traces):\n    trace_to_indices.setdefault(trace, []).append(idx)\ngroup_to_indices = {gid: ids for gid, ids in enumerate(trace_to_indices.values())}\nindex_to_gid = [None] * len(codes)\nfor gid, idxs in group_to_indices.items():\n    for idx in idxs:\n        index_to_gid[idx] = gid\n\n# encode snippets as character sequences\nvocab = sorted(set(\"\".join(codes)))\nstoi = {c: i + 1 for i, c in enumerate(vocab)}\nstoi[\"PAD\"] = 0\nmax_len = max(len(s) for s in codes)\nencoded = []\nfor s in codes:\n    seq = [stoi[c] for c in s] + [0] * (max_len - len(s))\n    encoded.append(seq)\nencoded = torch.LongTensor(encoded)\n\n\n# dataset & loaders\nclass CodeDataset(Dataset):\n    def __init__(self, encoded, group_to_indices, index_to_gid):\n        self.encoded = encoded\n        self.group_to_indices = group_to_indices\n        self.index_to_gid = index_to_gid\n\n    def __len__(self):\n        return len(self.index_to_gid)\n\n    def __getitem__(self, idx):\n        anchor = self.encoded[idx]\n        gid = self.index_to_gid[idx]\n        pos = idx\n        while pos == idx:\n            pos = random.choice(self.group_to_indices[gid])\n        neg_gid = random.choice([g for g in self.group_to_indices if g != gid])\n        neg = random.choice(self.group_to_indices[neg_gid])\n        return anchor, self.encoded[pos], self.encoded[neg]\n\n\ndataset = CodeDataset(encoded, group_to_indices, index_to_gid)\nall_gids = list(group_to_indices.keys())\nrandom.shuffle(all_gids)\nsplit = int(0.8 * len(all_gids))\ntrain_gids, val_gids = all_gids[:split], all_gids[split:]\ntrain_indices = [i for g in train_gids for i in group_to_indices[g]]\nval_indices = [i for g in val_gids for i in group_to_indices[g]]\ntrain_loader = DataLoader(Subset(dataset, train_indices), batch_size=8, shuffle=True)\nval_loader = DataLoader(Subset(dataset, val_indices), batch_size=8, shuffle=False)\n\n\n# model definition\nclass CodeEncoder(nn.Module):\n    def __init__(self, vocab_size, embed_dim=64, hidden=64):\n        super().__init__()\n        self.embed = nn.Embedding(vocab_size, embed_dim, padding_idx=0)\n        self.lstm = nn.LSTM(embed_dim, hidden, batch_first=True)\n\n    def forward(self, x):\n        x = self.embed(x)\n        _, (h, _) = self.lstm(x)\n        return h.squeeze(0)\n\n\n# ablation over triplet margin hyperparameter\nMARGIN_LIST = [0.1, 0.5, 1.0, 2.0]\nEPOCHS = 30\nexperiment_data = {\"triplet_margin_ablation\": {\"synthetic\": {}}}\n\nfor margin in MARGIN_LIST:\n    # init model, optimizer, loss\n    model = CodeEncoder(len(stoi), 64, 64).to(device)\n    optimizer = Adam(model.parameters(), lr=1e-3)\n    loss_fn = nn.TripletMarginLoss(margin=margin)\n\n    data = {\n        \"metrics\": {\"train\": [], \"val\": []},\n        \"losses\": {\"train\": [], \"val\": []},\n        \"predictions\": [],\n        \"ground_truth\": [],\n    }\n\n    # training + validation\n    for epoch in range(EPOCHS):\n        model.train()\n        total_train_loss = 0.0\n        for a, p, n in train_loader:\n            a, p, n = a.to(device), p.to(device), n.to(device)\n            emb_a, emb_p, emb_n = model(a), model(p), model(n)\n            loss = loss_fn(emb_a, emb_p, emb_n)\n            optimizer.zero_grad()\n            loss.backward()\n            optimizer.step()\n            total_train_loss += loss.item()\n        avg_train_loss = total_train_loss / len(train_loader)\n        data[\"losses\"][\"train\"].append(avg_train_loss)\n\n        model.eval()\n        total_val_loss = 0.0\n        with torch.no_grad():\n            for a, p, n in val_loader:\n                a, p, n = a.to(device), p.to(device), n.to(device)\n                total_val_loss += loss_fn(model(a), model(p), model(n)).item()\n        avg_val_loss = total_val_loss / len(val_loader)\n        data[\"losses\"][\"val\"].append(avg_val_loss)\n\n        # retrieval accuracy\n        with torch.no_grad():\n            emb_all = model(encoded.to(device))\n            emb_norm = F.normalize(emb_all, dim=1)\n            sims = emb_norm @ emb_norm.T\n\n            def compute_acc(indices):\n                correct = 0\n                for i in indices:\n                    sim = sims[i].clone()\n                    sim[i] = -float(\"inf\")\n                    top1 = torch.argmax(sim).item()\n                    if index_to_gid[top1] == index_to_gid[i]:\n                        correct += 1\n                return correct / len(indices)\n\n            train_acc = compute_acc(train_indices)\n            val_acc = compute_acc(val_indices)\n        data[\"metrics\"][\"train\"].append(train_acc)\n        data[\"metrics\"][\"val\"].append(val_acc)\n\n    # final predictions\n    model.eval()\n    with torch.no_grad():\n        emb_all = model(encoded.to(device))\n        emb_norm = F.normalize(emb_all, dim=1)\n        sims = emb_norm @ emb_norm.T\n        for i in val_indices:\n            sim = sims[i].clone()\n            sim[i] = -float(\"inf\")\n            top1 = torch.argmax(sim).item()\n            data[\"predictions\"].append(index_to_gid[top1])\n            data[\"ground_truth\"].append(index_to_gid[i])\n\n    experiment_data[\"triplet_margin_ablation\"][\"synthetic\"][margin] = data\n    final_val_acc = data[\"metrics\"][\"val\"][-1]\n    print(f\"Finished margin={margin}: final val_acc={final_val_acc:.4f}\")\n\n# save all results\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\nprint(\"Saved experiment_data.npy\")\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n# Load experiment data\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\n    data = experiment_data[\"triplet_margin_ablation\"][\"synthetic\"]\n    margins = sorted(data.keys())\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n    margins = []\n\n# Plot loss & accuracy curves for each margin\nfor m in margins:\n    try:\n        fig, axs = plt.subplots(1, 2, figsize=(10, 4))\n        fig.suptitle(f\"Synthetic Dataset: Triplet Margin {m}\")\n        epochs = range(1, len(data[m][\"losses\"][\"train\"]) + 1)\n        # Loss curves\n        axs[0].plot(epochs, data[m][\"losses\"][\"train\"], label=\"Train\")\n        axs[0].plot(epochs, data[m][\"losses\"][\"val\"], label=\"Val\")\n        axs[0].set_title(\"Left: Loss curves\")\n        axs[0].set_xlabel(\"Epoch\")\n        axs[0].set_ylabel(\"Loss\")\n        axs[0].legend()\n        # Accuracy curves\n        axs[1].plot(epochs, data[m][\"metrics\"][\"train\"], label=\"Train\")\n        axs[1].plot(epochs, data[m][\"metrics\"][\"val\"], label=\"Val\")\n        axs[1].set_title(\"Right: Accuracy curves\")\n        axs[1].set_xlabel(\"Epoch\")\n        axs[1].set_ylabel(\"Accuracy\")\n        axs[1].legend()\n        fig.savefig(os.path.join(working_dir, f\"synthetic_margin_{m}_curves.png\"))\n        plt.close(fig)\n    except Exception as e:\n        print(f\"Error creating plot for margin={m}: {e}\")\n        plt.close()\n\n# Summary plot of final validation accuracy vs. margin\ntry:\n    final_vals = [data[m][\"metrics\"][\"val\"][-1] for m in margins]\n    plt.figure()\n    plt.plot(margins, final_vals, marker=\"o\")\n    plt.title(\"Synthetic Dataset: Final Validation Accuracy vs Triplet Margin\")\n    plt.xlabel(\"Margin\")\n    plt.ylabel(\"Validation Accuracy\")\n    plt.savefig(os.path.join(working_dir, \"synthetic_final_val_accuracy.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating summary plot: {e}\")\n    plt.close()\n",
+    "plot_plan": "We load the saved experiment results and extract the synthetic triplet\u2010margin ablation data.  \nFor each margin, we plot a two\u2010panel figure showing the training vs. validation loss on the left and accuracy on the right, with a suptitle indicating the dataset and margin.  \nWe label axes, legends, and subplot titles \u201cLeft: Loss curves\u201d and \u201cRight: Accuracy curves.\u201d  \nEach figure is saved under a descriptive filename including \u201csynthetic\u201d and the margin, and always closed afterwards.  \nAfter looping through all margins (four in total), we compile the final validation accuracies and plot them against the margin values in a summary figure.  \nAll plotting blocks are wrapped in try\u2010except so errors don\u2019t break the script, and we never simulate or assume any missing data.  \nThis produces at most five figures: one for each margin and one summary.",
+    "plot_analyses": [
+      {
+        "analysis": "Loss curves for margin=1.0 show a smooth decay from ~0.95 down to near zero over 15 epochs, with training and validation losses closely tracking one another, indicating stable optimization without overfitting. Accuracy curves reveal that the model achieves perfect train accuracy by epoch 8 and perfect validation accuracy by epoch 10, demonstrating good generalization for this margin setting.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_2120288f76b5437ab67ae259f95ba70a_proc_400997/synthetic_margin_1.0_curves.png"
+      },
+      {
+        "analysis": "For margin=2.0, the initial loss is higher (~2.0) and declines more slowly, with noticeable noise in the validation loss, reaching near zero around epoch 19. Accuracy climbs steadily and reaches 100% on both train and validation by epoch 10, but with a slower mid\u2010phase improvement compared to margin 1.0. The larger margin increases optimization difficulty yet still converges to perfect accuracy.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_2120288f76b5437ab67ae259f95ba70a_proc_400997/synthetic_margin_2.0_curves.png"
+      },
+      {
+        "analysis": "With margin=0.1, the loss starts much lower (~0.15) and quickly goes to zero within 8 epochs with minimal oscillation, and accuracy reaches 100% on training by epoch 8 and on validation by epoch 9. The small margin accelerates convergence significantly without harming final performance.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_2120288f76b5437ab67ae259f95ba70a_proc_400997/synthetic_margin_0.1_curves.png"
+      },
+      {
+        "analysis": "The final validation accuracy vs margin plot is flat at 1.0 across margins [0.1, 0.5, 1.0, 2.0], confirming that all tested margins achieve perfect performance on the synthetic dataset, making final accuracy insensitive to margin choice in this toy setting.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_2120288f76b5437ab67ae259f95ba70a_proc_400997/synthetic_final_val_accuracy.png"
+      },
+      {
+        "analysis": "For margin=0.5, loss decreases from ~0.5 to zero by epoch 12 with low noise, and accuracy hits 100% for training by epoch 6 and for validation by epoch 7. This intermediate margin yields a convergence speed between the small and large margin cases, consistent with the trend that smaller margins accelerate learning.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_2120288f76b5437ab67ae259f95ba70a_proc_400997/synthetic_margin_0.5_curves.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_2120288f76b5437ab67ae259f95ba70a_proc_400997/synthetic_margin_1.0_curves.png",
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_2120288f76b5437ab67ae259f95ba70a_proc_400997/synthetic_margin_2.0_curves.png",
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_2120288f76b5437ab67ae259f95ba70a_proc_400997/synthetic_margin_0.1_curves.png",
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_2120288f76b5437ab67ae259f95ba70a_proc_400997/synthetic_final_val_accuracy.png",
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_2120288f76b5437ab67ae259f95ba70a_proc_400997/synthetic_margin_0.5_curves.png"
+    ],
+    "vlm_feedback_summary": "The triplet margin hyperparameter primarily affects the initial loss scale and convergence speed: smaller margins lead to faster convergence, while larger margins slow down training but do not alter the final performance. As all margin values achieve perfect accuracy on this synthetic dataset, margin selection here only impacts training efficiency. For more nuanced insights, future ablations should include more complex or noisy datasets where final generalization might vary across margin settings.",
+    "exp_results_dir": "experiment_results/experiment_2120288f76b5437ab67ae259f95ba70a_proc_400997",
+    "ablation_name": "Triplet Margin Hyperparameter Ablation",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_2120288f76b5437ab67ae259f95ba70a_proc_400997/experiment_data.npy"
+    ]
+  },
+  {
+    "overall_plan": "We will conduct a systematic two\u2010factor study of LSTM encoder-based triplet retrieval on the synthetic code dataset by varying (1) the number of training epochs (e.g., 10, 30, 50) and (2) the distance metric used in the triplet loss (Euclidean vs. cosine distance with L2\u2010normalization). For each combination, we reinitialize the model and train from scratch, logging per\u2010epoch training and validation losses, retrieval accuracies, and final validation predictions. All results are consolidated into a single NumPy file (experiment_data.npy) organized to reflect both the EPOCHS hyperparameter tuning axis and the Distance Metric ablation axis. This comprehensive setup will allow us to analyze how training duration and metric choice jointly affect retrieval performance and to identify optimal settings.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "train accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the training set",
+            "data": [
+              {
+                "dataset_name": "synthetic (euclidean, 10 epochs)",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "synthetic (euclidean, 30 epochs)",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "synthetic (euclidean, 50 epochs)",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "synthetic (cosine, 10 epochs)",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "synthetic (cosine, 30 epochs)",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "synthetic (cosine, 50 epochs)",
+                "final_value": 1.0,
+                "best_value": 1.0
+              }
+            ]
+          },
+          {
+            "metric_name": "validation accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the validation set",
+            "data": [
+              {
+                "dataset_name": "synthetic (euclidean, 10 epochs)",
+                "final_value": 0.75,
+                "best_value": 0.75
+              },
+              {
+                "dataset_name": "synthetic (euclidean, 30 epochs)",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "synthetic (euclidean, 50 epochs)",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "synthetic (cosine, 10 epochs)",
+                "final_value": 0.75,
+                "best_value": 0.75
+              },
+              {
+                "dataset_name": "synthetic (cosine, 30 epochs)",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "synthetic (cosine, 50 epochs)",
+                "final_value": 1.0,
+                "best_value": 1.0
+              }
+            ]
+          },
+          {
+            "metric_name": "train loss",
+            "lower_is_better": true,
+            "description": "Loss on the training set",
+            "data": [
+              {
+                "dataset_name": "synthetic (euclidean, 10 epochs)",
+                "final_value": 0.1305,
+                "best_value": 0.1305
+              },
+              {
+                "dataset_name": "synthetic (euclidean, 30 epochs)",
+                "final_value": 0.0,
+                "best_value": 0.0
+              },
+              {
+                "dataset_name": "synthetic (euclidean, 50 epochs)",
+                "final_value": 0.0,
+                "best_value": 0.0
+              },
+              {
+                "dataset_name": "synthetic (cosine, 10 epochs)",
+                "final_value": 0.1678,
+                "best_value": 0.1678
+              },
+              {
+                "dataset_name": "synthetic (cosine, 30 epochs)",
+                "final_value": 0.0592,
+                "best_value": 0.0592
+              },
+              {
+                "dataset_name": "synthetic (cosine, 50 epochs)",
+                "final_value": 0.0004,
+                "best_value": 0.0004
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Loss on the validation set",
+            "data": [
+              {
+                "dataset_name": "synthetic (euclidean, 10 epochs)",
+                "final_value": 0.3857,
+                "best_value": 0.3857
+              },
+              {
+                "dataset_name": "synthetic (euclidean, 30 epochs)",
+                "final_value": 0.2652,
+                "best_value": 0.2652
+              },
+              {
+                "dataset_name": "synthetic (euclidean, 50 epochs)",
+                "final_value": 0.1913,
+                "best_value": 0.1913
+              },
+              {
+                "dataset_name": "synthetic (cosine, 10 epochs)",
+                "final_value": 0.2616,
+                "best_value": 0.2616
+              },
+              {
+                "dataset_name": "synthetic (cosine, 30 epochs)",
+                "final_value": 0.129,
+                "best_value": 0.129
+              },
+              {
+                "dataset_name": "synthetic (cosine, 50 epochs)",
+                "final_value": 0.1711,
+                "best_value": 0.1711
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os\nimport random\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.nn.functional as F\nfrom torch.utils.data import Dataset, DataLoader, Subset\nfrom torch.optim import Adam\n\n# set up working directory\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\n\n# generate synthetic code snippets and traces\ncodes = []\nfor c in range(1, 11):\n    codes.append(f\"def f(x): return x+{c}\")\n    codes.append(f\"def f(x): return {c}+x\")\ninput_set = np.random.randint(-10, 10, size=100)\ntraces = []\nfor code in codes:\n    env = {}\n    exec(code, env)\n    f = env[\"f\"]\n    traces.append(tuple(f(int(x)) for x in input_set))\n\n# group snippets by trace\ntrace_to_indices = {}\nfor idx, trace in enumerate(traces):\n    trace_to_indices.setdefault(trace, []).append(idx)\ngroup_to_indices = {gid: ids for gid, ids in enumerate(trace_to_indices.values())}\nindex_to_gid = [None] * len(codes)\nfor gid, idxs in group_to_indices.items():\n    for idx in idxs:\n        index_to_gid[idx] = gid\n\n# encode snippets as character sequences\nvocab = sorted(set(\"\".join(codes)))\nstoi = {c: i + 1 for i, c in enumerate(vocab)}\nstoi[\"PAD\"] = 0\nmax_len = max(len(s) for s in codes)\nencoded = []\nfor s in codes:\n    seq = [stoi[c] for c in s] + [0] * (max_len - len(s))\n    encoded.append(seq)\nencoded = torch.LongTensor(encoded)\n\n\n# dataset & loaders\nclass CodeDataset(Dataset):\n    def __init__(self, encoded, group_to_indices, index_to_gid):\n        self.encoded = encoded\n        self.group_to_indices = group_to_indices\n        self.index_to_gid = index_to_gid\n\n    def __len__(self):\n        return len(self.index_to_gid)\n\n    def __getitem__(self, idx):\n        anchor = self.encoded[idx]\n        gid = self.index_to_gid[idx]\n        pos = idx\n        while pos == idx:\n            pos = random.choice(self.group_to_indices[gid])\n        neg_gid = random.choice([g for g in self.group_to_indices if g != gid])\n        neg = random.choice(self.group_to_indices[neg_gid])\n        return anchor, self.encoded[pos], self.encoded[neg]\n\n\ndataset = CodeDataset(encoded, group_to_indices, index_to_gid)\nall_gids = list(group_to_indices.keys())\nrandom.shuffle(all_gids)\nsplit = int(0.8 * len(all_gids))\ntrain_gids, val_gids = all_gids[:split], all_gids[split:]\ntrain_indices = [i for g in train_gids for i in group_to_indices[g]]\nval_indices = [i for g in val_gids for i in group_to_indices[g]]\ntrain_loader = DataLoader(Subset(dataset, train_indices), batch_size=8, shuffle=True)\nval_loader = DataLoader(Subset(dataset, val_indices), batch_size=8, shuffle=False)\n\n\n# model definition\nclass CodeEncoder(nn.Module):\n    def __init__(self, vocab_size, embed_dim=64, hidden=64):\n        super().__init__()\n        self.embed = nn.Embedding(vocab_size, embed_dim, padding_idx=0)\n        self.lstm = nn.LSTM(embed_dim, hidden, batch_first=True)\n\n    def forward(self, x):\n        x = self.embed(x)\n        _, (h, _) = self.lstm(x)\n        return h.squeeze(0)\n\n\n# distance function for cosine triplet\ndef cosine_dist(x, y):\n    return 1 - F.cosine_similarity(x, y)\n\n\n# experiment configurations\nEPOCH_LIST = [10, 30, 50]\nablation_types = [\"euclidean\", \"cosine\"]\nexperiment_data = {}\n\nfor ablation in ablation_types:\n    experiment_data[ablation] = {\"synthetic\": {}}\n    for E in EPOCH_LIST:\n        # init model, optimizer, loss\n        model = CodeEncoder(len(stoi), 64, 64).to(device)\n        optimizer = Adam(model.parameters(), lr=1e-3)\n        if ablation == \"euclidean\":\n            loss_fn = nn.TripletMarginLoss(margin=1.0)\n        else:\n            loss_fn = nn.TripletMarginWithDistanceLoss(\n                distance_function=cosine_dist, margin=1.0\n            )\n\n        data = {\n            \"metrics\": {\"train\": [], \"val\": []},\n            \"losses\": {\"train\": [], \"val\": []},\n            \"predictions\": [],\n            \"ground_truth\": [],\n        }\n\n        # training + validation loop\n        for epoch in range(E):\n            model.train()\n            total_train_loss = 0.0\n            for a, p, n in train_loader:\n                a, p, n = a.to(device), p.to(device), n.to(device)\n                emb_a, emb_p, emb_n = model(a), model(p), model(n)\n                if ablation == \"cosine\":\n                    emb_a = F.normalize(emb_a, dim=1)\n                    emb_p = F.normalize(emb_p, dim=1)\n                    emb_n = F.normalize(emb_n, dim=1)\n                loss = loss_fn(emb_a, emb_p, emb_n)\n                optimizer.zero_grad()\n                loss.backward()\n                optimizer.step()\n                total_train_loss += loss.item()\n            avg_train_loss = total_train_loss / len(train_loader)\n            data[\"losses\"][\"train\"].append(avg_train_loss)\n\n            model.eval()\n            total_val_loss = 0.0\n            with torch.no_grad():\n                for a, p, n in val_loader:\n                    a, p, n = a.to(device), p.to(device), n.to(device)\n                    emb_a, emb_p, emb_n = model(a), model(p), model(n)\n                    if ablation == \"cosine\":\n                        emb_a = F.normalize(emb_a, dim=1)\n                        emb_p = F.normalize(emb_p, dim=1)\n                        emb_n = F.normalize(emb_n, dim=1)\n                    total_val_loss += loss_fn(emb_a, emb_p, emb_n).item()\n            avg_val_loss = total_val_loss / len(val_loader)\n            data[\"losses\"][\"val\"].append(avg_val_loss)\n\n            # retrieval metrics\n            with torch.no_grad():\n                emb_all = model(encoded.to(device))\n                emb_norm = F.normalize(emb_all, dim=1)\n                sims = emb_norm @ emb_norm.T\n\n                def compute_acc(indices):\n                    correct = 0\n                    for i in indices:\n                        sim = sims[i].clone()\n                        sim[i] = -float(\"inf\")\n                        top1 = torch.argmax(sim).item()\n                        if index_to_gid[top1] == index_to_gid[i]:\n                            correct += 1\n                    return correct / len(indices)\n\n                train_acc = compute_acc(train_indices)\n                val_acc = compute_acc(val_indices)\n            data[\"metrics\"][\"train\"].append(train_acc)\n            data[\"metrics\"][\"val\"].append(val_acc)\n\n        # final predictions\n        model.eval()\n        with torch.no_grad():\n            emb_all = model(encoded.to(device))\n            emb_norm = F.normalize(emb_all, dim=1)\n            sims = emb_norm @ emb_norm.T\n            for i in val_indices:\n                sim = sims[i].clone()\n                sim[i] = -float(\"inf\")\n                top1 = torch.argmax(sim).item()\n                data[\"predictions\"].append(index_to_gid[top1])\n                data[\"ground_truth\"].append(index_to_gid[i])\n\n        experiment_data[ablation][\"synthetic\"][E] = data\n        print(f\"Ablation={ablation}, E={E}, final val_acc={val_acc:.4f}\")\n\n# save results\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\nprint(\"Saved experiment_data.npy\")\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n\n# Plot for Euclidean triplet\ntry:\n    ablation = \"euclidean\"\n    synthetic = experiment_data[ablation][\"synthetic\"]\n    fig, axes = plt.subplots(1, 2, figsize=(12, 5))\n    for E, info in synthetic.items():\n        epochs = list(range(1, len(info[\"losses\"][\"train\"]) + 1))\n        axes[0].plot(epochs, info[\"losses\"][\"train\"], label=f\"Train E={E}\")\n        axes[0].plot(epochs, info[\"losses\"][\"val\"], linestyle=\"--\", label=f\"Val E={E}\")\n        axes[1].plot(epochs, info[\"metrics\"][\"train\"], label=f\"Train E={E}\")\n        axes[1].plot(epochs, info[\"metrics\"][\"val\"], linestyle=\"--\", label=f\"Val E={E}\")\n    axes[0].set_xlabel(\"Epoch\")\n    axes[0].set_ylabel(\"Loss\")\n    axes[0].set_title(\"Left: Loss Curves (synthetic)\")\n    axes[0].legend()\n    axes[1].set_xlabel(\"Epoch\")\n    axes[1].set_ylabel(\"Accuracy\")\n    axes[1].set_title(\"Right: Accuracy Curves (synthetic)\")\n    axes[1].legend()\n    fig.suptitle(\"synthetic dataset \u2013 euclidean triplet\")\n    plt.savefig(os.path.join(working_dir, \"synthetic_euclidean_loss_acc.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating euclidean plot: {e}\")\n    plt.close()\n\n# Plot for Cosine triplet\ntry:\n    ablation = \"cosine\"\n    synthetic = experiment_data[ablation][\"synthetic\"]\n    fig, axes = plt.subplots(1, 2, figsize=(12, 5))\n    for E, info in synthetic.items():\n        epochs = list(range(1, len(info[\"losses\"][\"train\"]) + 1))\n        axes[0].plot(epochs, info[\"losses\"][\"train\"], label=f\"Train E={E}\")\n        axes[0].plot(epochs, info[\"losses\"][\"val\"], linestyle=\"--\", label=f\"Val E={E}\")\n        axes[1].plot(epochs, info[\"metrics\"][\"train\"], label=f\"Train E={E}\")\n        axes[1].plot(epochs, info[\"metrics\"][\"val\"], linestyle=\"--\", label=f\"Val E={E}\")\n    axes[0].set_xlabel(\"Epoch\")\n    axes[0].set_ylabel(\"Loss\")\n    axes[0].set_title(\"Left: Loss Curves (synthetic)\")\n    axes[0].legend()\n    axes[1].set_xlabel(\"Epoch\")\n    axes[1].set_ylabel(\"Accuracy\")\n    axes[1].set_title(\"Right: Accuracy Curves (synthetic)\")\n    axes[1].legend()\n    fig.suptitle(\"synthetic dataset \u2013 cosine triplet\")\n    plt.savefig(os.path.join(working_dir, \"synthetic_cosine_loss_acc.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating cosine plot: {e}\")\n    plt.close()\n",
+    "plot_plan": "First, we load the experiment results dictionary from experiment_data.npy in the working directory. Next, for each ablation type (euclidean and cosine), we assemble a plot of loss and retrieval accuracy curves across the three training regimes (E=10, 30, 50) on the synthetic dataset. We create a figure with two horizontal subplots: the left shows training and validation loss curves, and the right shows training and validation accuracy curves. Each curve is labeled by its split and epoch count. We add a main title indicating the dataset and ablation type, as well as subplot titles \"Left: Loss Curves (synthetic)\" and \"Right: Accuracy Curves (synthetic)\". Legends and axis labels ensure clarity. Each plotting block is wrapped in a try-except to report errors without halting. After saving the figure to working_dir with a descriptive filename, we always close the figure to free resources.",
+    "plot_analyses": [
+      {
+        "analysis": "synthetic dataset \u2013 cosine triplet: Training loss curves for embedding sizes of 10, 30, and 50 dimensions show a rapid decrease, with all configurations reaching near-zero loss by around epoch 15. Validation losses follow a similar downward trajectory initially but exhibit increased noise and plateauing after epoch 20, particularly for the 50-dimensional setting, suggesting slight overfitting or instability in later training. Accuracy curves rise steeply: training accuracy achieves 100% by epoch 5 for higher-dimensional embeddings (E=30, 50) and by epoch 8 for E=10. Validation accuracy mirrors this trend, though the E=10 model lags until epoch 8 before reaching perfect accuracy. The 50-dimensional validation accuracy remains stuck at lower values until a sudden jump around epoch 7, indicating potential underexposure to certain triplet relationships early on. Overall, cosine triplet contrastive pre-training quickly fits the synthetic data but larger embedding sizes may introduce late-stage instability on held-out samples.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_aad02a7804b94b168a8de324c50e464c_proc_400995/synthetic_cosine_loss_acc.png"
+      },
+      {
+        "analysis": "synthetic dataset \u2013 euclidean triplet: Loss trajectories are similar to the cosine variant but show slightly faster convergence, with training losses hitting zero by epoch 12 across all embedding dimensions. Validation losses again decrease steadily but display sporadic spikes and a noisy plateau for E=50 after epoch 25, pointing to overfitting on synthetic examples. Accuracy for training tops out at 100% by epoch 6 (E=30, 50) and epoch 9 (E=10). Validation accuracy climbs more gradually for E=10 (reaching around 75% by epoch 7 before plateauing) and then jumps to full accuracy by epoch 10. Higher-dimensional models achieve perfect validation accuracy by epoch 6. The behavior suggests that Euclidean-triplet pre-training achieves equally strong or slightly faster convergence compared to cosine triplets, with similar overfitting tendencies in larger embedding spaces.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_aad02a7804b94b168a8de324c50e464c_proc_400995/synthetic_euclidean_loss_acc.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_aad02a7804b94b168a8de324c50e464c_proc_400995/synthetic_cosine_loss_acc.png",
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_aad02a7804b94b168a8de324c50e464c_proc_400995/synthetic_euclidean_loss_acc.png"
+    ],
+    "vlm_feedback_summary": "Both contrastive variants converge extremely quickly on the synthetic dataset, achieving perfect accuracy in under 10 epochs for sufficiently large embeddings. Euclidean triplet shows marginally faster convergence than cosine triplet, but both experience noisy validation loss and potential overfitting at higher dimensions. Embedding size influences early-stage learning stability, with E=50 exhibiting delayed validation accuracy gains and post-convergence loss spikes. Future ablations should explore regularization or early stopping to mitigate late-stage instability and assess performance on more complex or realistic code datasets.",
+    "exp_results_dir": "experiment_results/experiment_aad02a7804b94b168a8de324c50e464c_proc_400995",
+    "ablation_name": "Distance Metric Ablation",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_aad02a7804b94b168a8de324c50e464c_proc_400995/experiment_data.npy"
+    ]
+  },
+  {
+    "overall_plan": "We will conduct a systematic two-dimensional grid search over training epochs and embedding dimensions for our LSTM-based CodeEncoder on a synthetic code retrieval task with triplet loss. First, we tune the number of epochs by looping over values like 10, 30, and 50, training from scratch for each setting and logging per-epoch training/validation losses, retrieval accuracies, and final validation predictions under a single 'EPOCHS' key. Next, we perform an embedding dimension ablation by iterating over sizes [16, 32, 64, 128, 256], again training each model for the fixed best epoch count, recording the same suite of metrics and final top-1 validation predictions under 'embed_hidden'\u2192'synthetic'[dim]. All results are aggregated into a nested Python dict and saved as a NumPy file, enabling downstream plotting and analysis. This comprehensive plan will reveal how training duration and model capacity jointly affect retrieval performance, guiding optimal hyperparameter selection.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "train accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the training dataset",
+            "data": [
+              {
+                "dataset_name": "synthetic (Dimension: 16)",
+                "final_value": 0.875,
+                "best_value": 0.875
+              },
+              {
+                "dataset_name": "synthetic (Dimension: 32)",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "synthetic (Dimension: 64)",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "synthetic (Dimension: 128)",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "synthetic (Dimension: 256)",
+                "final_value": 1.0,
+                "best_value": 1.0
+              }
+            ]
+          },
+          {
+            "metric_name": "validation accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the validation dataset",
+            "data": [
+              {
+                "dataset_name": "synthetic (Dimension: 16)",
+                "final_value": 0.75,
+                "best_value": 0.75
+              },
+              {
+                "dataset_name": "synthetic (Dimension: 32)",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "synthetic (Dimension: 64)",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "synthetic (Dimension: 128)",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "synthetic (Dimension: 256)",
+                "final_value": 1.0,
+                "best_value": 1.0
+              }
+            ]
+          },
+          {
+            "metric_name": "training loss",
+            "lower_is_better": true,
+            "description": "Loss on the training dataset",
+            "data": [
+              {
+                "dataset_name": "synthetic (Dimension: 16)",
+                "final_value": 0.584,
+                "best_value": 0.584
+              },
+              {
+                "dataset_name": "synthetic (Dimension: 32)",
+                "final_value": 0.0683,
+                "best_value": 0.0683
+              },
+              {
+                "dataset_name": "synthetic (Dimension: 64)",
+                "final_value": 0.0,
+                "best_value": 0.0
+              },
+              {
+                "dataset_name": "synthetic (Dimension: 128)",
+                "final_value": 0.0,
+                "best_value": 0.0
+              },
+              {
+                "dataset_name": "synthetic (Dimension: 256)",
+                "final_value": 0.0,
+                "best_value": 0.0
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Loss on the validation dataset",
+            "data": [
+              {
+                "dataset_name": "synthetic (Dimension: 16)",
+                "final_value": 0.7061,
+                "best_value": 0.7061
+              },
+              {
+                "dataset_name": "synthetic (Dimension: 32)",
+                "final_value": 0.2551,
+                "best_value": 0.2551
+              },
+              {
+                "dataset_name": "synthetic (Dimension: 64)",
+                "final_value": 0.0,
+                "best_value": 0.0
+              },
+              {
+                "dataset_name": "synthetic (Dimension: 128)",
+                "final_value": 0.0,
+                "best_value": 0.0
+              },
+              {
+                "dataset_name": "synthetic (Dimension: 256)",
+                "final_value": 0.0,
+                "best_value": 0.0
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os\nimport random\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.nn.functional as F\nfrom torch.utils.data import Dataset, DataLoader, Subset\nfrom torch.optim import Adam\n\n# set up working directory\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\n\n# generate synthetic code snippets and traces\ncodes = []\nfor c in range(1, 11):\n    codes.append(f\"def f(x): return x+{c}\")\n    codes.append(f\"def f(x): return {c}+x\")\ninput_set = np.random.randint(-10, 10, size=100)\ntraces = []\nfor code in codes:\n    env = {}\n    exec(code, env)\n    f = env[\"f\"]\n    traces.append(tuple(f(int(x)) for x in input_set))\n\n# group snippets by trace\ntrace_to_indices = {}\nfor idx, trace in enumerate(traces):\n    trace_to_indices.setdefault(trace, []).append(idx)\ngroup_to_indices = {gid: idxs for gid, idxs in enumerate(trace_to_indices.values())}\nindex_to_gid = [None] * len(codes)\nfor gid, idxs in group_to_indices.items():\n    for idx in idxs:\n        index_to_gid[idx] = gid\n\n# encode snippets as character sequences\nvocab = sorted(set(\"\".join(codes)))\nstoi = {c: i + 1 for i, c in enumerate(vocab)}\nstoi[\"PAD\"] = 0\nmax_len = max(len(s) for s in codes)\nencoded = []\nfor s in codes:\n    seq = [stoi[c] for c in s] + [0] * (max_len - len(s))\n    encoded.append(seq)\nencoded = torch.LongTensor(encoded).to(device)\n\n\n# dataset & loaders\nclass CodeDataset(Dataset):\n    def __init__(self, encoded, group_to_indices, index_to_gid):\n        self.encoded = encoded\n        self.group_to_indices = group_to_indices\n        self.index_to_gid = index_to_gid\n\n    def __len__(self):\n        return len(self.index_to_gid)\n\n    def __getitem__(self, idx):\n        anchor = self.encoded[idx]\n        gid = self.index_to_gid[idx]\n        pos = idx\n        while pos == idx:\n            pos = random.choice(self.group_to_indices[gid])\n        neg_gid = random.choice([g for g in self.group_to_indices if g != gid])\n        neg = random.choice(self.group_to_indices[neg_gid])\n        return anchor, self.encoded[pos], self.encoded[neg]\n\n\ndataset = CodeDataset(encoded, group_to_indices, index_to_gid)\nall_gids = list(group_to_indices.keys())\nrandom.shuffle(all_gids)\nsplit = int(0.8 * len(all_gids))\ntrain_gids, val_gids = all_gids[:split], all_gids[split:]\ntrain_indices = [i for g in train_gids for i in group_to_indices[g]]\nval_indices = [i for g in val_gids for i in group_to_indices[g]]\ntrain_loader = DataLoader(Subset(dataset, train_indices), batch_size=8, shuffle=True)\nval_loader = DataLoader(Subset(dataset, val_indices), batch_size=8, shuffle=False)\n\n\n# model definition\nclass CodeEncoder(nn.Module):\n    def __init__(self, vocab_size, embed_dim=64, hidden=64):\n        super().__init__()\n        self.embed = nn.Embedding(vocab_size, embed_dim, padding_idx=0)\n        self.lstm = nn.LSTM(embed_dim, hidden, batch_first=True)\n\n    def forward(self, x):\n        x = self.embed(x)\n        _, (h, _) = self.lstm(x)\n        return h.squeeze(0)\n\n\n# ablation over embedding & hidden dims\nDIM_LIST = [16, 32, 64, 128, 256]\nEPOCHS = 30\nexperiment_data = {\"embed_hidden\": {\"synthetic\": {}}}\n\nfor dim in DIM_LIST:\n    print(f\"Starting ablation for dim={dim}\")\n    model = CodeEncoder(len(stoi), embed_dim=dim, hidden=dim).to(device)\n    optimizer = Adam(model.parameters(), lr=1e-3)\n    loss_fn = nn.TripletMarginLoss(margin=1.0)\n\n    data = {\n        \"metrics\": {\"train\": [], \"val\": []},\n        \"losses\": {\"train\": [], \"val\": []},\n        \"predictions\": [],\n        \"ground_truth\": [],\n    }\n\n    for epoch in range(EPOCHS):\n        model.train()\n        total_train_loss = 0.0\n        for a, p, n in train_loader:\n            a, p, n = a.to(device), p.to(device), n.to(device)\n            emb_a, emb_p, emb_n = model(a), model(p), model(n)\n            loss = loss_fn(emb_a, emb_p, emb_n)\n            optimizer.zero_grad()\n            loss.backward()\n            optimizer.step()\n            total_train_loss += loss.item()\n        data[\"losses\"][\"train\"].append(total_train_loss / len(train_loader))\n\n        model.eval()\n        total_val_loss = 0.0\n        with torch.no_grad():\n            for a, p, n in val_loader:\n                a, p, n = a.to(device), p.to(device), n.to(device)\n                total_val_loss += loss_fn(model(a), model(p), model(n)).item()\n        data[\"losses\"][\"val\"].append(total_val_loss / len(val_loader))\n\n        # compute retrieval accuracy\n        with torch.no_grad():\n            emb_all = model(encoded)\n            emb_norm = F.normalize(emb_all, dim=1)\n            sims = emb_norm @ emb_norm.T\n\n            def compute_acc(indices):\n                correct = 0\n                for i in indices:\n                    sim = sims[i].clone()\n                    sim[i] = -float(\"inf\")\n                    top1 = torch.argmax(sim).item()\n                    if index_to_gid[top1] == index_to_gid[i]:\n                        correct += 1\n                return correct / len(indices)\n\n            train_acc = compute_acc(train_indices)\n            val_acc = compute_acc(val_indices)\n            data[\"metrics\"][\"train\"].append(train_acc)\n            data[\"metrics\"][\"val\"].append(val_acc)\n\n    # final predictions on validation\n    model.eval()\n    with torch.no_grad():\n        emb_all = model(encoded)\n        emb_norm = F.normalize(emb_all, dim=1)\n        sims = emb_norm @ emb_norm.T\n        for i in val_indices:\n            sim = sims[i].clone()\n            sim[i] = -float(\"inf\")\n            top1 = torch.argmax(sim).item()\n            data[\"predictions\"].append(index_to_gid[top1])\n            data[\"ground_truth\"].append(index_to_gid[i])\n\n    experiment_data[\"embed_hidden\"][\"synthetic\"][dim] = data\n    print(f\"Finished dim={dim}, final val_acc={data['metrics']['val'][-1]:.4f}\")\n\n# save all results\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\nprint(\"Saved experiment_data.npy\")\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\n# load experiment data\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\n    data = experiment_data[\"embed_hidden\"][\"synthetic\"]\n    dims = sorted(data.keys())\n    epochs = len(data[dims[0]][\"losses\"][\"train\"])\n    xs = list(range(1, epochs + 1))\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n    data, dims, xs = {}, [], []\n\n# Loss curves\ntry:\n    plt.figure()\n    for d in dims:\n        l = data[d][\"losses\"]\n        plt.plot(xs, l[\"train\"], label=f\"train dim={d}\")\n        plt.plot(xs, l[\"val\"], \"--\", label=f\"val dim={d}\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Loss\")\n    plt.title(\"Loss Curves on synthetic dataset\\nTrain: solid, Val: dashed\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_loss_curve.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating loss curve: {e}\")\n    plt.close()\n\n# Accuracy curves\ntry:\n    plt.figure()\n    for d in dims:\n        m = data[d][\"metrics\"]\n        plt.plot(xs, m[\"train\"], label=f\"train dim={d}\")\n        plt.plot(xs, m[\"val\"], \"--\", label=f\"val dim={d}\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Retrieval Accuracy\")\n    plt.title(\"Accuracy Curves on synthetic dataset\\nTrain: solid, Val: dashed\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_accuracy_curve.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating accuracy curve: {e}\")\n    plt.close()\n\n# Print final validation accuracies\nfor d in dims:\n    final_acc = data[d][\"metrics\"][\"val\"][-1]\n    print(f\"Final val acc for dim={d}: {final_acc:.4f}\")\n",
+    "plot_plan": "We\u2019ll load the saved experiment_data.npy and extract the per\u2010dimension curves for the synthetic dataset. For each embedding size we gather train/val losses and accuracies across epochs. We then create two summary figures: one plotting all train vs. val loss curves and one plotting all train vs. val accuracy curves, with clear titles, subtitles, and legends. Each figure is wrapped in a try\u2010except block, saved under working_dir with descriptive names, and closed afterward. Finally, we print out the final validation accuracy for each embedding dimension. This ensures we visualize trends and also report key metrics to the console.",
+    "plot_analyses": [
+      {
+        "analysis": "Accuracy curves on the synthetic dataset with varying embedding dimensions reveal a strong capacity\u2013performance relationship. Models using 256-dim embeddings reach perfect training and validation accuracy by around epoch 3, while 128-dim models converge slightly slower (by epoch 5). The 64-dim configuration achieves unity on both splits by roughly epoch 7. With 32-dim embeddings, training accuracy climbs steadily but only hits 100% near epoch 13, and validation accuracy plateaus around 0.50 until showing modest improvement late in training. The 16-dim model fails to learn effectively: training accuracy rises gradually and peaks below 0.90, while validation accuracy remains stuck at 0.50 before inching up to about 0.75 at the very end. This pattern indicates that embedding dimension critically affects how quickly and how well the model can distinguish trace-equivalent from trace-dissimilar code.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_8009319c799940e694e8f42df978c1e1_proc_400997/synthetic_accuracy_curve.png"
+      },
+      {
+        "analysis": "Loss curves mirror the accuracy findings: high-capacity models (256 and 128 dims) drive training and validation loss to near zero within the first few epochs, with negligible divergence between splits. The 64-dim run takes longer (around 7\u20138 epochs), but also achieves minimal loss throughout. The 32-dim setting displays gradual loss reduction, with occasional validation spikes around epochs 25\u201327, signaling some instability or under-capacity. The 16-dim variant retains a high training loss (>0.8) and shows almost no decrease in validation loss, demonstrating its inability to capture the contrastive objectives based on dynamic traces. Overall, larger embedding sizes not only speed up convergence but also produce stable generalization, whereas smaller dimensions struggle to represent runtime behavior effectively.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_8009319c799940e694e8f42df978c1e1_proc_400997/synthetic_loss_curve.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_8009319c799940e694e8f42df978c1e1_proc_400997/synthetic_accuracy_curve.png",
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_8009319c799940e694e8f42df978c1e1_proc_400997/synthetic_loss_curve.png"
+    ],
+    "vlm_feedback_summary": "Embedding dimension scaling exerts a pronounced impact: larger dimensions accelerate convergence, minimize loss quickly, and yield perfect or near-perfect accuracy on both training and validation sets, while lower dimensions fail to capture the richness of dynamic trace data, resulting in slow or stalled learning and subpar retrieval performance. This capacity-performance tradeoff underscores the necessity of sufficient embedding size when pre-training on execution traces to learn robust code representations.",
+    "exp_results_dir": "experiment_results/experiment_8009319c799940e694e8f42df978c1e1_proc_400997",
+    "ablation_name": "Embedding Dimension Ablation",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_8009319c799940e694e8f42df978c1e1_proc_400997/experiment_data.npy"
+    ]
+  },
+  {
+    "overall_plan": "Our overarching plan comprises two complementary components. First, we conduct a systematic hyperparameter sweep over the number of training epochs (e.g., 10, 30, 50), re\u2010training the LSTM encoder from scratch for each setting, and logging per\u2010epoch losses, retrieval accuracies, and final validation predictions into a consolidated NumPy file for later analysis. Second, we implement a variable renaming invariance ablation: we randomly rename function and argument identifiers in code snippets, construct a joint vocabulary of original and renamed tokens, train a triplet retrieval model on the original code, and at each epoch evaluate retrieval performance on both the standard validation set and the newly renamed validation set. We save final predictions for both to quantify the model\u2019s robustness to superficial code changes.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "train accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the synthetic training dataset",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 1.0,
+                "best_value": 1.0
+              }
+            ]
+          },
+          {
+            "metric_name": "validation accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the synthetic validation dataset",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 1.0,
+                "best_value": 1.0
+              }
+            ]
+          },
+          {
+            "metric_name": "renaming accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy for the renaming task on the synthetic dataset",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 0.0,
+                "best_value": 0.25
+              }
+            ]
+          },
+          {
+            "metric_name": "train loss",
+            "lower_is_better": true,
+            "description": "Loss on the synthetic training dataset",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 0.029,
+                "best_value": 0.029
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Loss on the synthetic validation dataset",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 0.0,
+                "best_value": 0.0
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os\nimport random\nimport re\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.nn.functional as F\nfrom torch.utils.data import Dataset, DataLoader, Subset\nfrom torch.optim import Adam\n\n# reproducibility & setup\nrandom.seed(0)\nnp.random.seed(0)\ntorch.manual_seed(0)\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\n\n# generate synthetic snippets and semantic traces\ncodes = []\nfor c in range(1, 11):\n    codes.append(f\"def f(x): return x+{c}\")\n    codes.append(f\"def f(x): return {c}+x\")\ninput_set = np.random.randint(-10, 10, size=100)\ntraces = []\nfor code in codes:\n    env = {}\n    exec(code, env)\n    f = env[\"f\"]\n    traces.append(tuple(f(int(x)) for x in input_set))\n\n# group by semantic equivalence\ntrace_to_indices = {}\nfor idx, trace in enumerate(traces):\n    trace_to_indices.setdefault(trace, []).append(idx)\ngroup_to_indices = {gid: idxs for gid, idxs in enumerate(trace_to_indices.values())}\nindex_to_gid = [None] * len(codes)\nfor gid, idxs in group_to_indices.items():\n    for idx in idxs:\n        index_to_gid[idx] = gid\n\n# generate one unseen random renaming per snippet\nrenamed_codes = []\nfor s in codes:\n    func = f\"g{random.randint(100,999)}\"\n    var = f\"y{random.randint(100,999)}\"\n    s2 = re.sub(r\"\\bdef\\s+f\\(\", f\"def {func}(\", s)\n    s3 = re.sub(r\"\\bx\\b\", var, s2)\n    renamed_codes.append(s3)\n\n# build joint vocab over original + renamed\nall_text = \"\".join(codes + renamed_codes)\nvocab = sorted(set(all_text))\nstoi = {c: i + 1 for i, c in enumerate(vocab)}\nstoi[\"PAD\"] = 0\nmax_len = max(len(s) for s in (codes + renamed_codes))\n\n\n# helper to encode and pad\ndef encode_list(strs):\n    arr = []\n    for s in strs:\n        seq = [stoi.get(c, 0) for c in s] + [0] * (max_len - len(s))\n        arr.append(seq)\n    return torch.LongTensor(arr)\n\n\nencoded = encode_list(codes)\nencoded_renamed = encode_list(renamed_codes)\n\n# train/val split on groups\nall_gids = list(group_to_indices.keys())\nrandom.shuffle(all_gids)\nsplit = int(0.8 * len(all_gids))\ntrain_gids, val_gids = all_gids[:split], all_gids[split:]\ntrain_indices = [i for g in train_gids for i in group_to_indices[g]]\nval_indices = [i for g in val_gids for i in group_to_indices[g]]\n\n\n# dataset & loaders\nclass CodeDataset(Dataset):\n    def __init__(self, encoded, group_to_indices, index_to_gid):\n        self.encoded = encoded\n        self.group_to_indices = group_to_indices\n        self.index_to_gid = index_to_gid\n\n    def __len__(self):\n        return len(self.index_to_gid)\n\n    def __getitem__(self, idx):\n        anchor = self.encoded[idx]\n        gid = self.index_to_gid[idx]\n        pos = idx\n        while pos == idx:\n            pos = random.choice(self.group_to_indices[gid])\n        neg_gid = random.choice([g for g in self.group_to_indices if g != gid])\n        neg = random.choice(self.group_to_indices[neg_gid])\n        return anchor, self.encoded[pos], self.encoded[neg]\n\n\ndataset = CodeDataset(encoded, group_to_indices, index_to_gid)\ntrain_loader = DataLoader(Subset(dataset, train_indices), batch_size=8, shuffle=True)\nval_loader = DataLoader(Subset(dataset, val_indices), batch_size=8, shuffle=False)\n\n\n# model\nclass CodeEncoder(nn.Module):\n    def __init__(self, vocab_size, embed_dim=64, hidden=64):\n        super().__init__()\n        self.embed = nn.Embedding(vocab_size, embed_dim, padding_idx=0)\n        self.lstm = nn.LSTM(embed_dim, hidden, batch_first=True)\n\n    def forward(self, x):\n        x = self.embed(x)\n        _, (h, _) = self.lstm(x)\n        return h.squeeze(0)\n\n\n# ablation experiment\nEPOCH_LIST = [10, 30, 50]\nexperiment_data = {\"variable_renaming_invariance\": {\"synthetic\": {}}}\n\nfor E in EPOCH_LIST:\n    model = CodeEncoder(len(stoi), 64, 64).to(device)\n    optimizer = Adam(model.parameters(), lr=1e-3)\n    loss_fn = nn.TripletMarginLoss(margin=1.0)\n\n    data = {\n        \"metrics\": {\"train\": [], \"val\": [], \"rename\": []},\n        \"losses\": {\"train\": [], \"val\": []},\n        \"predictions\": [],\n        \"ground_truth\": [],\n        \"rename_predictions\": [],\n        \"rename_ground_truth\": [],\n    }\n\n    # train + epochwise eval\n    for epoch in range(E):\n        model.train()\n        tot_tr = 0\n        for a, p, n in train_loader:\n            a, p, n = a.to(device), p.to(device), n.to(device)\n            ea, ep, en = model(a), model(p), model(n)\n            loss = loss_fn(ea, ep, en)\n            optimizer.zero_grad()\n            loss.backward()\n            optimizer.step()\n            tot_tr += loss.item()\n        data[\"losses\"][\"train\"].append(tot_tr / len(train_loader))\n\n        model.eval()\n        tot_val = 0\n        with torch.no_grad():\n            for a, p, n in val_loader:\n                a, p, n = a.to(device), p.to(device), n.to(device)\n                tot_val += loss_fn(model(a), model(p), model(n)).item()\n        data[\"losses\"][\"val\"].append(tot_val / len(val_loader))\n\n        # retrieval acc on original\n        with torch.no_grad():\n            emb_all = model(encoded.to(device))\n            emb_norm = F.normalize(emb_all, dim=1)\n            sims = emb_norm @ emb_norm.T\n\n            def compute_acc(idxs):\n                corr = 0\n                for i in idxs:\n                    s = sims[i].clone()\n                    s[i] = -1e9\n                    j = torch.argmax(s).item()\n                    if index_to_gid[j] == index_to_gid[i]:\n                        corr += 1\n                return corr / len(idxs)\n\n            tr_acc = compute_acc(train_indices)\n            v_acc = compute_acc(val_indices)\n\n        # retrieval acc on unseen renamings (val only)\n        with torch.no_grad():\n            emb_ren = model(encoded_renamed.to(device))\n            ren_norm = F.normalize(emb_ren, dim=1)\n            sims2 = ren_norm @ emb_norm.T\n            corr2 = 0\n            for i in val_indices:\n                j = torch.argmax(sims2[i]).item()\n                if index_to_gid[j] == index_to_gid[i]:\n                    corr2 += 1\n            ren_acc = corr2 / len(val_indices)\n\n        data[\"metrics\"][\"train\"].append(tr_acc)\n        data[\"metrics\"][\"val\"].append(v_acc)\n        data[\"metrics\"][\"rename\"].append(ren_acc)\n\n    # final predictions\n    model.eval()\n    with torch.no_grad():\n        emb_o = model(encoded.to(device))\n        norm_o = F.normalize(emb_o, dim=1)\n        sims_o = norm_o @ norm_o.T\n        emb_r = model(encoded_renamed.to(device))\n        norm_r = F.normalize(emb_r, dim=1)\n        sims_r = norm_r @ norm_o.T\n\n        for i in val_indices:\n            # original\n            s = sims_o[i].clone()\n            s[i] = -1e9\n            j = torch.argmax(s).item()\n            data[\"predictions\"].append(index_to_gid[j])\n            data[\"ground_truth\"].append(index_to_gid[i])\n            # rename\n            j2 = torch.argmax(sims_r[i]).item()\n            data[\"rename_predictions\"].append(index_to_gid[j2])\n            data[\"rename_ground_truth\"].append(index_to_gid[i])\n\n    experiment_data[\"variable_renaming_invariance\"][\"synthetic\"][E] = data\n    print(\n        f\"Done E={E}: val_acc={data['metrics']['val'][-1]:.4f}, rename_acc={data['metrics']['rename'][-1]:.4f}\"\n    )\n\n# save results\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\nprint(\"Saved experiment_data.npy\")\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n# load experiment data\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\nsynthetic_data = experiment_data[\"variable_renaming_invariance\"][\"synthetic\"]\n\n# plot for each epoch configuration\nfor E in sorted(synthetic_data.keys()):\n    data = synthetic_data[E]\n    epochs = list(range(1, len(data[\"losses\"][\"train\"]) + 1))\n    try:\n        fig = plt.figure(figsize=(10, 4))\n        ax1 = fig.add_subplot(1, 2, 1)\n        ax1.plot(epochs, data[\"losses\"][\"train\"], label=\"Train Loss\")\n        ax1.plot(epochs, data[\"losses\"][\"val\"], label=\"Val Loss\")\n        ax1.set_title(\"Left: Training and Validation Loss\")\n        ax1.set_xlabel(\"Epoch\")\n        ax1.set_ylabel(\"Loss\")\n        ax1.legend()\n\n        ax2 = fig.add_subplot(1, 2, 2)\n        ax2.plot(epochs, data[\"metrics\"][\"train\"], label=\"Train Acc\")\n        ax2.plot(epochs, data[\"metrics\"][\"val\"], label=\"Val Acc\")\n        ax2.plot(epochs, data[\"metrics\"][\"rename\"], label=\"Rename Acc\")\n        ax2.set_title(\"Right: Training, Validation and Rename Accuracy\")\n        ax2.set_xlabel(\"Epoch\")\n        ax2.set_ylabel(\"Accuracy\")\n        ax2.legend()\n\n        plt.suptitle(f\"Synthetic Dataset (E={E})\")\n        save_path = os.path.join(working_dir, f\"synthetic_dataset_E{E}_curves.png\")\n        plt.savefig(save_path)\n        plt.close(fig)\n        # print final metrics\n        last_val = data[\"metrics\"][\"val\"][-1]\n        last_ren = data[\"metrics\"][\"rename\"][-1]\n        print(f\"E={E}: final val_acc={last_val:.4f}, rename_acc={last_ren:.4f}\")\n    except Exception as e:\n        print(f\"Error creating plot for E={E}: {e}\")\n        plt.close()\n",
+    "plot_plan": "We will load the saved experiment data and extract the synthetic\u2010dataset results. For each epoch setting E, we retrieve losses and the three retrieval accuracies across training epochs. We then create a two\u2010panel figure: the left panel plots train and validation loss versus epoch, and the right panel plots train, validation, and rename retrieval accuracy versus epoch. We label each subplot with a clear title (\u201cLeft: Training and Validation Loss\u201d and \u201cRight: Training, Validation and Rename Accuracy\u201d), add axis labels and legends, and set a suptitle indicating the dataset and E. Each figure is wrapped in its own try\u2010except to handle any errors and is saved to working_dir under a descriptive filename. After saving, we print the final validation and renaming accuracies for that E. Finally, all figures are closed to free resources.",
+    "plot_analyses": [
+      {
+        "analysis": "In the 30-epoch run on the synthetic dataset, training and validation loss drop sharply from about 1.0 to near zero by epoch 12, with the two curves tracking closely until that point and then exhibiting low-magnitude fluctuations thereafter. Both training and validation accuracy climb rapidly, reaching perfect or near-perfect scores by around epoch 10. In contrast, rename accuracy remains at zero for the first several epochs, then exhibits a few isolated spikes (around epochs 7, 13, and 18) up to around 0.5, but never sustains high values and returns to near zero by the end. This suggests that standard contrastive objectives drive convergence on clone and semantic prediction quickly, while the rename-invariance signal remains weak and sporadic under this schedule.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_80f4639c872f417d835aa5c4e1f4eea1_proc_400996/synthetic_dataset_E30_curves.png"
+      },
+      {
+        "analysis": "With only 10 epochs of training, the loss on both splits decreases slowly from roughly 0.99 to 0.80, and the two curves stay tightly coupled. Training accuracy rises from roughly 0.4 to 1.0 by epoch 7, and validation accuracy from about 0.5 to 1.0 by epoch 5, indicating the model quickly learns static contrastive tasks even within limited epochs. Rename accuracy holds at about 0.25 for the majority of the schedule (epochs 1\u20138) before dropping to zero in the final two epochs, again failing to build a stable invariance to renaming under this abbreviated training.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_80f4639c872f417d835aa5c4e1f4eea1_proc_400996/synthetic_dataset_E10_curves.png"
+      },
+      {
+        "analysis": "Extending to 50 epochs yields a very similar pattern to the 30-epoch case: loss plunges between epochs 5 and 15 into the 0\u20130.2 range and then oscillates at low values, and both train and validation accuracy saturate at or near 1.0 by around epoch 10\u201312. Rename accuracy again shows only occasional brief upticks to 0.25 (early), 0.5 (around epoch 28), and 0.25 (around epoch 9), before returning to 0. These transient spikes fail to translate into lasting performance, suggesting that even prolonged exposure does not meaningfully strengthen the model\u2019s rename-invariance under the current contrastive design.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_80f4639c872f417d835aa5c4e1f4eea1_proc_400996/synthetic_dataset_E50_curves.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_80f4639c872f417d835aa5c4e1f4eea1_proc_400996/synthetic_dataset_E30_curves.png",
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_80f4639c872f417d835aa5c4e1f4eea1_proc_400996/synthetic_dataset_E10_curves.png",
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_80f4639c872f417d835aa5c4e1f4eea1_proc_400996/synthetic_dataset_E50_curves.png"
+    ],
+    "vlm_feedback_summary": "Across all three epoch regimes, the model rapidly masters standard contrastive pre-training objectives (clone detection) but consistently underperforms on the rename-invariance subtask. Adjustments to the rename augmentation frequency, loss weighting, or integration of auxiliary objectives may be needed to amplify this weak signal.",
+    "exp_results_dir": "experiment_results/experiment_80f4639c872f417d835aa5c4e1f4eea1_proc_400996",
+    "ablation_name": "Variable Renaming Invariance Ablation",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_80f4639c872f417d835aa5c4e1f4eea1_proc_400996/experiment_data.npy"
+    ]
+  },
+  {
+    "overall_plan": "We will conduct a two\u2010stage experimental campaign to optimize and analyze our LSTM encoder for code retrieval. First, we perform hyperparameter tuning over the number of training epochs (10, 30, 50) using a unidirectional LSTM encoder. For each epoch setting, we reinitialize the model, train from scratch with triplet loss on the synthetic code dataset, and record per\u2010epoch training/validation losses, retrieval accuracies, and final validation predictions. Second, we expand this pipeline into a bidirectional LSTM ablation: we add a \u2018bidirectional\u2019 flag to our encoder (halving per\u2010direction hidden size to keep total dimensions constant) and repeat the same epoch sweep for both unidirectional and bidirectional variants. We capture the same suite of metrics and store all results in a nested dictionary under experiment_data['bidirectional_lstm_ablation']['synthetic'][variant][E], then save the complete dataset to experiment_data.npy. This approach simultaneously identifies the best epoch count and evaluates whether bidirectionality yields retrieval improvements over the baseline.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "train accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the training set",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 1.0,
+                "best_value": 1.0
+              }
+            ]
+          },
+          {
+            "metric_name": "validation accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the validation set",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 1.0,
+                "best_value": 1.0
+              }
+            ]
+          },
+          {
+            "metric_name": "train loss",
+            "lower_is_better": true,
+            "description": "Loss on the training set",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 0.0009,
+                "best_value": 0.0
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Loss on the validation set",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 0.0454,
+                "best_value": 0.0
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os, random\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.nn.functional as F\nfrom torch.utils.data import Dataset, DataLoader, Subset\nfrom torch.optim import Adam\n\n# setup\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n\n# synthetic codes & traces\ncodes = []\nfor c in range(1, 11):\n    codes.append(f\"def f(x): return x+{c}\")\n    codes.append(f\"def f(x): return {c}+x\")\ninput_set = np.random.randint(-10, 10, 100)\ntraces = []\nfor code in codes:\n    env = {}\n    exec(code, env)\n    f = env[\"f\"]\n    traces.append(tuple(f(int(x)) for x in input_set))\ntrace_to_indices = {}\nfor idx, trace in enumerate(traces):\n    trace_to_indices.setdefault(trace, []).append(idx)\ngroup_to_indices = {gid: idxs for gid, idxs in enumerate(trace_to_indices.values())}\nindex_to_gid = [None] * len(codes)\nfor gid, idxs in group_to_indices.items():\n    for i in idxs:\n        index_to_gid[i] = gid\n\n# char\u2010level encoding\nvocab = sorted(set(\"\".join(codes)))\nstoi = {c: i + 1 for i, c in enumerate(vocab)}\nstoi[\"PAD\"] = 0\nmax_len = max(len(s) for s in codes)\nencoded = torch.LongTensor(\n    [[stoi[c] for c in s] + [0] * (max_len - len(s)) for s in codes]\n)\n\n\n# dataset & splits\nclass CodeDataset(Dataset):\n    def __init__(self, encoded, group_to_indices, index_to_gid):\n        self.encoded, self.group_to_indices, self.index_to_gid = (\n            encoded,\n            group_to_indices,\n            index_to_gid,\n        )\n\n    def __len__(self):\n        return len(self.index_to_gid)\n\n    def __getitem__(self, idx):\n        a = self.encoded[idx]\n        gid = self.index_to_gid[idx]\n        p = idx\n        while p == idx:\n            p = random.choice(self.group_to_indices[gid])\n        neg_gid = random.choice([g for g in self.group_to_indices if g != gid])\n        n = random.choice(self.group_to_indices[neg_gid])\n        return a, self.encoded[p], self.encoded[n]\n\n\ndataset = CodeDataset(encoded, group_to_indices, index_to_gid)\nall_gids = list(group_to_indices.keys())\nrandom.shuffle(all_gids)\nsplit = int(0.8 * len(all_gids))\ntrain_gids, val_gids = all_gids[:split], all_gids[split:]\ntrain_indices = [i for g in train_gids for i in group_to_indices[g]]\nval_indices = [i for g in val_gids for i in group_to_indices[g]]\ntrain_loader = DataLoader(Subset(dataset, train_indices), batch_size=8, shuffle=True)\nval_loader = DataLoader(Subset(dataset, val_indices), batch_size=8, shuffle=False)\n\n\n# encoder with optional bidirectionality\nclass CodeEncoder(nn.Module):\n    def __init__(self, vocab_size, embed_dim=64, hidden=64, bidirectional=False):\n        super().__init__()\n        self.embed = nn.Embedding(vocab_size, embed_dim, padding_idx=0)\n        self.bidirectional = bidirectional\n        nh = hidden // (2 if bidirectional else 1)\n        self.lstm = nn.LSTM(\n            embed_dim, nh, batch_first=True, bidirectional=bidirectional\n        )\n\n    def forward(self, x):\n        x = self.embed(x)\n        h, _ = self.lstm(x)  # h: (B, T, D*num_dirs)\n        # get final hidden states\n        _, (hn, _) = self.lstm(x)\n        if self.bidirectional:\n            h1, h2 = hn[0], hn[1]\n            return torch.cat([h1, h2], dim=1)\n        else:\n            return hn.squeeze(0)\n\n\n# ablation study\nvariants = [\"unidirectional\", \"bidirectional\"]\nEPOCH_LIST = [10, 30, 50]\nexperiment_data = {\n    \"bidirectional_lstm_ablation\": {\"synthetic\": {v: {} for v in variants}}\n}\n\nfor variant in variants:\n    is_bi = variant == \"bidirectional\"\n    for E in EPOCH_LIST:\n        model = CodeEncoder(len(stoi), embed_dim=64, hidden=64, bidirectional=is_bi).to(\n            device\n        )\n        optimizer = Adam(model.parameters(), lr=1e-3)\n        loss_fn = nn.TripletMarginLoss(margin=1.0)\n\n        data = {\n            \"metrics\": {\"train\": [], \"val\": []},\n            \"losses\": {\"train\": [], \"val\": []},\n            \"predictions\": [],\n            \"ground_truth\": [],\n        }\n\n        for epoch in range(E):\n            model.train()\n            tr_loss = 0.0\n            for a, p, n in train_loader:\n                a, p, n = a.to(device), p.to(device), n.to(device)\n                ea, ep, en = model(a), model(p), model(n)\n                l = loss_fn(ea, ep, en)\n                optimizer.zero_grad()\n                l.backward()\n                optimizer.step()\n                tr_loss += l.item()\n            data[\"losses\"][\"train\"].append(tr_loss / len(train_loader))\n\n            model.eval()\n            vl = 0.0\n            with torch.no_grad():\n                for a, p, n in val_loader:\n                    a, p, n = a.to(device), p.to(device), n.to(device)\n                    vl += loss_fn(model(a), model(p), model(n)).item()\n            data[\"losses\"][\"val\"].append(vl / len(val_loader))\n\n            # retrieval acc\n            with torch.no_grad():\n                emb_all = model(encoded.to(device))\n                emb_n = F.normalize(emb_all, dim=1)\n                sims = emb_n @ emb_n.T\n\n                def comp_acc(indices):\n                    corr = 0\n                    for i in indices:\n                        s = sims[i].clone()\n                        s[i] = -1e9\n                        top1 = torch.argmax(s).item()\n                        if index_to_gid[top1] == index_to_gid[i]:\n                            corr += 1\n                    return corr / len(indices)\n\n                data[\"metrics\"][\"train\"].append(comp_acc(train_indices))\n                data[\"metrics\"][\"val\"].append(comp_acc(val_indices))\n\n        # final predictions\n        model.eval()\n        with torch.no_grad():\n            emb_all = model(encoded.to(device))\n            emb_n = F.normalize(emb_all, dim=1)\n            sims = emb_n @ emb_n.T\n            for i in val_indices:\n                s = sims[i].clone()\n                s[i] = -1e9\n                top1 = torch.argmax(s).item()\n                data[\"predictions\"].append(index_to_gid[top1])\n                data[\"ground_truth\"].append(index_to_gid[i])\n\n        # convert to numpy arrays\n        data_np = {\n            \"metrics\": {\n                \"train\": np.array(data[\"metrics\"][\"train\"]),\n                \"val\": np.array(data[\"metrics\"][\"val\"]),\n            },\n            \"losses\": {\n                \"train\": np.array(data[\"losses\"][\"train\"]),\n                \"val\": np.array(data[\"losses\"][\"val\"]),\n            },\n            \"predictions\": np.array(data[\"predictions\"]),\n            \"ground_truth\": np.array(data[\"ground_truth\"]),\n        }\n        experiment_data[\"bidirectional_lstm_ablation\"][\"synthetic\"][variant][\n            E\n        ] = data_np\n        print(f\"{variant} E={E} final val acc={data_np['metrics']['val'][-1]:.4f}\")\n\n# save\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\nprint(\"Saved experiment_data.npy\")\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n# load experiment data\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\n    exp = experiment_data[\"bidirectional_lstm_ablation\"][\"synthetic\"]\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n\n# Loss curves plot\ntry:\n    plt.figure()\n    for variant, results in exp.items():\n        for E, data in results.items():\n            tr = data[\"losses\"][\"train\"]\n            vl = data[\"losses\"][\"val\"]\n            plt.plot(tr, label=f\"{variant} train E={E}\")\n            plt.plot(vl, \"--\", label=f\"{variant} val E={E}\")\n    plt.title(\n        \"Training vs Validation Loss\\nsolid: train, dashed: validation on synthetic dataset\"\n    )\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Loss\")\n    plt.legend()\n    plt.savefig(\n        os.path.join(\n            working_dir, \"synthetic_bidirectional_lstm_ablation_loss_curves.png\"\n        )\n    )\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating loss plot: {e}\")\n    plt.close()\n\n# Accuracy curves plot\ntry:\n    plt.figure()\n    for variant, results in exp.items():\n        for E, data in results.items():\n            ta = data[\"metrics\"][\"train\"]\n            va = data[\"metrics\"][\"val\"]\n            plt.plot(ta, label=f\"{variant} train E={E}\")\n            plt.plot(va, \"--\", label=f\"{variant} val E={E}\")\n    plt.title(\n        \"Retrieval Accuracy vs Epoch\\nsolid: train, dashed: validation on synthetic dataset\"\n    )\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Accuracy\")\n    plt.legend()\n    plt.savefig(\n        os.path.join(\n            working_dir, \"synthetic_bidirectional_lstm_ablation_accuracy_curves.png\"\n        )\n    )\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating accuracy plot: {e}\")\n    plt.close()\n",
+    "plot_plan": "I will load the saved experiment data from the working directory and extract the synthetic ablation results for both unidirectional and bidirectional LSTMs. Then I will generate two main figures: one overlaying training and validation loss curves across all ablation settings, and another for the corresponding retrieval accuracy curves. Each plot is wrapped in its own try\u2010except block to handle any missing or corrupted data gracefully. The loss plot will use solid lines for training and dashed lines for validation, with labels indicating the variant and the number of training epochs. Likewise, the accuracy plot will follow the same line\u2010style convention. Both figures will have a clear title specifying the dataset and a subtitle clarifying the legend mapping to train versus validation. Finally, each figure will be saved to the working directory with descriptive filenames, and figures will be closed after saving to free up resources.",
+    "plot_analyses": [
+      {
+        "analysis": "Image 1 shows the training and validation loss curves over 50 epochs on the synthetic dataset for both unidirectional and bidirectional transformer encoders with embedding dimensions E = 10, 30, and 50. Key observations:\n- All configurations eventually drive training loss nearly to zero by around epoch 15, indicating sufficient model capacity to fit the synthetic data.\n- Validation loss follows a similar downward trend but exhibits more fluctuation, especially for bidirectional models at medium and high dimensions (E = 30, 50).  This suggests the bidirectional encoder is more prone to variance on unseen examples in this synthetic setting.\n- Higher-dimensional embeddings (E = 30, 50) consistently converge faster and to a lower final validation loss than E = 10, indicating that very small embedding sizes underrepresent important features of the trace-contrastive task.\n- The unidirectional model at E = 30 achieves the fastest validation loss decline, reaching near-zero error by epoch ~12, whereas the bidirectional E = 30 shows several validation loss spikes as late as epoch 30.\n- There is no strong overfitting regime: validation loss continues to decrease alongside training loss across all settings, though the bidirectional high-dimensional cases display minor late-stage oscillations.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_b78b574eaf7343a0833f9f2662cbc161_proc_400997/synthetic_bidirectional_lstm_ablation_loss_curves.png"
+      },
+      {
+        "analysis": "Image 2 depicts retrieval accuracy (contrastive recall) over the same 50 epochs and settings. Key findings:\n- All models reach perfect (1.0) training accuracy by around epoch 20, confirming that both unidirectional and bidirectional variants can perfectly discriminate positive and negative pairs in the training set.\n- Validation accuracy lags training by a few epochs but also reaches 100% for all configurations, indicating strong generalization on the synthetic distribution.\n- Unidirectional E = 30 achieves perfect validation accuracy fastest (by epoch ~6), followed by unidirectional E = 50 (epoch ~8) and E = 10 (epoch ~14). This mirrors the loss curves\u2019 indication that medium and high embedding sizes enable quicker learning.\n- Bidirectional models converge more slowly on validation accuracy, with E = 50 hitting 1.0 by epoch ~12 and E = 30 by epoch ~15, while E = 10 requires ~20 epochs. The consistent lag behind unidirectional counterparts suggests directional masking may simplify the contrastive objective on this synthetic task.\n- Minor drops in validation accuracy around mid-training for several curves coincide with loss spikes, reinforcing the link between occasional over-variance in bidirectional training and temporary generalization dips.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_b78b574eaf7343a0833f9f2662cbc161_proc_400997/synthetic_bidirectional_lstm_ablation_accuracy_curves.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_b78b574eaf7343a0833f9f2662cbc161_proc_400997/synthetic_bidirectional_lstm_ablation_loss_curves.png",
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_b78b574eaf7343a0833f9f2662cbc161_proc_400997/synthetic_bidirectional_lstm_ablation_accuracy_curves.png"
+    ],
+    "vlm_feedback_summary": "Across embedding dimensions, unidirectional encoders learn faster and more stably than bidirectional ones on this synthetic retrieval task. Embedding sizes of 30 and above substantially accelerate convergence and reduce variance, while very small embeddings (E = 10) slow the process and yield higher final loss/longer to perfect accuracy. No overfitting is evident, though bidirectional high-dimensional models show slight validation fluctuations, suggesting room for regularization or curriculum tweaks in later experiments.",
+    "exp_results_dir": "experiment_results/experiment_b78b574eaf7343a0833f9f2662cbc161_proc_400997",
+    "ablation_name": "Bidirectional LSTM Ablation",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_b78b574eaf7343a0833f9f2662cbc161_proc_400997/experiment_data.npy"
+    ]
+  },
+  {
+    "overall_plan": "We will conduct a two-part experimental study of an LSTM encoder. First, we will perform a hyperparameter sweep over training epochs (e.g., 10, 30, 50), reinitializing the model for each setting to record per\u2010epoch losses, retrieval accuracies, and final validation predictions. Second, we will execute a dead\u2010code\u2010injection ablation: generate paired clean and code\u2010injected synthetic snippets, then train and evaluate the same encoder across identical epoch budgets on both variants, capturing losses, retrieval accuracies, predictions, and ground truths. All results are stored in a single NumPy file with organized keys (\u201cEPOCHS\u201d for the hyperparameter sweep and \u201cdead_code_injection\u201d for the ablation) to enable unified analysis of training dynamics and robustness to injected noise.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "training accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the training set",
+            "data": [
+              {
+                "dataset_name": "synthetic_clean",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "synthetic_injected",
+                "final_value": 1.0,
+                "best_value": 1.0
+              }
+            ]
+          },
+          {
+            "metric_name": "validation accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the validation set",
+            "data": [
+              {
+                "dataset_name": "synthetic_clean",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "synthetic_injected",
+                "final_value": 0.5,
+                "best_value": 0.5
+              }
+            ]
+          },
+          {
+            "metric_name": "training loss",
+            "lower_is_better": true,
+            "description": "Loss on the training set",
+            "data": [
+              {
+                "dataset_name": "synthetic_clean",
+                "final_value": 0.0,
+                "best_value": 0.0
+              },
+              {
+                "dataset_name": "synthetic_injected",
+                "final_value": 0.0,
+                "best_value": 0.0
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Loss on the validation set",
+            "data": [
+              {
+                "dataset_name": "synthetic_clean",
+                "final_value": 0.0,
+                "best_value": 0.0
+              },
+              {
+                "dataset_name": "synthetic_injected",
+                "final_value": 0.3423,
+                "best_value": 0.3423
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os\nimport random\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.nn.functional as F\nfrom torch.utils.data import Dataset, DataLoader, Subset\nfrom torch.optim import Adam\n\n# set up working directory\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# initialize experiment storage\nexperiment_data = {\n    \"dead_code_injection\": {\n        \"synthetic_clean\": {},\n        \"synthetic_injected\": {},\n    }\n}\n\n# device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\n\n# generate base synthetic code snippets and their traces\ncodes = []\nfor c in range(1, 11):\n    codes.append(f\"def f(x): return x+{c}\")\n    codes.append(f\"def f(x): return {c}+x\")\ninput_set = np.random.randint(-10, 10, size=100)\ntraces = []\nfor code in codes:\n    env = {}\n    exec(code, env)\n    f = env[\"f\"]\n    traces.append(tuple(f(int(x)) for x in input_set))\n\n# group snippets by identical trace (functional equivalence)\ntrace_to_indices = {}\nfor idx, trace in enumerate(traces):\n    trace_to_indices.setdefault(trace, []).append(idx)\ngroup_to_indices = {gid: idxs for gid, idxs in enumerate(trace_to_indices.values())}\nindex_to_gid = [None] * len(codes)\nfor gid, idxs in group_to_indices.items():\n    for idx in idxs:\n        index_to_gid[idx] = gid\n\n# train/validation split of groups\nall_gids = list(group_to_indices.keys())\nrandom.shuffle(all_gids)\nsplit = int(0.8 * len(all_gids))\ntrain_gids, val_gids = all_gids[:split], all_gids[split:]\ntrain_indices = [i for g in train_gids for i in group_to_indices[g]]\nval_indices = [i for g in val_gids for i in group_to_indices[g]]\n\n\n# dead code injector utility\ndef inject_dead_code(code):\n    # Turn \"def f(x): return expr\" into a multi-line with no-ops\n    sig, expr = code.split(\": return \")\n    return (\n        f\"{sig}:\\n\"\n        \"    dummy = 0\\n\"\n        \"    for _ in range(1):\\n\"\n        \"        pass\\n\"\n        f\"    return {expr}\"\n    )\n\n\n# dataset class\nclass CodeDataset(Dataset):\n    def __init__(self, encoded, group_to_indices, index_to_gid):\n        self.encoded = encoded\n        self.group_to_indices = group_to_indices\n        self.index_to_gid = index_to_gid\n\n    def __len__(self):\n        return len(self.index_to_gid)\n\n    def __getitem__(self, idx):\n        anchor = self.encoded[idx]\n        gid = self.index_to_gid[idx]\n        pos = idx\n        while pos == idx:\n            pos = random.choice(self.group_to_indices[gid])\n        neg_gid = random.choice([g for g in self.group_to_indices if g != gid])\n        neg = random.choice(self.group_to_indices[neg_gid])\n        return anchor, self.encoded[pos], self.encoded[neg]\n\n\n# model definition\nclass CodeEncoder(nn.Module):\n    def __init__(self, vocab_size, embed_dim=64, hidden=64):\n        super().__init__()\n        self.embed = nn.Embedding(vocab_size, embed_dim, padding_idx=0)\n        self.lstm = nn.LSTM(embed_dim, hidden, batch_first=True)\n\n    def forward(self, x):\n        x = self.embed(x)\n        _, (h, _) = self.lstm(x)\n        return h.squeeze(0)\n\n\n# hyperparameters\nEPOCH_LIST = [10, 30, 50]\n\n# run both clean and injected versions\nfor dataset_name in [\"synthetic_clean\", \"synthetic_injected\"]:\n    # pick the code variants\n    if dataset_name == \"synthetic_clean\":\n        codes_use = codes\n    else:\n        codes_use = [inject_dead_code(c) for c in codes]\n\n    # build vocabulary and encode\n    vocab = sorted(set(\"\".join(codes_use)))\n    stoi = {c: i + 1 for i, c in enumerate(vocab)}\n    stoi[\"PAD\"] = 0\n    max_len = max(len(s) for s in codes_use)\n    encoded_list = []\n    for s in codes_use:\n        seq = [stoi[ch] for ch in s] + [0] * (max_len - len(s))\n        encoded_list.append(seq)\n    encoded_use = torch.LongTensor(encoded_list)\n\n    # prepare data loaders\n    dataset = CodeDataset(encoded_use, group_to_indices, index_to_gid)\n    train_loader = DataLoader(\n        Subset(dataset, train_indices), batch_size=8, shuffle=True\n    )\n    val_loader = DataLoader(Subset(dataset, val_indices), batch_size=8, shuffle=False)\n\n    # per-epoch-budget experiments\n    for E in EPOCH_LIST:\n        # init model & optimizer\n        model = CodeEncoder(len(stoi), 64, 64).to(device)\n        optimizer = Adam(model.parameters(), lr=1e-3)\n        loss_fn = nn.TripletMarginLoss(margin=1.0)\n        data = {\n            \"metrics\": {\"train\": [], \"val\": []},\n            \"losses\": {\"train\": [], \"val\": []},\n            \"predictions\": [],\n            \"ground_truth\": [],\n        }\n\n        # train + validate\n        for epoch in range(E):\n            model.train()\n            total_train_loss = 0.0\n            for a, p, n in train_loader:\n                a, p, n = a.to(device), p.to(device), n.to(device)\n                emb_a, emb_p, emb_n = model(a), model(p), model(n)\n                loss = loss_fn(emb_a, emb_p, emb_n)\n                optimizer.zero_grad()\n                loss.backward()\n                optimizer.step()\n                total_train_loss += loss.item()\n            data[\"losses\"][\"train\"].append(total_train_loss / len(train_loader))\n\n            model.eval()\n            total_val_loss = 0.0\n            with torch.no_grad():\n                for a, p, n in val_loader:\n                    a, p, n = a.to(device), p.to(device), n.to(device)\n                    total_val_loss += loss_fn(model(a), model(p), model(n)).item()\n            data[\"losses\"][\"val\"].append(total_val_loss / len(val_loader))\n\n            # retrieval accuracy\n            with torch.no_grad():\n                embs = model(encoded_use.to(device))\n                embs = F.normalize(embs, dim=1)\n                sims = embs @ embs.t()\n\n                def compute_acc(idxs):\n                    correct = 0\n                    for i in idxs:\n                        s = sims[i].clone()\n                        s[i] = -float(\"inf\")\n                        top1 = torch.argmax(s).item()\n                        if index_to_gid[top1] == index_to_gid[i]:\n                            correct += 1\n                    return correct / len(idxs)\n\n                data[\"metrics\"][\"train\"].append(compute_acc(train_indices))\n                data[\"metrics\"][\"val\"].append(compute_acc(val_indices))\n\n        # final predictions on validation\n        model.eval()\n        with torch.no_grad():\n            embs = model(encoded_use.to(device))\n            embs = F.normalize(embs, dim=1)\n            sims = embs @ embs.t()\n            for i in val_indices:\n                s = sims[i].clone()\n                s[i] = -float(\"inf\")\n                top1 = torch.argmax(s).item()\n                data[\"predictions\"].append(index_to_gid[top1])\n                data[\"ground_truth\"].append(index_to_gid[i])\n\n        experiment_data[\"dead_code_injection\"][dataset_name][E] = data\n        print(\n            f\"Dataset={dataset_name}, EPOCHS={E}, final val_acc={data['metrics']['val'][-1]:.4f}\"\n        )\n\n# save everything\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\nprint(\"Saved experiment_data.npy\")\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\n# load experiment_data\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n    experiment_data = None\n\nif experiment_data:\n    # Print final validation accuracies\n    for dataset_name, results in experiment_data[\"dead_code_injection\"].items():\n        for E in sorted(results.keys()):\n            val_acc = results[E][\"metrics\"][\"val\"][-1]\n            print(f\"Dataset={dataset_name}, EPOCHS={E}, final val_acc={val_acc:.4f}\")\n\n    # Plot loss curves for each dataset\n    for dataset_name in experiment_data[\"dead_code_injection\"]:\n        try:\n            plt.figure()\n            data = experiment_data[\"dead_code_injection\"][dataset_name]\n            for E in sorted(data.keys()):\n                losses = data[E][\"losses\"]\n                epochs = np.arange(1, len(losses[\"train\"]) + 1)\n                plt.plot(epochs, losses[\"train\"], label=f\"Train E={E}\")\n                plt.plot(epochs, losses[\"val\"], linestyle=\"--\", label=f\"Val E={E}\")\n            plt.title(f\"Loss Curves for {dataset_name} (Train vs Val)\")\n            plt.xlabel(\"Epoch\")\n            plt.ylabel(\"Loss\")\n            plt.legend()\n            save_path = os.path.join(working_dir, f\"{dataset_name}_loss_curves.png\")\n            plt.savefig(save_path)\n            plt.close()\n        except Exception as e:\n            print(f\"Error creating {dataset_name} loss plot: {e}\")\n            plt.close()\n\n    # Plot accuracy curves for each dataset\n    for dataset_name in experiment_data[\"dead_code_injection\"]:\n        try:\n            plt.figure()\n            data = experiment_data[\"dead_code_injection\"][dataset_name]\n            for E in sorted(data.keys()):\n                metrics = data[E][\"metrics\"]\n                epochs = np.arange(1, len(metrics[\"train\"]) + 1)\n                plt.plot(epochs, metrics[\"train\"], label=f\"Train E={E}\")\n                plt.plot(epochs, metrics[\"val\"], linestyle=\"--\", label=f\"Val E={E}\")\n            plt.title(f\"Accuracy Curves for {dataset_name} (Train vs Val)\")\n            plt.xlabel(\"Epoch\")\n            plt.ylabel(\"Accuracy\")\n            plt.legend()\n            save_path = os.path.join(working_dir, f\"{dataset_name}_accuracy_curves.png\")\n            plt.savefig(save_path)\n            plt.close()\n        except Exception as e:\n            print(f\"Error creating {dataset_name} accuracy plot: {e}\")\n            plt.close()\n",
+    "plot_plan": "We\u2019ll load the saved experiment data, print out the final validation accuracy for each dataset and epoch budget, then generate aggregated loss and accuracy curves for both synthetic_clean and synthetic_injected.  Each figure shows train vs val curves for all epoch budgets on the same axes, wrapped in its own try/except for robustness.  We include clear titles and labels, save to working_dir with descriptive filenames, and always close figures.",
+    "plot_analyses": [
+      {
+        "analysis": "Loss curves for synthetic_clean show that training loss declines rapidly across all epoch budgets, reaching near zero within roughly 10\u201315 epochs. Validation loss closely follows the training curve and also converges to zero soon after, with minimal gap between train and val on each schedule. Higher epoch budgets (E=50) introduce slight oscillations in validation loss between epochs 5\u201315, but the model still converges to zero loss by epoch ~20. These patterns indicate fast convergence and strong generalization on clean data, with only minor noise at larger budgets.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_8d56eb13f9fa42b9b5bd093264b67d80_proc_400995/synthetic_clean_loss_curves.png"
+      },
+      {
+        "analysis": "Accuracy curves for synthetic_injected reveal that training accuracy reaches 100% by epoch ~5 for every epoch budget, but validation accuracy is both lower and less stable. The E=10 run plateaus near 75%, while E=30 and E=50 peaks at ~75% later (around epochs 20 and 12 respectively) before dropping back toward 50%. This behavior suggests that injected variants lead to overfitting on noisy traces: perfect memorization of training examples with compromised and unstable generalization that worsens under longer training.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_8d56eb13f9fa42b9b5bd093264b67d80_proc_400995/synthetic_injected_accuracy_curves.png"
+      },
+      {
+        "analysis": "Loss curves for synthetic_injected indicate that training loss again drops to zero quickly (within ~10 epochs), but validation loss decreases more slowly and exhibits pronounced oscillations. The E=10 schedule only reaches near-zero validation loss by ~20 epochs; E=30 requires ~25 epochs; and E=50 does not settle until well past ~30 epochs. Persistent fluctuations in validation loss reflect the difficulty of reconciling noisy injected traces, leading to slower and more erratic convergence compared to clean data.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_8d56eb13f9fa42b9b5bd093264b67d80_proc_400995/synthetic_injected_loss_curves.png"
+      },
+      {
+        "analysis": "Accuracy curves for synthetic_clean demonstrate that training accuracy hits 100% by epoch ~4, and validation accuracy also reaches full accuracy by epoch ~6 for E=10, by ~5 for E=30, and as early as ~4 for E=50. The clean dataset yields smooth, rapid generalization with virtually no overfitting gap, confirming that static-only code variants are learned and transferred effectively by the model.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_8d56eb13f9fa42b9b5bd093264b67d80_proc_400995/synthetic_clean_accuracy_curves.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_8d56eb13f9fa42b9b5bd093264b67d80_proc_400995/synthetic_clean_loss_curves.png",
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_8d56eb13f9fa42b9b5bd093264b67d80_proc_400995/synthetic_injected_accuracy_curves.png",
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_8d56eb13f9fa42b9b5bd093264b67d80_proc_400995/synthetic_injected_loss_curves.png",
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_8d56eb13f9fa42b9b5bd093264b67d80_proc_400995/synthetic_clean_accuracy_curves.png"
+    ],
+    "vlm_feedback_summary": "Clean synthetic data leads to rapid, stable convergence and perfect generalization, whereas injected variants cause noisy validation loss/accuracy, slower convergence, and overfitting. Longer runs on injected data only partially mitigate noise but introduce instability, highlighting the need for specialized strategies to handle dynamic trace augmentations.",
+    "exp_results_dir": "experiment_results/experiment_8d56eb13f9fa42b9b5bd093264b67d80_proc_400995",
+    "ablation_name": "Dead Code Injection Ablation",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_8d56eb13f9fa42b9b5bd093264b67d80_proc_400995/experiment_data.npy"
+    ]
+  },
+  {
+    "overall_plan": "Our overarching goal is to systematically evaluate the interaction between training duration (number of epochs) and encoder architecture on triplet\u2010loss retrieval performance. Initially, we performed hyperparameter tuning over epochs (10, 30, 50) for an LSTM encoder, recording per\u2010epoch train/validation losses, retrieval accuracies, and final validation predictions under the key 'EPOCHS' in a single NumPy file. Building on that, the current phase introduces a CNN encoder ablation: we replace the LSTM with a 1D convolutional encoder (multiple filter widths, global max\u2010pooling, linear projection) and rerun the same epoch sweep. In addition to the same losses, accuracies, predictions, and ground truths, we now also capture model parameter counts. All results are stored in `experiment_data['CNN_ENCODER_ABLATION']['synthetic'][E]` and saved to `experiment_data.npy`. This unified approach enables direct comparison of two encoder architectures across consistent training regimes to uncover the best combination of model design and training length.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "train accuracy",
+            "lower_is_better": false,
+            "description": "Training accuracy",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 1.0,
+                "best_value": 1.0
+              }
+            ]
+          },
+          {
+            "metric_name": "validation accuracy",
+            "lower_is_better": false,
+            "description": "Validation accuracy",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 1.0,
+                "best_value": 1.0
+              }
+            ]
+          },
+          {
+            "metric_name": "train loss",
+            "lower_is_better": true,
+            "description": "Training loss",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 0.0,
+                "best_value": 0.0
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Validation loss",
+            "data": [
+              {
+                "dataset_name": "synthetic",
+                "final_value": 0.1519,
+                "best_value": 0.1519
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os, random\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.nn.functional as F\nfrom torch.utils.data import Dataset, DataLoader, Subset\nfrom torch.optim import Adam\n\n# reproducibility\nrandom.seed(42)\nnp.random.seed(42)\ntorch.manual_seed(42)\n\n# working dir\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nprint(f\"Using device: {device}\")\n\n# synthetic data\ncodes = []\nfor c in range(1, 11):\n    codes.append(f\"def f(x): return x+{c}\")\n    codes.append(f\"def f(x): return {c}+x\")\ninp = np.random.randint(-10, 10, size=100)\ntraces = []\nfor code in codes:\n    env = {}\n    exec(code, env)\n    f = env[\"f\"]\n    traces.append(tuple(f(int(x)) for x in inp))\n\ntrace_to_idxs = {}\nfor i, t in enumerate(traces):\n    trace_to_idxs.setdefault(t, []).append(i)\ngroup_to_idxs = {g: idxs for g, idxs in enumerate(trace_to_idxs.values())}\nindex_to_gid = [None] * len(codes)\nfor g, idxs in group_to_idxs.items():\n    for i in idxs:\n        index_to_gid[i] = g\n\n# encode chars\nvocab = sorted(set(\"\".join(codes)))\nstoi = {c: i + 1 for i, c in enumerate(vocab)}\nstoi[\"PAD\"] = 0\nmax_len = max(len(s) for s in codes)\nencoded = torch.LongTensor(\n    [[stoi[c] for c in s] + [0] * (max_len - len(s)) for s in codes]\n)\n\n\n# dataset\nclass CodeDataset(Dataset):\n    def __init__(self, enc, group_to_idxs, index_to_gid):\n        self.enc = enc\n        self.g2i = group_to_idxs\n        self.i2g = index_to_gid\n\n    def __len__(self):\n        return len(self.i2g)\n\n    def __getitem__(self, idx):\n        a = self.enc[idx]\n        g = self.i2g[idx]\n        pos = idx\n        while pos == idx:\n            pos = random.choice(self.g2i[g])\n        neg_g = random.choice([x for x in self.g2i if x != g])\n        neg = random.choice(self.g2i[neg_g])\n        return a, self.enc[pos], self.enc[neg]\n\n\ndataset = CodeDataset(encoded, group_to_idxs, index_to_gid)\nall_gs = list(group_to_idxs.keys())\nrandom.shuffle(all_gs)\nsplit = int(0.8 * len(all_gs))\ntrain_gs, val_gs = all_gs[:split], all_gs[split:]\ntrain_idxs = [i for g in train_gs for i in group_to_idxs[g]]\nval_idxs = [i for g in val_gs for i in group_to_idxs[g]]\ntrain_loader = DataLoader(Subset(dataset, train_idxs), batch_size=8, shuffle=True)\nval_loader = DataLoader(Subset(dataset, val_idxs), batch_size=8, shuffle=False)\n\n\n# CNN encoder\nclass CodeEncoderCNN(nn.Module):\n    def __init__(\n        self,\n        vocab_size,\n        embed_dim=64,\n        hidden=64,\n        kernel_sizes=[3, 4, 5],\n        num_filters=64,\n    ):\n        super().__init__()\n        self.embed = nn.Embedding(vocab_size, embed_dim, padding_idx=0)\n        self.convs = nn.ModuleList(\n            [\n                nn.Conv1d(\n                    in_channels=embed_dim, out_channels=num_filters, kernel_size=k\n                )\n                for k in kernel_sizes\n            ]\n        )\n        self.fc = nn.Linear(num_filters * len(kernel_sizes), hidden)\n\n    def forward(self, x):\n        x = self.embed(x)  # (B, L, E)\n        x = x.transpose(1, 2)  # (B, E, L)\n        outs = [F.relu(conv(x)) for conv in self.convs]\n        pools = [F.max_pool1d(o, o.size(2)).squeeze(2) for o in outs]\n        cat = torch.cat(pools, dim=1)\n        return self.fc(cat)\n\n\n# experiment scaffolding\nEPOCH_LIST = [10, 30, 50]\nexperiment_data = {\"CNN_ENCODER_ABLATION\": {\"synthetic\": {}}}\n\nfor E in EPOCH_LIST:\n    model = CodeEncoderCNN(len(stoi), 64, 64).to(device)\n    optimizer = Adam(model.parameters(), lr=1e-3)\n    loss_fn = nn.TripletMarginLoss(margin=1.0)\n    data = {\n        \"metrics\": {\"train\": [], \"val\": []},\n        \"losses\": {\"train\": [], \"val\": []},\n        \"predictions\": [],\n        \"ground_truth\": [],\n        \"param_count\": sum(p.numel() for p in model.parameters()),\n    }\n\n    for epoch in range(E):\n        model.train()\n        tr_loss = 0.0\n        for a, p, n in train_loader:\n            a, p, n = a.to(device), p.to(device), n.to(device)\n            ea, ep, en = model(a), model(p), model(n)\n            loss = loss_fn(ea, ep, en)\n            optimizer.zero_grad()\n            loss.backward()\n            optimizer.step()\n            tr_loss += loss.item()\n        tr_loss /= len(train_loader)\n        data[\"losses\"][\"train\"].append(tr_loss)\n\n        model.eval()\n        val_loss = 0.0\n        with torch.no_grad():\n            for a, p, n in val_loader:\n                a, p, n = a.to(device), p.to(device), n.to(device)\n                val_loss += loss_fn(model(a), model(p), model(n)).item()\n        val_loss /= len(val_loader)\n        data[\"losses\"][\"val\"].append(val_loss)\n\n        with torch.no_grad():\n            emb = model(encoded.to(device))\n            emb_n = F.normalize(emb, dim=1)\n            sims = emb_n @ emb_n.T\n\n            def acc(idx_list):\n                c = 0\n                for i in idx_list:\n                    s = sims[i].clone()\n                    s[i] = -1e9\n                    top1 = torch.argmax(s).item()\n                    if index_to_gid[top1] == index_to_gid[i]:\n                        c += 1\n                return c / len(idx_list)\n\n            data[\"metrics\"][\"train\"].append(acc(train_idxs))\n            data[\"metrics\"][\"val\"].append(acc(val_idxs))\n\n    # final predictions\n    model.eval()\n    with torch.no_grad():\n        emb = model(encoded.to(device))\n        emb_n = F.normalize(emb, dim=1)\n        sims = emb_n @ emb_n.T\n        for i in val_idxs:\n            s = sims[i].clone()\n            s[i] = -1e9\n            top1 = torch.argmax(s).item()\n            data[\"predictions\"].append(index_to_gid[top1])\n            data[\"ground_truth\"].append(index_to_gid[i])\n\n    experiment_data[\"CNN_ENCODER_ABLATION\"][\"synthetic\"][E] = data\n    print(\n        f\"Done CNN ablation EPOCHS={E}, final val acc={data['metrics']['val'][-1]:.4f}\"\n    )\n\n# save results\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\nprint(\"Saved experiment_data.npy\")\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\n# Load experiment data\ntry:\n    exp_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\n    data = exp_data[\"CNN_ENCODER_ABLATION\"][\"synthetic\"]\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n    data = {}\n\n# Determine epoch settings\nepochs = sorted(map(int, data.keys()))\n\n# Plot loss curves\ntry:\n    plt.figure(figsize=(8, 5))\n    for E in epochs:\n        d = data[E]\n        x = range(1, len(d[\"losses\"][\"train\"]) + 1)\n        plt.plot(x, d[\"losses\"][\"train\"], label=f\"Train Loss E={E}\")\n        plt.plot(x, d[\"losses\"][\"val\"], \"--\", label=f\"Val Loss E={E}\")\n    plt.title(\"Synthetic Dataset Loss Curves for CNN Encoder Ablation\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Loss\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_loss_curves.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating loss curves plot: {e}\")\n    plt.close()\n\n# Plot accuracy curves\ntry:\n    plt.figure(figsize=(8, 5))\n    for E in epochs:\n        d = data[E]\n        x = range(1, len(d[\"metrics\"][\"train\"]) + 1)\n        plt.plot(x, d[\"metrics\"][\"train\"], label=f\"Train Acc E={E}\")\n        plt.plot(x, d[\"metrics\"][\"val\"], \"--\", label=f\"Val Acc E={E}\")\n    plt.title(\"Synthetic Dataset Accuracy Curves for CNN Encoder Ablation\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Accuracy\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_accuracy_curves.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating accuracy curves plot: {e}\")\n    plt.close()\n\n# Plot final validation accuracy bar chart\ntry:\n    final_acc = [data[E][\"metrics\"][\"val\"][-1] for E in epochs]\n    plt.figure(figsize=(6, 4))\n    plt.bar([str(E) for E in epochs], final_acc, color=\"skyblue\")\n    plt.title(\"Synthetic Dataset Final Validation Accuracy\\nfor CNN Encoder Ablation\")\n    plt.xlabel(\"Epochs\")\n    plt.ylabel(\"Final Val Accuracy\")\n    plt.savefig(os.path.join(working_dir, \"synthetic_final_val_accuracy.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating final val accuracy plot: {e}\")\n    plt.close()\n",
+    "plot_plan": "We load the saved experiment data for the CNN encoder ablation on the synthetic dataset, extract the per\u2010epoch loss and accuracy traces for each epoch setting, and sort the epoch settings. We then generate three plots: (1) combined training and validation loss curves over epochs for all experiments, (2) combined training and validation accuracy curves similarly, and (3) a bar chart of the final validation accuracy achieved at the last epoch of each experiment. Each plot is wrapped in a try\u2010except to catch and log errors, closes the figure after saving, and uses descriptive filenames including the dataset name and type of plot. We use only existing data and basic matplotlib, saving everything under the working directory.",
+    "plot_analyses": [
+      {
+        "analysis": "Accuracy curves for different epoch budgets show that all configurations\u2019 training accuracy climbs rapidly to near 100% within 10 epochs. With 10 epochs, validation accuracy plateaus around 75%, indicating underfitting on the synthetic code tasks. Extending training to 30 epochs yields validation accuracy rising smoothly to 100% by roughly epoch 15 and stays there. A 50-epoch run reaches perfect validation accuracy even faster (around epoch 8) and remains at 100%, demonstrating that after sufficient training the CNN encoder fully captures the patterns in this synthetic dataset.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_f1380c5e79ff46038a65c1799d529f94_proc_400995/synthetic_accuracy_curves.png"
+      },
+      {
+        "analysis": "Loss curves reveal that training loss for all epoch settings falls sharply to near zero by epoch 10, confirming quick memorization of the synthetic patterns. Validation loss at 10 epochs remains above 0.2, reinforcing its underfitting behavior. Increasing to 30 epochs steadily reduces validation loss to near zero by about epoch 20, with only minor oscillations. At 50 epochs, validation loss continues to hover around zero but shows more variability, suggesting that additional training beyond 30 epochs yields diminishing returns and may introduce noise without performance gains.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_f1380c5e79ff46038a65c1799d529f94_proc_400995/synthetic_loss_curves.png"
+      },
+      {
+        "analysis": "Bar chart of final validation accuracy confirms that a 10-epoch budget yields 75% accuracy, while both 30 and 50 epochs achieve 100%. There is no improvement in accuracy beyond 30 epochs, indicating that further training does not provide additional benefit on this synthetic dataset.",
+        "plot_path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_f1380c5e79ff46038a65c1799d529f94_proc_400995/synthetic_final_val_accuracy.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_f1380c5e79ff46038a65c1799d529f94_proc_400995/synthetic_accuracy_curves.png",
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_f1380c5e79ff46038a65c1799d529f94_proc_400995/synthetic_loss_curves.png",
+      "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_f1380c5e79ff46038a65c1799d529f94_proc_400995/synthetic_final_val_accuracy.png"
+    ],
+    "vlm_feedback_summary": "The CNN encoder underfits when trained only 10 epochs but converges fully by 30 epochs, achieving perfect validation metrics. Training to 50 epochs offers no further accuracy improvement and introduces slight loss instability, suggesting 30 epochs as an optimal budget for this synthetic code task.",
+    "exp_results_dir": "experiment_results/experiment_f1380c5e79ff46038a65c1799d529f94_proc_400995",
+    "ablation_name": "CNN_ENCODER_ABLATION",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_f1380c5e79ff46038a65c1799d529f94_proc_400995/experiment_data.npy"
+    ]
+  }
+]

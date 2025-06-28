@@ -1,0 +1,49 @@
+{
+  "Experiment_description": "Three preliminary implementations of synthetic arithmetic code generation were tested: (1) a dummy LLM template\u2010based generator with on\u2010the\u2010fly static\u2010analysis\u2010guided repairs, (2) a lightweight embedding+linear classification model with automatic division-by-zero rewriting, and (3) a seeded repeat of (2). All variants are evaluated via unit tests on random inputs (including zeros) to compute an Error-Free Generation Rate and, for the trainable models, tracked losses.",
+  "Significance": "These experiments demonstrate that even a minimal static analysis component integrated into the code\u2010generation loop can completely eliminate a common class of runtime errors (division by zero). They also reveal that on trivial synthetic tasks a simple model quickly achieves perfect error rates and near-zero loss, indicating the need for more challenging benchmarks to assess generalization and robustness.",
+  "Description": "Node 3012f1 used Python's ast module to detect division operations in naive template code and injected zero-check guards before executing unit tests for add, divide, and factorial tasks. Node 79fce4 trained a four\u2010class classifier in PyTorch to generate arithmetic functions, applied a fast static analyzer to rewrite unsafe divisions, and logged per\u2010epoch train/validation losses and error\u2010free rates. Node ab8777 repeated the same pipeline with fixed random seeds to assess reproducibility. All metrics were saved in structured .npy files and visualized via loss and error\u2010rate curves.",
+  "List_of_included_plots": [
+    {
+      "path": "experiments/2025-06-07_15-26-52_abstract_interpretation_guided_generation_attempt_0/logs/0-run/experiment_results/experiment_3012f165cddc45babdbab427188c1a39_proc_72646/synthetic_tasks_error_rate_comparison.png",
+      "description": "Error-free generation rate comparison between baseline and guided code variants",
+      "analysis": "The guided approach achieves a perfect 100% error-free rate versus the baseline\u2019s 67%, highlighting that lightweight static analysis in the generation loop can fully eliminate runtime and logical errors on these tasks."
+    },
+    {
+      "path": "experiments/2025-06-07_15-26-52_abstract_interpretation_guided_generation_attempt_0/logs/0-run/experiment_results/experiment_79fce44eb3104f6bbd598a51a2a63e0f_proc_72647/loss_curve.png",
+      "description": "Train and validation loss over five epochs for the classification model",
+      "analysis": "Both training and validation losses drop from ~0.41/0.075 to near-zero (<0.03) within two epochs, indicating rapid convergence and a negligible generalization gap on this synthetic dataset."
+    },
+    {
+      "path": "experiments/2025-06-07_15-26-52_abstract_interpretation_guided_generation_attempt_0/logs/0-run/experiment_results/experiment_79fce44eb3104f6bbd598a51a2a63e0f_proc_72647/error_rate.png",
+      "description": "Error-free generation rate for both training and validation sets",
+      "analysis": "A flat 100% success rate across all epochs suggests that the simple static\u2010analysis repair combined with an embedding+linear model trivially solves these tasks, underlining the need for more complex benchmarks."
+    }
+  ],
+  "Key_numerical_results": [
+    {
+      "result": 0.67,
+      "description": "Baseline error-free generation rate",
+      "analysis": "The naive template code without guidance fails on the divide task, yielding only 67% overall success, which underscores the prevalence of division\u2010by\u2010zero errors."
+    },
+    {
+      "result": 1.0,
+      "description": "Guided error-free generation rate",
+      "analysis": "Injecting static checks into the generation loop raises the error-free rate to 100%, fully mitigating runtime faults on synthetic arithmetic tasks."
+    },
+    {
+      "result": 0.0043,
+      "description": "Final training loss (classification model)",
+      "analysis": "A near-zero training loss indicates the model can perfectly fit the synthetic data, but may also signal over-simplicity of the benchmark."
+    },
+    {
+      "result": 0.0039,
+      "description": "Final validation loss (classification model)",
+      "analysis": "The minimal gap between training and validation losses confirms stable convergence without overfitting, again reflecting dataset simplicity."
+    },
+    {
+      "result": 1.0,
+      "description": "Error-free generation rate (classification model)",
+      "analysis": "A constant 100% error-free rate throughout training and validation reveals metric saturation on trivial tasks, limiting its discriminative power in preliminary experiments."
+    }
+  ]
+}

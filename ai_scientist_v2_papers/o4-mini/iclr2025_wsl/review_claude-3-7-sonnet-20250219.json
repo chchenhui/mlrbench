@@ -1,0 +1,34 @@
+{
+    "Clarity": {
+        "score": 7,
+        "justification": "The paper is generally well-written with a clear structure. The introduction effectively motivates the problem of representing neural network weights as sparse combinations of learned primitives. The method section concisely explains the sparse coding approach and provides appropriate background. Figures are informative, particularly Figure 2 which illustrates sample reconstruction. However, there are some clarity issues: the abstract claims 'under 15% relative error' for held-out weights, but Section 6 reports 22% error. Additionally, the paper lacks sufficient details on the synthetic benchmark generation process, making it difficult to fully understand the experimental setup."
+    },
+    "Novelty": {
+        "score": 6,
+        "justification": "The paper presents a novel application of sparse coding techniques to neural network weights, which aligns with the workshop's focus on weights as a new data modality. The authors correctly position their work relative to hypernetworks, model soups, and low-rank adaptations. However, the novelty is limited by the fact that the approach is a straightforward application of well-established sparse coding methods (K-SVD, LISTA) to a new domain without significant algorithmic innovations. The paper acknowledges this in the related work section, noting that their contribution is applying existing sparse coding frameworks to weight space."
+    },
+    "Soundness": {
+        "score": 3,
+        "justification": "The paper has several methodological issues that significantly impact its soundness. First, all experiments are conducted on synthetic data generated from a ground-truth dictionary, creating a circular evaluation where the method is tested on data explicitly designed to fit the model's assumptions. This fails to demonstrate whether real neural network weights exhibit the sparse structure the method assumes. Second, the claim of 'under 15% relative error' in the abstract contradicts the 22% error reported in Section 6. Third, the approach of flattening weights ignores the tensor structure of neural networks, which the authors acknowledge but don't address. The extensive ablation studies (optimizer choice, batch size, initialization) are thorough but only inform us about sparse coding on synthetic data, not about the paper's central hypothesis regarding neural network weights."
+    },
+    "Significance": {
+        "score": 3,
+        "justification": "The potential significance of compositional weight primitives for model synthesis is high and aligns well with the workshop's theme. However, the actual contribution is severely limited by the exclusive focus on synthetic data. The paper does not demonstrate any practical utility on real neural networks or tasks. The claims of 'rapid model generation' and 'low compute cost' remain unsubstantiated without experiments on actual models like ResNet or VGG (which are mentioned as future work in the conclusion). The ablation studies on optimizer choice, batch size, and initialization are thorough but only inform us about sparse coding on synthetic data, not about the paper's central hypothesis regarding neural network weights."
+    },
+    "Overall": {
+        "score": 4,
+        "strengths": [
+            "The paper addresses an important problem in the emerging field of weight space learning that aligns well with the workshop's focus",
+            "The writing is clear and the method is well-explained with appropriate background",
+            "The ablation studies are thorough, examining multiple factors like optimizer choice, batch size, and initialization schemes",
+            "The approach has potential for enabling efficient model synthesis if extended to real neural networks"
+        ],
+        "weaknesses": [
+            "All experiments are conducted on synthetic data generated to match the model's assumptions, providing no evidence that real neural network weights exhibit the assumed sparse structure",
+            "The abstract contains a misleading claim about reconstruction error (under 15%) that contradicts the actual results (22%) reported in Section 6",
+            "The approach ignores the tensor structure of neural networks by flattening weights, which may lose important structural information",
+            "The paper fails to demonstrate any practical utility on real models or tasks, despite claiming benefits for model synthesis and transfer learning"
+        ]
+    },
+    "Confidence": 5
+}

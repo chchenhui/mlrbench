@@ -1,0 +1,1730 @@
+[
+  {
+    "overall_plan": "We will perform a two\u2010stage experimental protocol that first tunes batch sizes for both the AI and user models, and then conducts an ablation study on the form of labels passed to the user model. In the outer loop, for each candidate AI batch size, we reinitialize data loaders, the AI model, and optimizers, train the AI model for 15 epochs, and generate predictions on train/val/test sets. We convert these predictions into two types of features: the full softmax probability vector and a one\u2010hot hard label (top\u20101 class). In the inner loop, for each user batch size and each ablation condition (soft vs. hard labels), we initialize and train the user model for 20 epochs, logging per\u2010epoch train/validation losses and accuracies, and finally collecting test predictions against ground truth. All results are stored in a nested experiment_data dictionary keyed by (AI batch size, user batch size, ablation type) and then saved to 'experiment_data.npy'. This design will allow us to assess how batch\u2010size choices and label types jointly affect downstream performance.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "train accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the training dataset",
+            "data": [
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_16_usr_bs_16",
+                "final_value": 0.855,
+                "best_value": 0.855
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_16_usr_bs_32",
+                "final_value": 0.86,
+                "best_value": 0.86
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_16_usr_bs_64",
+                "final_value": 0.8575,
+                "best_value": 0.8575
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_32_usr_bs_16",
+                "final_value": 0.8633,
+                "best_value": 0.8633
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_32_usr_bs_32",
+                "final_value": 0.8625,
+                "best_value": 0.8625
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_32_usr_bs_64",
+                "final_value": 0.8608,
+                "best_value": 0.8608
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_64_usr_bs_16",
+                "final_value": 0.8583,
+                "best_value": 0.8583
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_64_usr_bs_32",
+                "final_value": 0.86,
+                "best_value": 0.86
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_64_usr_bs_64",
+                "final_value": 0.8592,
+                "best_value": 0.8592
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_16_usr_bs_16",
+                "final_value": 0.8583,
+                "best_value": 0.8583
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_16_usr_bs_32",
+                "final_value": 0.86,
+                "best_value": 0.86
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_16_usr_bs_64",
+                "final_value": 0.8617,
+                "best_value": 0.8617
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_32_usr_bs_16",
+                "final_value": 0.8592,
+                "best_value": 0.8592
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_32_usr_bs_32",
+                "final_value": 0.8525,
+                "best_value": 0.8525
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_32_usr_bs_64",
+                "final_value": 0.8558,
+                "best_value": 0.8558
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_64_usr_bs_16",
+                "final_value": 0.8542,
+                "best_value": 0.8542
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_64_usr_bs_32",
+                "final_value": 0.86,
+                "best_value": 0.86
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_64_usr_bs_64",
+                "final_value": 0.8608,
+                "best_value": 0.8608
+              }
+            ]
+          },
+          {
+            "metric_name": "validation accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the validation dataset",
+            "data": [
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_16_usr_bs_16",
+                "final_value": 0.8267,
+                "best_value": 0.8267
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_16_usr_bs_32",
+                "final_value": 0.8233,
+                "best_value": 0.8233
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_16_usr_bs_64",
+                "final_value": 0.83,
+                "best_value": 0.83
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_32_usr_bs_16",
+                "final_value": 0.8233,
+                "best_value": 0.8233
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_32_usr_bs_32",
+                "final_value": 0.8267,
+                "best_value": 0.8267
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_32_usr_bs_64",
+                "final_value": 0.8333,
+                "best_value": 0.8333
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_64_usr_bs_16",
+                "final_value": 0.8267,
+                "best_value": 0.8267
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_64_usr_bs_32",
+                "final_value": 0.8267,
+                "best_value": 0.8267
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_64_usr_bs_64",
+                "final_value": 0.8233,
+                "best_value": 0.8233
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_16_usr_bs_16",
+                "final_value": 0.8333,
+                "best_value": 0.8333
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_16_usr_bs_32",
+                "final_value": 0.84,
+                "best_value": 0.84
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_16_usr_bs_64",
+                "final_value": 0.8233,
+                "best_value": 0.8233
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_32_usr_bs_16",
+                "final_value": 0.8233,
+                "best_value": 0.8233
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_32_usr_bs_32",
+                "final_value": 0.83,
+                "best_value": 0.83
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_32_usr_bs_64",
+                "final_value": 0.84,
+                "best_value": 0.84
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_64_usr_bs_16",
+                "final_value": 0.8267,
+                "best_value": 0.8267
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_64_usr_bs_32",
+                "final_value": 0.8267,
+                "best_value": 0.8267
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_64_usr_bs_64",
+                "final_value": 0.8467,
+                "best_value": 0.8467
+              }
+            ]
+          },
+          {
+            "metric_name": "test accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the test dataset",
+            "data": [
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_16_usr_bs_16",
+                "final_value": 0.85,
+                "best_value": 0.85
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_16_usr_bs_32",
+                "final_value": 0.854,
+                "best_value": 0.854
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_16_usr_bs_64",
+                "final_value": 0.858,
+                "best_value": 0.858
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_32_usr_bs_16",
+                "final_value": 0.86,
+                "best_value": 0.86
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_32_usr_bs_32",
+                "final_value": 0.858,
+                "best_value": 0.858
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_32_usr_bs_64",
+                "final_value": 0.86,
+                "best_value": 0.86
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_64_usr_bs_16",
+                "final_value": 0.864,
+                "best_value": 0.864
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_64_usr_bs_32",
+                "final_value": 0.86,
+                "best_value": 0.86
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_64_usr_bs_64",
+                "final_value": 0.85,
+                "best_value": 0.85
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_16_usr_bs_16",
+                "final_value": 0.856,
+                "best_value": 0.856
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_16_usr_bs_32",
+                "final_value": 0.86,
+                "best_value": 0.86
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_16_usr_bs_64",
+                "final_value": 0.858,
+                "best_value": 0.858
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_32_usr_bs_16",
+                "final_value": 0.86,
+                "best_value": 0.86
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_32_usr_bs_32",
+                "final_value": 0.852,
+                "best_value": 0.852
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_32_usr_bs_64",
+                "final_value": 0.85,
+                "best_value": 0.85
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_64_usr_bs_16",
+                "final_value": 0.854,
+                "best_value": 0.854
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_64_usr_bs_32",
+                "final_value": 0.864,
+                "best_value": 0.864
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_64_usr_bs_64",
+                "final_value": 0.86,
+                "best_value": 0.86
+              }
+            ]
+          },
+          {
+            "metric_name": "train loss",
+            "lower_is_better": true,
+            "description": "Loss on the training dataset",
+            "data": [
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_16_usr_bs_16",
+                "final_value": 0.3057,
+                "best_value": 0.3057
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_16_usr_bs_32",
+                "final_value": 0.3044,
+                "best_value": 0.3044
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_16_usr_bs_64",
+                "final_value": 0.3047,
+                "best_value": 0.3047
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_32_usr_bs_16",
+                "final_value": 0.305,
+                "best_value": 0.305
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_32_usr_bs_32",
+                "final_value": 0.3034,
+                "best_value": 0.3034
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_32_usr_bs_64",
+                "final_value": 0.3043,
+                "best_value": 0.3043
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_64_usr_bs_16",
+                "final_value": 0.3047,
+                "best_value": 0.3047
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_64_usr_bs_32",
+                "final_value": 0.3073,
+                "best_value": 0.3073
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_64_usr_bs_64",
+                "final_value": 0.3048,
+                "best_value": 0.3048
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_16_usr_bs_16",
+                "final_value": 0.3092,
+                "best_value": 0.3092
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_16_usr_bs_32",
+                "final_value": 0.3022,
+                "best_value": 0.3022
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_16_usr_bs_64",
+                "final_value": 0.3038,
+                "best_value": 0.3038
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_32_usr_bs_16",
+                "final_value": 0.3055,
+                "best_value": 0.3055
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_32_usr_bs_32",
+                "final_value": 0.306,
+                "best_value": 0.306
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_32_usr_bs_64",
+                "final_value": 0.3044,
+                "best_value": 0.3044
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_64_usr_bs_16",
+                "final_value": 0.3063,
+                "best_value": 0.3063
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_64_usr_bs_32",
+                "final_value": 0.3035,
+                "best_value": 0.3035
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_64_usr_bs_64",
+                "final_value": 0.303,
+                "best_value": 0.303
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Loss on the validation dataset",
+            "data": [
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_16_usr_bs_16",
+                "final_value": 0.3768,
+                "best_value": 0.3768
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_16_usr_bs_32",
+                "final_value": 0.3752,
+                "best_value": 0.3752
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_16_usr_bs_64",
+                "final_value": 0.3702,
+                "best_value": 0.3702
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_32_usr_bs_16",
+                "final_value": 0.3899,
+                "best_value": 0.3899
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_32_usr_bs_32",
+                "final_value": 0.3796,
+                "best_value": 0.3796
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_32_usr_bs_64",
+                "final_value": 0.3711,
+                "best_value": 0.3711
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_64_usr_bs_16",
+                "final_value": 0.3772,
+                "best_value": 0.3772
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_64_usr_bs_32",
+                "final_value": 0.3769,
+                "best_value": 0.3769
+              },
+              {
+                "dataset_name": "ablation=soft, config=ai_bs_64_usr_bs_64",
+                "final_value": 0.3741,
+                "best_value": 0.3741
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_16_usr_bs_16",
+                "final_value": 0.3814,
+                "best_value": 0.3814
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_16_usr_bs_32",
+                "final_value": 0.3703,
+                "best_value": 0.3703
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_16_usr_bs_64",
+                "final_value": 0.3727,
+                "best_value": 0.3727
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_32_usr_bs_16",
+                "final_value": 0.3697,
+                "best_value": 0.3697
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_32_usr_bs_32",
+                "final_value": 0.3713,
+                "best_value": 0.3713
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_32_usr_bs_64",
+                "final_value": 0.372,
+                "best_value": 0.372
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_64_usr_bs_16",
+                "final_value": 0.3874,
+                "best_value": 0.3874
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_64_usr_bs_32",
+                "final_value": 0.3626,
+                "best_value": 0.3626
+              },
+              {
+                "dataset_name": "ablation=hard, config=ai_bs_64_usr_bs_64",
+                "final_value": 0.3673,
+                "best_value": 0.3673
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.utils.data import Dataset, DataLoader\n\n# Set up working directory\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# Device config\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n\n# Reproducibility\nnp.random.seed(0)\ntorch.manual_seed(0)\n\n# Synthetic dataset generation\nN, D = 2000, 2\nX = np.random.randn(N, D)\nw_true = np.array([2.0, -3.0])\nb_true = 0.5\nlogits = X.dot(w_true) + b_true\nprobs = 1 / (1 + np.exp(-logits))\ny = (np.random.rand(N) < probs).astype(int)\n\n# Train/val/test split\nidx = np.random.permutation(N)\ntrain_idx, val_idx, test_idx = idx[:1200], idx[1200:1500], idx[1500:]\nX_train, y_train = X[train_idx], y[train_idx]\nX_val, y_val = X[val_idx], y[val_idx]\nX_test, y_test = X[test_idx], y[test_idx]\n\n# Normalize features\nmean, std = X_train.mean(0), X_train.std(0) + 1e-6\nX_train = (X_train - mean) / std\nX_val = (X_val - mean) / std\nX_test = (X_test - mean) / std\n\n\n# Dataset classes\nclass SimpleDS(Dataset):\n    def __init__(self, X, y):\n        self.X = torch.from_numpy(X).float()\n        self.y = torch.from_numpy(y).long()\n\n    def __len__(self):\n        return len(self.y)\n\n    def __getitem__(self, i):\n        return {\"x\": self.X[i], \"y\": self.y[i]}\n\n\nclass UserDS(Dataset):\n    def __init__(self, feat, label):\n        self.X = torch.from_numpy(feat).float()\n        self.y = torch.from_numpy(label).long()\n\n    def __len__(self):\n        return len(self.y)\n\n    def __getitem__(self, i):\n        return {\"feat\": self.X[i], \"label\": self.y[i]}\n\n\n# Model definitions\nclass AIModel(nn.Module):\n    def __init__(self, inp_dim, hid_dim, out_dim):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(inp_dim, hid_dim), nn.ReLU(), nn.Linear(hid_dim, out_dim)\n        )\n\n    def forward(self, x):\n        return self.net(x)\n\n\nclass UserModel(nn.Module):\n    def __init__(self, inp_dim, hid_dim, out_dim):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(inp_dim, hid_dim), nn.ReLU(), nn.Linear(hid_dim, out_dim)\n        )\n\n    def forward(self, x):\n        return self.net(x)\n\n\n# Hyperparameters\nai_batch_sizes = [16, 32, 64]\nusr_batch_sizes = [16, 32, 64]\n\n# Container for experiment data\nexperiment_data = {\"soft\": {}, \"hard\": {}}\n\nfor ai_bs in ai_batch_sizes:\n    # AI data loaders\n    ai_tr_loader = DataLoader(\n        SimpleDS(X_train, y_train), batch_size=ai_bs, shuffle=True\n    )\n    ai_val_loader = DataLoader(SimpleDS(X_val, y_val), batch_size=ai_bs)\n    # Initialize AI model\n    ai_model = AIModel(D, 16, 2).to(device)\n    criterion_ai = nn.CrossEntropyLoss()\n    optimizer_ai = optim.Adam(ai_model.parameters(), lr=1e-2)\n    # Train AI model\n    for _ in range(15):\n        ai_model.train()\n        for batch in ai_tr_loader:\n            x = batch[\"x\"].to(device)\n            yb = batch[\"y\"].to(device)\n            out = ai_model(x)\n            loss = criterion_ai(out, yb)\n            optimizer_ai.zero_grad()\n            loss.backward()\n            optimizer_ai.step()\n    # Generate AI probabilities\n    ai_model.eval()\n    with torch.no_grad():\n        X_all = torch.from_numpy(np.vstack([X_train, X_val, X_test])).float().to(device)\n        logits_all = ai_model(X_all)\n        probs_all = torch.softmax(logits_all, dim=1).cpu().numpy()\n    p_train = probs_all[: len(X_train)]\n    p_val = probs_all[len(X_train) : len(X_train) + len(X_val)]\n    p_test = probs_all[-len(X_test) :]\n\n    # Generate hard one-hot encodings\n    def to_onehot(p):\n        oh = np.zeros_like(p)\n        idx_max = p.argmax(axis=1)\n        oh[np.arange(len(idx_max)), idx_max] = 1\n        return oh\n\n    p_train_hard = to_onehot(p_train)\n    p_val_hard = to_onehot(p_val)\n    p_test_hard = to_onehot(p_test)\n    # Prepare user features for both ablations\n    X_usr = {\n        \"soft\": (\n            np.hstack([X_train, p_train]),\n            np.hstack([X_val, p_val]),\n            np.hstack([X_test, p_test]),\n        ),\n        \"hard\": (\n            np.hstack([X_train, p_train_hard]),\n            np.hstack([X_val, p_val_hard]),\n            np.hstack([X_test, p_test_hard]),\n        ),\n    }\n    for usr_bs in usr_batch_sizes:\n        for ablation in [\"soft\", \"hard\"]:\n            X_tr_ab, X_val_ab, X_test_ab = X_usr[ablation]\n            # User data loaders with ground truth labels\n            usr_tr_loader = DataLoader(\n                UserDS(X_tr_ab, y_train), batch_size=usr_bs, shuffle=True\n            )\n            usr_val_loader = DataLoader(UserDS(X_val_ab, y_val), batch_size=usr_bs)\n            usr_test_loader = DataLoader(UserDS(X_test_ab, y_test), batch_size=usr_bs)\n            # Init User model\n            user_model = UserModel(D + 2, 8, 2).to(device)\n            criterion_usr = nn.CrossEntropyLoss()\n            optimizer_usr = optim.Adam(user_model.parameters(), lr=1e-2)\n            train_accs, val_accs = [], []\n            train_losses, val_losses = [], []\n            # Train User model\n            for _ in range(20):\n                user_model.train()\n                t_loss = 0.0\n                t_corr = 0\n                t_tot = 0\n                for batch in usr_tr_loader:\n                    feat = batch[\"feat\"].to(device)\n                    lbl = batch[\"label\"].to(device)\n                    out = user_model(feat)\n                    loss = criterion_usr(out, lbl)\n                    optimizer_usr.zero_grad()\n                    loss.backward()\n                    optimizer_usr.step()\n                    t_loss += loss.item() * feat.size(0)\n                    preds = out.argmax(dim=1)\n                    t_corr += (preds == lbl).sum().item()\n                    t_tot += lbl.size(0)\n                train_losses.append(t_loss / t_tot)\n                train_accs.append(t_corr / t_tot)\n                # Validation\n                user_model.eval()\n                v_loss = 0.0\n                v_corr = 0\n                v_tot = 0\n                with torch.no_grad():\n                    for batch in usr_val_loader:\n                        feat = batch[\"feat\"].to(device)\n                        lbl = batch[\"label\"].to(device)\n                        out = user_model(feat)\n                        loss = criterion_usr(out, lbl)\n                        v_loss += loss.item() * feat.size(0)\n                        preds = out.argmax(dim=1)\n                        v_corr += (preds == lbl).sum().item()\n                        v_tot += lbl.size(0)\n                val_losses.append(v_loss / v_tot)\n                val_accs.append(v_corr / v_tot)\n            # Test evaluation\n            test_preds, test_gt = [], []\n            user_model.eval()\n            with torch.no_grad():\n                for batch in usr_test_loader:\n                    feat = batch[\"feat\"].to(device)\n                    lbl = batch[\"label\"].to(device)\n                    out = user_model(feat)\n                    p = out.argmax(dim=1).cpu().numpy()\n                    test_preds.extend(p.tolist())\n                    test_gt.extend(lbl.cpu().numpy().tolist())\n            key = f\"ai_bs_{ai_bs}_usr_bs_{usr_bs}\"\n            experiment_data[ablation][key] = {\n                \"metrics\": {\"train\": np.array(train_accs), \"val\": np.array(val_accs)},\n                \"losses\": {\n                    \"train\": np.array(train_losses),\n                    \"val\": np.array(val_losses),\n                },\n                \"predictions\": np.array(test_preds),\n                \"ground_truth\": np.array(test_gt),\n            }\n\n# Save all experiment data\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\n# Load experiment data\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n    experiment_data = {}\n\n# Print test accuracy for each ablation and setting\nfor ablation, settings in experiment_data.items():\n    for key, vals in settings.items():\n        preds = vals[\"predictions\"]\n        gt = vals[\"ground_truth\"]\n        acc = np.mean(preds == gt)\n        print(f\"Ablation: {ablation}, {key}, Test Accuracy: {acc:.3f}\")\n\n# Plot training/validation accuracy curves per ablation\nfor ablation, settings in experiment_data.items():\n    try:\n        plt.figure()\n        for key, vals in settings.items():\n            tr = vals[\"metrics\"][\"train\"]\n            va = vals[\"metrics\"][\"val\"]\n            plt.plot(tr, label=f\"{key} Train\")\n            plt.plot(va, \"--\", label=f\"{key} Val\")\n        plt.title(\n            f\"{ablation.capitalize()} Ablation - Accuracy Curves\\nDataset: Synthetic Logistic\"\n        )\n        plt.xlabel(\"Epoch\")\n        plt.ylabel(\"Accuracy\")\n        plt.legend(fontsize=\"small\", ncol=2)\n        fname = os.path.join(working_dir, f\"{ablation}_accuracy_curves.png\")\n        plt.savefig(fname)\n        plt.close()\n    except Exception as e:\n        print(f\"Error creating {ablation} accuracy plot: {e}\")\n        plt.close()\n\n# Plot training/validation loss curves per ablation\nfor ablation, settings in experiment_data.items():\n    try:\n        plt.figure()\n        for key, vals in settings.items():\n            trl = vals[\"losses\"][\"train\"]\n            val = vals[\"losses\"][\"val\"]\n            plt.plot(trl, label=f\"{key} Train\")\n            plt.plot(val, \"--\", label=f\"{key} Val\")\n        plt.title(\n            f\"{ablation.capitalize()} Ablation - Loss Curves\\nDataset: Synthetic Logistic\"\n        )\n        plt.xlabel(\"Epoch\")\n        plt.ylabel(\"Loss\")\n        plt.legend(fontsize=\"small\", ncol=2)\n        fname = os.path.join(working_dir, f\"{ablation}_loss_curves.png\")\n        plt.savefig(fname)\n        plt.close()\n    except Exception as e:\n        print(f\"Error creating {ablation} loss plot: {e}\")\n        plt.close()\n",
+    "plot_plan": "We will load the saved experiment data from the working directory and extract both accuracy and loss histories along with final predictions and ground\u2010truth labels. We then compute and print the test accuracy for each ablation (\u201csoft\u201d and \u201chard\u201d) and each batch\u2010size combination. Next, for each ablation we generate one plot of training and validation accuracy curves (all settings overlaid) wrapped in a try\u2010except to catch errors and always close the figure afterward. We do the same for loss curves, again saving to files named by ablation and plot type. All plots will include clear titles specifying the synthetic logistic dataset, labeled axes, and legends, and will be saved under working_dir with descriptive filenames. No simulated data will be used, and only the existing metrics in experiment_data.npy will be plotted.",
+    "plot_analyses": [
+      {
+        "analysis": "Soft Ablation - Loss Curves (Dataset: Synthetic Logistic):\n- All configurations exhibit a steep drop in training loss within the first two epochs, from roughly 0.65\u20130.68 down to about 0.30\u20130.32.\n- Validation losses settle into a narrow band around 0.36\u20130.38 after epoch 2, with small fluctuations but no clear divergence or overfitting.\n- Models with larger AI or user batch sizes (e.g., ai_bs_64_usr_bs_64) reach the plateau slightly faster (by epoch 1) than the smallest-batch pairs (ai_bs_16_usr_bs_16), but final training and validation losses are essentially indistinguishable across conditions by epoch 5\u201310.\n- Overall, removal of the \u201csoft\u201d component leaves the model\u2019s ability to minimize loss largely intact under the synthetic logistic task.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_acfdb6e7d5a64d37808a07983dbd34e6_proc_2577153/soft_loss_curves.png"
+      },
+      {
+        "analysis": "Hard Ablation - Loss Curves (Dataset: Synthetic Logistic):\n- A rapid reduction in training loss occurs in the first two epochs, from about 0.62\u20130.63 down to ~0.30\u20130.31, mirroring the behavior under soft ablation.\n- Validation losses converge into the 0.36\u20130.38 range, with marginally more jitter than in the soft-ablation case but no systematic upward drift.\n- Slightly slower initial convergence is seen for the smallest-batch setups, yet by epoch 3\u20134 all batch-size combinations achieve nearly identical loss levels.\n- Ablation of the \u201chard\u201d component similarly does not hinder overall loss minimization, producing final train/validation losses that match those under the soft variation.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_acfdb6e7d5a64d37808a07983dbd34e6_proc_2577153/hard_loss_curves.png"
+      },
+      {
+        "analysis": "Hard Ablation - Accuracy Curves (Dataset: Synthetic Logistic):\n- Training accuracy rises quickly from ~0.72 to ~0.85\u20130.86 by epoch 2 across all batch-size pairs.\n- Validation accuracy splits into two clusters: one group (combinations with ai_bs \u226532 and usr_bs \u226532) stabilizes around 0.84\u20130.85; the other (small-batch pairings such as ai_bs_16_usr_bs_16 or ai_bs_32_usr_bs_16) plateaus near 0.82\u20130.83.\n- Fluctuations in validation accuracy are more pronounced than in the soft-ablation case, but there\u2019s no trend of performance degradation over time.\n- Larger batches on both AI and user sides consistently yield the highest steady-state accuracy under hard ablation.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_acfdb6e7d5a64d37808a07983dbd34e6_proc_2577153/hard_accuracy_curves.png"
+      },
+      {
+        "analysis": "Soft Ablation - Accuracy Curves (Dataset: Synthetic Logistic):\n- Rapid attainment of ~0.85 train accuracy by epoch 2, closely tracking the pattern seen in hard ablation.\n- Validation accuracy groups again separate by batch-size regime: high-batch pairs reach ~0.84\u20130.85; low-batch pairs remain around 0.82\u20130.83.\n- Trajectories are marginally smoother, with reduced spike amplitude in validation accuracy relative to the hard-ablation runs.\n- No evidence of serious overfitting: validation curves remain stable or improve slightly over the 20 epochs.\n- Soft ablation yields performance on par with hard ablation, confirming that neither component by itself is critical to achieve baseline accuracy on this synthetic logistic task.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_acfdb6e7d5a64d37808a07983dbd34e6_proc_2577153/soft_accuracy_curves.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_acfdb6e7d5a64d37808a07983dbd34e6_proc_2577153/soft_loss_curves.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_acfdb6e7d5a64d37808a07983dbd34e6_proc_2577153/hard_loss_curves.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_acfdb6e7d5a64d37808a07983dbd34e6_proc_2577153/hard_accuracy_curves.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_acfdb6e7d5a64d37808a07983dbd34e6_proc_2577153/soft_accuracy_curves.png"
+    ],
+    "vlm_feedback_summary": "Both soft and hard ablation variants drive rapid convergence in loss and accuracy, with final metrics nearly matching each other. Batch-size interplay has a modest effect, favoring dual large batches, but removal of either explanation channel does not significantly impair performance on this synthetic classification problem.",
+    "exp_results_dir": "experiment_results/experiment_acfdb6e7d5a64d37808a07983dbd34e6_proc_2577153",
+    "ablation_name": "Hard Label Input Ablation",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_acfdb6e7d5a64d37808a07983dbd34e6_proc_2577153/experiment_data.npy"
+    ]
+  },
+  {
+    "overall_plan": "Conduct a comprehensive two\u2010stage training experiment that combines hyperparameter tuning over batch sizes with a teacher\u2010feature ablation in the user model. Specifically, loop over a grid of AI\u2010model and user\u2010model batch sizes: for each pair, reinitialize data loaders, models, and optimizers; train the AI model for 15 epochs; generate its predictions; then train the user model for 20 epochs under two regimes\u2014one using both raw inputs and teacher probabilities, and one using only raw inputs. Log per\u2010epoch training and validation losses and accuracies, plus final test predictions and ground truths. Aggregate all results in a nested dictionary keyed by batch\u2010size pairs and the ablation condition under \"teacher_feature_removal\", then save the full `experiment_data.npy` file.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "train accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on training set",
+            "data": [
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_16_user_bs_16",
+                "final_value": 0.9933,
+                "best_value": 0.9933
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_16_user_bs_32",
+                "final_value": 0.9942,
+                "best_value": 0.9942
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_16_user_bs_64",
+                "final_value": 0.9983,
+                "best_value": 0.9983
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_32_user_bs_16",
+                "final_value": 0.9958,
+                "best_value": 0.9958
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_32_user_bs_32",
+                "final_value": 0.9958,
+                "best_value": 0.9958
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_32_user_bs_64",
+                "final_value": 0.9942,
+                "best_value": 0.9942
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_64_user_bs_16",
+                "final_value": 0.9925,
+                "best_value": 0.9925
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_64_user_bs_32",
+                "final_value": 0.9933,
+                "best_value": 0.9933
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_64_user_bs_64",
+                "final_value": 0.9958,
+                "best_value": 0.9958
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_16_user_bs_16",
+                "final_value": 0.995,
+                "best_value": 0.995
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_16_user_bs_32",
+                "final_value": 0.995,
+                "best_value": 0.995
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_16_user_bs_64",
+                "final_value": 0.995,
+                "best_value": 0.995
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_32_user_bs_16",
+                "final_value": 0.9925,
+                "best_value": 0.9925
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_32_user_bs_32",
+                "final_value": 0.99,
+                "best_value": 0.99
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_32_user_bs_64",
+                "final_value": 0.9942,
+                "best_value": 0.9942
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_64_user_bs_16",
+                "final_value": 0.995,
+                "best_value": 0.995
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_64_user_bs_32",
+                "final_value": 0.9975,
+                "best_value": 0.9975
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_64_user_bs_64",
+                "final_value": 0.995,
+                "best_value": 0.995
+              }
+            ]
+          },
+          {
+            "metric_name": "validation accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on validation set",
+            "data": [
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_16_user_bs_16",
+                "final_value": 0.9933,
+                "best_value": 0.9933
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_16_user_bs_32",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_16_user_bs_64",
+                "final_value": 0.9933,
+                "best_value": 0.9933
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_32_user_bs_16",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_32_user_bs_32",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_32_user_bs_64",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_64_user_bs_16",
+                "final_value": 0.9967,
+                "best_value": 0.9967
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_64_user_bs_32",
+                "final_value": 0.9967,
+                "best_value": 0.9967
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_64_user_bs_64",
+                "final_value": 0.9967,
+                "best_value": 0.9967
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_16_user_bs_16",
+                "final_value": 0.9933,
+                "best_value": 0.9933
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_16_user_bs_32",
+                "final_value": 0.9933,
+                "best_value": 0.9933
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_16_user_bs_64",
+                "final_value": 0.9933,
+                "best_value": 0.9933
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_32_user_bs_16",
+                "final_value": 0.9933,
+                "best_value": 0.9933
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_32_user_bs_32",
+                "final_value": 0.9933,
+                "best_value": 0.9933
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_32_user_bs_64",
+                "final_value": 0.9967,
+                "best_value": 0.9967
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_64_user_bs_16",
+                "final_value": 0.98,
+                "best_value": 0.98
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_64_user_bs_32",
+                "final_value": 0.9967,
+                "best_value": 0.9967
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_64_user_bs_64",
+                "final_value": 0.9967,
+                "best_value": 0.9967
+              }
+            ]
+          },
+          {
+            "metric_name": "test accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on test set",
+            "data": [
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_16_user_bs_16",
+                "final_value": 0.998,
+                "best_value": 0.998
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_16_user_bs_32",
+                "final_value": 0.996,
+                "best_value": 0.996
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_16_user_bs_64",
+                "final_value": 0.996,
+                "best_value": 0.996
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_32_user_bs_16",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_32_user_bs_32",
+                "final_value": 0.996,
+                "best_value": 0.996
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_32_user_bs_64",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_64_user_bs_16",
+                "final_value": 0.998,
+                "best_value": 0.998
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_64_user_bs_32",
+                "final_value": 0.998,
+                "best_value": 0.998
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_64_user_bs_64",
+                "final_value": 0.998,
+                "best_value": 0.998
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_16_user_bs_16",
+                "final_value": 0.99,
+                "best_value": 0.99
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_16_user_bs_32",
+                "final_value": 0.994,
+                "best_value": 0.994
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_16_user_bs_64",
+                "final_value": 0.99,
+                "best_value": 0.99
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_32_user_bs_16",
+                "final_value": 0.996,
+                "best_value": 0.996
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_32_user_bs_32",
+                "final_value": 0.99,
+                "best_value": 0.99
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_32_user_bs_64",
+                "final_value": 0.992,
+                "best_value": 0.992
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_64_user_bs_16",
+                "final_value": 0.982,
+                "best_value": 0.982
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_64_user_bs_32",
+                "final_value": 0.996,
+                "best_value": 0.996
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_64_user_bs_64",
+                "final_value": 0.996,
+                "best_value": 0.996
+              }
+            ]
+          },
+          {
+            "metric_name": "train loss",
+            "lower_is_better": true,
+            "description": "Loss on training set",
+            "data": [
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_16_user_bs_16",
+                "final_value": 0.0152,
+                "best_value": 0.0152
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_16_user_bs_32",
+                "final_value": 0.0162,
+                "best_value": 0.0162
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_16_user_bs_64",
+                "final_value": 0.0195,
+                "best_value": 0.0195
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_32_user_bs_16",
+                "final_value": 0.0136,
+                "best_value": 0.0136
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_32_user_bs_32",
+                "final_value": 0.016,
+                "best_value": 0.016
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_32_user_bs_64",
+                "final_value": 0.0215,
+                "best_value": 0.0215
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_64_user_bs_16",
+                "final_value": 0.014,
+                "best_value": 0.014
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_64_user_bs_32",
+                "final_value": 0.0165,
+                "best_value": 0.0165
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_64_user_bs_64",
+                "final_value": 0.019,
+                "best_value": 0.019
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_16_user_bs_16",
+                "final_value": 0.0176,
+                "best_value": 0.0176
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_16_user_bs_32",
+                "final_value": 0.0234,
+                "best_value": 0.0234
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_16_user_bs_64",
+                "final_value": 0.0339,
+                "best_value": 0.0339
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_32_user_bs_16",
+                "final_value": 0.019,
+                "best_value": 0.019
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_32_user_bs_32",
+                "final_value": 0.0264,
+                "best_value": 0.0264
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_32_user_bs_64",
+                "final_value": 0.0331,
+                "best_value": 0.0331
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_64_user_bs_16",
+                "final_value": 0.0185,
+                "best_value": 0.0185
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_64_user_bs_32",
+                "final_value": 0.0198,
+                "best_value": 0.0198
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_64_user_bs_64",
+                "final_value": 0.0288,
+                "best_value": 0.0288
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Loss on validation set",
+            "data": [
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_16_user_bs_16",
+                "final_value": 0.0095,
+                "best_value": 0.0095
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_16_user_bs_32",
+                "final_value": 0.0103,
+                "best_value": 0.0103
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_16_user_bs_64",
+                "final_value": 0.0157,
+                "best_value": 0.0157
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_32_user_bs_16",
+                "final_value": 0.0083,
+                "best_value": 0.0083
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_32_user_bs_32",
+                "final_value": 0.0129,
+                "best_value": 0.0129
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_32_user_bs_64",
+                "final_value": 0.016,
+                "best_value": 0.016
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_64_user_bs_16",
+                "final_value": 0.0108,
+                "best_value": 0.0108
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_64_user_bs_32",
+                "final_value": 0.0137,
+                "best_value": 0.0137
+              },
+              {
+                "dataset_name": "with_teacher_probs | ai_bs_64_user_bs_64",
+                "final_value": 0.017,
+                "best_value": 0.017
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_16_user_bs_16",
+                "final_value": 0.0115,
+                "best_value": 0.0115
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_16_user_bs_32",
+                "final_value": 0.0187,
+                "best_value": 0.0187
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_16_user_bs_64",
+                "final_value": 0.0304,
+                "best_value": 0.0304
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_32_user_bs_16",
+                "final_value": 0.02,
+                "best_value": 0.02
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_32_user_bs_32",
+                "final_value": 0.0232,
+                "best_value": 0.0232
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_32_user_bs_64",
+                "final_value": 0.0266,
+                "best_value": 0.0266
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_64_user_bs_16",
+                "final_value": 0.0465,
+                "best_value": 0.0465
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_64_user_bs_32",
+                "final_value": 0.0203,
+                "best_value": 0.0203
+              },
+              {
+                "dataset_name": "raw_features_only | ai_bs_64_user_bs_64",
+                "final_value": 0.0257,
+                "best_value": 0.0257
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.utils.data import Dataset, DataLoader\n\n# Set up working directory\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# Device & reproducibility\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nnp.random.seed(0)\ntorch.manual_seed(0)\n\n# Synthetic dataset\nN, D = 2000, 2\nX = np.random.randn(N, D)\nw_true = np.array([2.0, -3.0])\nb_true = 0.5\nlogits = X.dot(w_true) + b_true\nprobs = 1 / (1 + np.exp(-logits))\ny = (np.random.rand(N) < probs).astype(int)\n\n# Train/val/test split\nidx = np.random.permutation(N)\ntrain_idx, val_idx, test_idx = idx[:1200], idx[1200:1500], idx[1500:]\nX_train, y_train = X[train_idx], y[train_idx]\nX_val, y_val = X[val_idx], y[val_idx]\nX_test, y_test = X[test_idx], y[test_idx]\n\n# Normalize\nmean, std = X_train.mean(0), X_train.std(0) + 1e-6\nX_train = (X_train - mean) / std\nX_val = (X_val - mean) / std\nX_test = (X_test - mean) / std\n\n\n# Dataset classes\nclass SimpleDS(Dataset):\n    def __init__(self, X, y):\n        self.X = torch.from_numpy(X).float()\n        self.y = torch.from_numpy(y).long()\n\n    def __len__(self):\n        return len(self.y)\n\n    def __getitem__(self, i):\n        return {\"x\": self.X[i], \"y\": self.y[i]}\n\n\nclass UserDS(Dataset):\n    def __init__(self, feat, label):\n        self.X = torch.from_numpy(feat).float()\n        self.y = torch.from_numpy(label).long()\n\n    def __len__(self):\n        return len(self.y)\n\n    def __getitem__(self, i):\n        return {\"feat\": self.X[i], \"label\": self.y[i]}\n\n\n# Models\nclass AIModel(nn.Module):\n    def __init__(self, inp, hid, out):\n        super().__init__()\n        self.net = nn.Sequential(nn.Linear(inp, hid), nn.ReLU(), nn.Linear(hid, out))\n\n    def forward(self, x):\n        return self.net(x)\n\n\nclass UserModel(nn.Module):\n    def __init__(self, inp, hid, out):\n        super().__init__()\n        self.net = nn.Sequential(nn.Linear(inp, hid), nn.ReLU(), nn.Linear(hid, out))\n\n    def forward(self, x):\n        return self.net(x)\n\n\n# Hyperparameters\nai_batch_sizes = [16, 32, 64]\nusr_batch_sizes = [16, 32, 64]\n\n# Container\nexperiment_data = {\n    \"teacher_feature_removal\": {\"with_teacher_probs\": {}, \"raw_features_only\": {}}\n}\n\nfor ai_bs in ai_batch_sizes:\n    # AI data loaders\n    ai_tr = DataLoader(SimpleDS(X_train, y_train), batch_size=ai_bs, shuffle=True)\n    ai_val = DataLoader(SimpleDS(X_val, y_val), batch_size=ai_bs)\n\n    # Train AI\n    ai_model = AIModel(D, 16, 2).to(device)\n    crit_ai = nn.CrossEntropyLoss()\n    opt_ai = optim.Adam(ai_model.parameters(), lr=1e-2)\n    for _ in range(15):\n        ai_model.train()\n        for b in ai_tr:\n            x, yb = b[\"x\"].to(device), b[\"y\"].to(device)\n            out = ai_model(x)\n            loss = crit_ai(out, yb)\n            opt_ai.zero_grad()\n            loss.backward()\n            opt_ai.step()\n\n    # AI outputs\n    ai_model.eval()\n    with torch.no_grad():\n        X_all = torch.from_numpy(np.vstack([X_train, X_val, X_test])).float().to(device)\n        logits_all = ai_model(X_all)\n        probs_all = torch.softmax(logits_all, 1).cpu().numpy()\n    p_train = probs_all[: len(X_train)]\n    p_val = probs_all[len(X_train) : len(X_train) + len(X_val)]\n    p_test = probs_all[-len(X_test) :]\n    f_train = p_train.argmax(1)\n    f_val = p_val.argmax(1)\n    f_test = p_test.argmax(1)\n\n    # Prepare features for both regimes\n    feats = {\n        \"with_teacher_probs\": (\n            np.hstack([X_train, p_train]),\n            np.hstack([X_val, p_val]),\n            np.hstack([X_test, p_test]),\n        ),\n        \"raw_features_only\": (X_train, X_val, X_test),\n    }\n\n    for scenario, (X_ut, X_uv, X_ute) in feats.items():\n        for usr_bs in usr_batch_sizes:\n            usr_tr = DataLoader(UserDS(X_ut, f_train), batch_size=usr_bs, shuffle=True)\n            usr_val = DataLoader(UserDS(X_uv, f_val), batch_size=usr_bs)\n            usr_te = DataLoader(UserDS(X_ute, f_test), batch_size=usr_bs)\n\n            # User model\n            inp_dim = X_ut.shape[1]\n            user_model = UserModel(inp_dim, 8, 2).to(device)\n            crit_usr = nn.CrossEntropyLoss()\n            opt_usr = optim.Adam(user_model.parameters(), lr=1e-2)\n\n            train_accs, val_accs = [], []\n            train_losses, val_losses = [], []\n\n            # Train user\n            for _ in range(20):\n                user_model.train()\n                t_loss = 0\n                corr = 0\n                tot = 0\n                for b in usr_tr:\n                    feat, lbl = b[\"feat\"].to(device), b[\"label\"].to(device)\n                    out = user_model(feat)\n                    loss = crit_usr(out, lbl)\n                    opt_usr.zero_grad()\n                    loss.backward()\n                    opt_usr.step()\n                    t_loss += loss.item() * feat.size(0)\n                    preds = out.argmax(1)\n                    corr += (preds == lbl).sum().item()\n                    tot += lbl.size(0)\n                train_losses.append(t_loss / tot)\n                train_accs.append(corr / tot)\n\n                # Val\n                user_model.eval()\n                v_loss = 0\n                v_corr = 0\n                v_tot = 0\n                with torch.no_grad():\n                    for b in usr_val:\n                        feat, lbl = b[\"feat\"].to(device), b[\"label\"].to(device)\n                        out = user_model(feat)\n                        loss = crit_usr(out, lbl)\n                        v_loss += loss.item() * feat.size(0)\n                        preds = out.argmax(1)\n                        v_corr += (preds == lbl).sum().item()\n                        v_tot += lbl.size(0)\n                val_losses.append(v_loss / v_tot)\n                val_accs.append(v_corr / v_tot)\n\n            # Test\n            test_preds, test_gt = [], []\n            user_model.eval()\n            with torch.no_grad():\n                for b in usr_te:\n                    feat, lbl = b[\"feat\"].to(device), b[\"label\"].to(device)\n                    out = user_model(feat)\n                    p = out.argmax(1).cpu().numpy()\n                    test_preds.extend(p.tolist())\n                    test_gt.extend(lbl.cpu().numpy().tolist())\n\n            key = f\"ai_bs_{ai_bs}_user_bs_{usr_bs}\"\n            experiment_data[\"teacher_feature_removal\"][scenario][key] = {\n                \"metrics\": {\"train\": np.array(train_accs), \"val\": np.array(val_accs)},\n                \"losses\": {\n                    \"train\": np.array(train_losses),\n                    \"val\": np.array(val_losses),\n                },\n                \"predictions\": np.array(test_preds),\n                \"ground_truth\": np.array(test_gt),\n            }\n\n# Save results\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\ntry:\n    experiment_data = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n\nfor scenario, combos in experiment_data.get(\"teacher_feature_removal\", {}).items():\n    for combo_key, res in combos.items():\n        try:\n            fig, axs = plt.subplots(1, 2, figsize=(10, 4))\n            epochs = np.arange(1, len(res[\"metrics\"][\"train\"]) + 1)\n            # Left: Accuracy\n            axs[0].plot(epochs, res[\"metrics\"][\"train\"], label=\"Train Acc\")\n            axs[0].plot(epochs, res[\"metrics\"][\"val\"], label=\"Val Acc\")\n            axs[0].set_xlabel(\"Epoch\")\n            axs[0].set_ylabel(\"Accuracy\")\n            axs[0].set_title(\"Left: Train vs Val Accuracy\")\n            axs[0].legend()\n            # Right: Loss\n            axs[1].plot(epochs, res[\"losses\"][\"train\"], label=\"Train Loss\")\n            axs[1].plot(epochs, res[\"losses\"][\"val\"], label=\"Val Loss\")\n            axs[1].set_xlabel(\"Epoch\")\n            axs[1].set_ylabel(\"Loss\")\n            axs[1].set_title(\"Right: Train vs Val Loss\")\n            axs[1].legend()\n            fig.suptitle(f\"{scenario} | {combo_key}\")\n            fig.tight_layout(rect=[0, 0.03, 1, 0.95])\n            fname = f\"{scenario}_{combo_key}_metrics.png\".replace(\" \", \"_\")\n            fig.savefig(os.path.join(working_dir, fname))\n            plt.close(fig)\n        except Exception as e:\n            print(f\"Error creating metrics plot for {scenario} {combo_key}: {e}\")\n            plt.close(\"all\")\n",
+    "plot_plan": "We\u2019ll load the saved experiment_data.npy from the working directory. We iterate over each scenario (\u201cwith_teacher_probs\u201d and \u201craw_features_only\u201d) and each AI/user batch size combination. For each, we extract the arrays of training and validation accuracies and losses. We then create a two\u2010panel figure: the left panel shows training vs validation accuracy, and the right panel shows training vs validation loss. We add clear subplot titles (\u201cLeft: Train vs Val Accuracy\u201d and \u201cRight: Train vs Val Loss\u201d) and a super\u2010title indicating the scenario and key. We save each figure to the working directory with a descriptive filename. We wrap each plotting block in try/except to catch errors and always close the figure. This ensures all available training/validation curves are visualized without simulating any new data.",
+    "plot_analyses": [
+      {
+        "analysis": "raw_features_only | ai_bs_16_user_bs_16 shows rapid convergence by epoch 3, with training accuracy rising from ~0.90 to ~0.99 and validation accuracy tracking closely around ~0.99 thereafter. Training and validation loss both decline steeply in the first 5 epochs and plateau around ~0.02. The small gap between curves indicates minimal overfitting and stable generalization under equal batch sizes.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/raw_features_only_ai_bs_64_user_bs_64_metrics.png"
+      },
+      {
+        "analysis": "raw_features_only | ai_bs_16_user_bs_64 yields slightly slower ramp-up of training accuracy, starting around ~0.60 and reaching ~0.99 by epoch 5. Validation accuracy climbs from ~0.83 to ~0.99, slightly ahead of training early on, suggesting stable generalization despite mismatch in batch sizes. Loss curves mirror the first setting but exhibit a marginally higher initial loss and converge to ~0.03.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/with_teacher_probs_ai_bs_32_user_bs_64_metrics.png"
+      },
+      {
+        "analysis": "raw_features_only | ai_bs_32_user_bs_32 starts with a lower training accuracy (~0.78) but quickly matches the ~0.99 level by epoch 4. Validation accuracy begins at ~0.84 and also stabilizes around ~0.99. Loss falls sharply through epoch 5, settling near ~0.02, indicating robust learning with moderate batch sizes.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/raw_features_only_ai_bs_32_user_bs_16_metrics.png"
+      },
+      {
+        "analysis": "raw_features_only | ai_bs_64_user_bs_16 displays an initial training accuracy of ~0.80 and validation around ~0.97. By epoch 4 both curves converge near ~0.99. There is some minor oscillation in validation accuracy around epochs 10\u201315 but the overall gap remains under 0.01. Loss plummets to ~0.02 by epoch 5 and stays flat.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/raw_features_only_ai_bs_16_user_bs_64_metrics.png"
+      },
+      {
+        "analysis": "raw_features_only | ai_bs_64_user_bs_64 reveals behavior similar to the previous condition but with both accuracies starting around ~0.80 and converging to ~0.98\u20130.99 by epoch 4. Loss dynamics are nearly identical, ending at ~0.02. The symmetry in train/val performance suggests negligible effect of large batch sizes when balanced.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/with_teacher_probs_ai_bs_64_user_bs_64_metrics.png"
+      },
+      {
+        "analysis": "with_teacher_probs | ai_bs_16_user_bs_16 shows slightly slower initial training growth (~0.78 at epoch 1) but matches ~0.99 accuracy by epoch 4. Validation accuracy remains very tight around ~0.99 throughout. Loss drops below ~0.02 by epoch 6, indicating that teacher probability signals marginally smooth the convergence and reduce overfitting.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/with_teacher_probs_ai_bs_16_user_bs_16_metrics.png"
+      },
+      {
+        "analysis": "with_teacher_probs | ai_bs_16_user_bs_64 has a gentler warm-up: training accuracy climbs from ~0.65 to ~0.98 by epoch 6, while validation advances from ~0.88 to ~0.98. Loss starts higher (~0.47) vs. earlier setups but converges to ~0.03, reflecting that teacher supervision salvages generalization despite batch\u2010size mismatch.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/with_teacher_probs_ai_bs_32_user_bs_32_metrics.png"
+      },
+      {
+        "analysis": "with_teacher_probs | ai_bs_32_user_bs_32 begins training at ~0.85, reaching ~0.99 accuracy by epoch 4; validation moves from ~0.97 to ~0.99. Loss behavior parallels raw features but finishes marginally lower (~0.015), hinting at slightly more confident predictions under dual supervision.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/raw_features_only_ai_bs_32_user_bs_32_metrics.png"
+      },
+      {
+        "analysis": "with_teacher_probs | ai_bs_64_user_bs_16 starts at ~0.93 training accuracy, climbs to ~0.99, with validation jittering between ~0.98 and ~0.995. Loss dips under ~0.02 by epoch 6. The teacher\u2010guided model appears more stable with large AI batch and small user batch, reducing early training volatility.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/raw_features_only_ai_bs_16_user_bs_32_metrics.png"
+      },
+      {
+        "analysis": "with_teacher_probs | ai_bs_64_user_bs_64 opens with training accuracy ~0.86, but rapidly approaches ~0.99, and validation steadies around ~0.995. Loss curves fall below ~0.02 by epoch 8 and remain smooth. Balanced large batches with teacher probabilities produce the tightest train/validation alignment overall.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/with_teacher_probs_ai_bs_64_user_bs_32_metrics.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/raw_features_only_ai_bs_64_user_bs_64_metrics.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/with_teacher_probs_ai_bs_32_user_bs_64_metrics.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/raw_features_only_ai_bs_32_user_bs_16_metrics.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/raw_features_only_ai_bs_16_user_bs_64_metrics.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/with_teacher_probs_ai_bs_64_user_bs_64_metrics.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/with_teacher_probs_ai_bs_16_user_bs_16_metrics.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/with_teacher_probs_ai_bs_32_user_bs_32_metrics.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/raw_features_only_ai_bs_32_user_bs_32_metrics.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/raw_features_only_ai_bs_16_user_bs_32_metrics.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/with_teacher_probs_ai_bs_64_user_bs_32_metrics.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/with_teacher_probs_ai_bs_64_user_bs_16_metrics.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/with_teacher_probs_ai_bs_32_user_bs_16_metrics.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/raw_features_only_ai_bs_16_user_bs_16_metrics.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/with_teacher_probs_ai_bs_16_user_bs_32_metrics.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/raw_features_only_ai_bs_64_user_bs_32_metrics.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/with_teacher_probs_ai_bs_16_user_bs_64_metrics.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/raw_features_only_ai_bs_32_user_bs_64_metrics.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/raw_features_only_ai_bs_64_user_bs_16_metrics.png"
+    ],
+    "vlm_feedback_summary": "All configurations achieve near\u2010perfect accuracy with low loss after 5\u20138 epochs. Introducing teacher probabilities consistently smooths convergence, slightly reduces final loss and narrows any small generalization gaps. Batch-size mismatches (AI vs. user) have minimal impact on long-term performance but can slow initial warm-up; matching batch sizes yields faster stabilization. Dual\u2010channel supervision (with_teacher_probs) marginally outperforms raw features in stability and loss.",
+    "exp_results_dir": "experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154",
+    "ablation_name": "Teacher Feature Removal Ablation",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_33a5a1e460e544bea66c611c4ce48198_proc_2577154/experiment_data.npy"
+    ]
+  },
+  {
+    "overall_plan": "Our overarching experimental pipeline involves two complementary stages. First, we perform a comprehensive hyperparameter grid search over AI and User model batch sizes, retraining both models (AI for 15 epochs, User for 20 epochs) for each batch-size pair. We collect per-epoch train/validation losses and accuracies plus final test predictions and labels, storing all results in an organized data structure for comparative analysis. Building on this, we conduct a confidence-filtered pseudo-labeling ablation: we train one AIModel (teacher) on synthetic data to obtain softmax predictions, then, for multiple confidence thresholds (0.6, 0.8, 0.9), we filter the pseudo-labeled examples by their maximum softmax score. For each threshold, we train a UserModel on the filtered subset, record training and validation metrics, and evaluate test predictions against teacher labels. All findings are saved under a unified `experiment_data.npy`. This integrated plan allows us to jointly optimize hyperparameters and assess the impact of pseudo-label confidence on student model performance, yielding insights into both training configuration and data curation in teacher-student learning paradigms.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "train accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the training set",
+            "data": [
+              {
+                "dataset_name": "threshold_0.6",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "threshold_0.8",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "threshold_0.9",
+                "final_value": 1.0,
+                "best_value": 1.0
+              }
+            ]
+          },
+          {
+            "metric_name": "validation accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the validation set",
+            "data": [
+              {
+                "dataset_name": "threshold_0.6",
+                "final_value": 0.9967,
+                "best_value": 0.9967
+              },
+              {
+                "dataset_name": "threshold_0.8",
+                "final_value": 0.9967,
+                "best_value": 0.9967
+              },
+              {
+                "dataset_name": "threshold_0.9",
+                "final_value": 0.97,
+                "best_value": 0.97
+              }
+            ]
+          },
+          {
+            "metric_name": "train loss",
+            "lower_is_better": true,
+            "description": "Loss on the training set",
+            "data": [
+              {
+                "dataset_name": "threshold_0.6",
+                "final_value": 0.0008,
+                "best_value": 0.0008
+              },
+              {
+                "dataset_name": "threshold_0.8",
+                "final_value": 0.0002,
+                "best_value": 0.0002
+              },
+              {
+                "dataset_name": "threshold_0.9",
+                "final_value": 0.0002,
+                "best_value": 0.0002
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Loss on the validation set",
+            "data": [
+              {
+                "dataset_name": "threshold_0.6",
+                "final_value": 0.0206,
+                "best_value": 0.0206
+              },
+              {
+                "dataset_name": "threshold_0.8",
+                "final_value": 0.0349,
+                "best_value": 0.0349
+              },
+              {
+                "dataset_name": "threshold_0.9",
+                "final_value": 0.0614,
+                "best_value": 0.0614
+              }
+            ]
+          },
+          {
+            "metric_name": "test accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the test set",
+            "data": [
+              {
+                "dataset_name": "threshold_0.6",
+                "final_value": 0.996,
+                "best_value": 0.996
+              },
+              {
+                "dataset_name": "threshold_0.8",
+                "final_value": 0.998,
+                "best_value": 0.998
+              },
+              {
+                "dataset_name": "threshold_0.9",
+                "final_value": 0.976,
+                "best_value": 0.976
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.utils.data import Dataset, DataLoader\n\n# Working directory\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# Device\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n\n# Reproducibility\nnp.random.seed(0)\ntorch.manual_seed(0)\n\n# Synthetic data\nN, D = 2000, 2\nX = np.random.randn(N, D)\nw_true = np.array([2.0, -3.0])\nb_true = 0.5\nlogits = X.dot(w_true) + b_true\nprobs = 1 / (1 + np.exp(-logits))\ny = (np.random.rand(N) < probs).astype(int)\n\n# Split\nidx = np.random.permutation(N)\ntrain_idx, val_idx, test_idx = idx[:1200], idx[1200:1500], idx[1500:]\nX_train, y_train = X[train_idx], y[train_idx]\nX_val, y_val = X[val_idx], y[val_idx]\nX_test, y_test = X[test_idx], y[test_idx]\n\n# Normalize\nmean, std = X_train.mean(0), X_train.std(0) + 1e-6\nX_train = (X_train - mean) / std\nX_val = (X_val - mean) / std\nX_test = (X_test - mean) / std\n\n\n# Datasets\nclass SimpleDS(Dataset):\n    def __init__(self, X, y):\n        self.X = torch.from_numpy(X).float()\n        self.y = torch.from_numpy(y).long()\n\n    def __len__(self):\n        return len(self.y)\n\n    def __getitem__(self, i):\n        return {\"x\": self.X[i], \"y\": self.y[i]}\n\n\nclass UserDS(Dataset):\n    def __init__(self, X, y):\n        self.X = torch.from_numpy(X).float()\n        self.y = torch.from_numpy(y).long()\n\n    def __len__(self):\n        return len(self.y)\n\n    def __getitem__(self, i):\n        return {\"feat\": self.X[i], \"label\": self.y[i]}\n\n\n# Models\nclass AIModel(nn.Module):\n    def __init__(self, inp, hid, out):\n        super().__init__()\n        self.net = nn.Sequential(nn.Linear(inp, hid), nn.ReLU(), nn.Linear(hid, out))\n\n    def forward(self, x):\n        return self.net(x)\n\n\nclass UserModel(nn.Module):\n    def __init__(self, inp, hid, out):\n        super().__init__()\n        self.net = nn.Sequential(nn.Linear(inp, hid), nn.ReLU(), nn.Linear(hid, out))\n\n    def forward(self, x):\n        return self.net(x)\n\n\n# Train teacher\nai_bs = 32\nai_tr_loader = DataLoader(SimpleDS(X_train, y_train), batch_size=ai_bs, shuffle=True)\nai_val_loader = DataLoader(SimpleDS(X_val, y_val), batch_size=ai_bs, shuffle=False)\nai_model = AIModel(D, 16, 2).to(device)\ncrit_ai = nn.CrossEntropyLoss()\nopt_ai = optim.Adam(ai_model.parameters(), lr=1e-2)\nfor _ in range(15):\n    ai_model.train()\n    for batch in ai_tr_loader:\n        x, yb = batch[\"x\"].to(device), batch[\"y\"].to(device)\n        out = ai_model(x)\n        loss = crit_ai(out, yb)\n        opt_ai.zero_grad()\n        loss.backward()\n        opt_ai.step()\n\n# Get teacher probs & pseudo-labels\nai_model.eval()\nwith torch.no_grad():\n    X_all = torch.from_numpy(np.vstack([X_train, X_val, X_test])).float().to(device)\n    logits_all = ai_model(X_all)\n    probs_all = torch.softmax(logits_all, dim=1).cpu().numpy()\np_train = probs_all[: len(X_train)]\np_val = probs_all[len(X_train) : len(X_train) + len(X_val)]\np_test = probs_all[-len(X_test) :]\nf_train = p_train.argmax(1)\nf_val = p_val.argmax(1)\nf_test = p_test.argmax(1)\n\n# Build user features\nX_usr_train = np.hstack([X_train, p_train])\nX_usr_val = np.hstack([X_val, p_val])\nX_usr_test = np.hstack([X_test, p_test])\n\n# Ablation: confidence thresholds\nthresholds = [0.6, 0.8, 0.9]\nexperiment_data = {\"confidence_filter\": {}}\nusr_bs = 32\n\nfor thr in thresholds:\n    # filter train\n    keep = np.where(np.max(p_train, axis=1) >= thr)[0]\n    X_tr_f = X_usr_train[keep]\n    y_tr_f = f_train[keep]\n    # loaders\n    usr_tr = DataLoader(UserDS(X_tr_f, y_tr_f), batch_size=usr_bs, shuffle=True)\n    usr_val = DataLoader(UserDS(X_usr_val, f_val), batch_size=usr_bs, shuffle=False)\n    usr_test = DataLoader(UserDS(X_usr_test, f_test), batch_size=usr_bs, shuffle=False)\n    # user model\n    user = UserModel(D + 2, 8, 2).to(device)\n    crit_u = nn.CrossEntropyLoss()\n    opt_u = optim.Adam(user.parameters(), lr=1e-2)\n    train_accs, val_accs = [], []\n    train_losses, val_losses = [], []\n    # train\n    for _ in range(20):\n        user.train()\n        t_loss, corr, tot = 0.0, 0, 0\n        for b in usr_tr:\n            x = b[\"feat\"].to(device)\n            yb = b[\"label\"].to(device)\n            out = user(x)\n            loss = crit_u(out, yb)\n            opt_u.zero_grad()\n            loss.backward()\n            opt_u.step()\n            t_loss += loss.item() * len(yb)\n            pred = out.argmax(1)\n            corr += (pred == yb).sum().item()\n            tot += len(yb)\n        train_losses.append(t_loss / tot)\n        train_accs.append(corr / tot)\n        # val\n        user.eval()\n        v_loss, v_corr, v_tot = 0.0, 0, 0\n        with torch.no_grad():\n            for b in usr_val:\n                x = b[\"feat\"].to(device)\n                yb = b[\"label\"].to(device)\n                out = user(x)\n                loss = crit_u(out, yb)\n                v_loss += loss.item() * len(yb)\n                pred = out.argmax(1)\n                v_corr += (pred == yb).sum().item()\n                v_tot += len(yb)\n        val_losses.append(v_loss / v_tot)\n        val_accs.append(v_corr / v_tot)\n    # test\n    user.eval()\n    test_preds, test_gt = [], []\n    with torch.no_grad():\n        for b in usr_test:\n            x = b[\"feat\"].to(device)\n            yb = b[\"label\"].to(device)\n            out = user(x)\n            test_preds.extend(out.argmax(1).cpu().numpy().tolist())\n            test_gt.extend(yb.cpu().numpy().tolist())\n    # save\n    key = f\"threshold_{thr}\"\n    experiment_data[\"confidence_filter\"][key] = {\n        \"metrics\": {\"train\": np.array(train_accs), \"val\": np.array(val_accs)},\n        \"losses\": {\"train\": np.array(train_losses), \"val\": np.array(val_losses)},\n        \"predictions\": np.array(test_preds),\n        \"ground_truth\": np.array(test_gt),\n    }\n\n# dump\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\ndata_path = os.path.join(working_dir, \"experiment_data.npy\")\ntry:\n    experiment_data = np.load(data_path, allow_pickle=True).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n\nconf_data = experiment_data.get(\"confidence_filter\", {})\nkeys = sorted(conf_data.keys(), key=lambda k: float(k.split(\"_\")[-1]))\n# determine epoch range\nn_epochs = len(conf_data[keys[0]][\"metrics\"][\"train\"])\nepochs = np.arange(1, n_epochs + 1)\n\n# Plot accuracy curves\ntry:\n    plt.figure()\n    for key in keys:\n        thr = key.split(\"_\")[-1]\n        train_acc = conf_data[key][\"metrics\"][\"train\"]\n        val_acc = conf_data[key][\"metrics\"][\"val\"]\n        plt.plot(epochs, train_acc, label=f\"Train thr={thr}\")\n        plt.plot(epochs, val_acc, \"--\", label=f\"Val thr={thr}\")\n    plt.title(\"Training vs Validation Accuracy\\nDataset: Synthetic Classification\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Accuracy\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"confidence_filter_accuracy.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating accuracy plot: {e}\")\n    plt.close()\n\n# Plot loss curves\ntry:\n    plt.figure()\n    for key in keys:\n        thr = key.split(\"_\")[-1]\n        train_loss = conf_data[key][\"losses\"][\"train\"]\n        val_loss = conf_data[key][\"losses\"][\"val\"]\n        plt.plot(epochs, train_loss, label=f\"Train thr={thr}\")\n        plt.plot(epochs, val_loss, \"--\", label=f\"Val thr={thr}\")\n    plt.title(\"Training vs Validation Loss\\nDataset: Synthetic Classification\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Loss\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"confidence_filter_loss.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating loss plot: {e}\")\n    plt.close()\n\n# Plot test accuracy bar chart\ntry:\n    thr_vals = []\n    test_accs = []\n    for key in keys:\n        thr_vals.append(key.split(\"_\")[-1])\n        preds = conf_data[key][\"predictions\"]\n        gt = conf_data[key][\"ground_truth\"]\n        test_accs.append((preds == gt).mean())\n    plt.figure()\n    plt.bar(thr_vals, test_accs, color=\"skyblue\")\n    plt.title(\n        \"Test Accuracy per Confidence Threshold\\nDataset: Synthetic Classification\"\n    )\n    plt.xlabel(\"Threshold\")\n    plt.ylabel(\"Test Accuracy\")\n    for i, v in enumerate(test_accs):\n        plt.text(i, v + 0.01, f\"{v:.2f}\", ha=\"center\")\n    plt.savefig(os.path.join(working_dir, \"confidence_filter_test_accuracy.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating test accuracy plot: {e}\")\n    plt.close()\n",
+    "plot_plan": "We will load the saved experiment data from the working directory and extract per\u2010threshold accuracy and loss curves as well as test predictions. Next, we will plot training vs validation accuracy trajectories for each confidence threshold on a single figure with clear labels and legends. Then, similarly, we will plot the corresponding loss curves. Finally, we compute the overall test accuracy for each threshold and render a bar chart annotated with exact values. Each figure is generated inside its own try\u2010except block to catch errors, given descriptive titles including dataset context, and saved using a filename that reflects the plot type and dataset. All plots are closed after saving to free resources and ensure figures do not overlap.",
+    "plot_analyses": [
+      {
+        "analysis": "Test Accuracy per Confidence Threshold indicates almost perfect classification at thresholds 0.6 and 0.8 (100% test accuracy), with a slight performance drop to 98% at threshold 0.9. This suggests that raising the confidence cutoff too high can marginally reduce overall coverage or introduce edge cases that degrade accuracy on the held\u2010out set.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_9a98c8acd1524dc2b0ada48aab8154d9_proc_2577154/confidence_filter_test_accuracy.png"
+      },
+      {
+        "analysis": "Training vs Validation Loss curves reveal rapid convergence across all thresholds. Lower cutoffs (0.6 and 0.8) yield faster decline and a lower validation loss floor (~0.02 and ~0.03 respectively), whereas the highest cutoff (0.9) shows slower convergence and settles at a higher validation loss (~0.06). The gap between training and validation loss grows with threshold, indicating that overly stringent confidence requirements may lead to overfitting or reduced effective training data.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_9a98c8acd1524dc2b0ada48aab8154d9_proc_2577154/confidence_filter_loss.png"
+      },
+      {
+        "analysis": "Training vs Validation Accuracy trajectories corroborate the loss observations: thresholds 0.6 and 0.8 reach 100% training and validation accuracy by epoch 4, while threshold 0.9 lags slightly, plateauing validation accuracy around 99\u201399.7% and exhibiting a modest generalization gap. This underscores that extremely high confidence thresholds can slow learning and cap maximum achievable alignment between model predictions and true labels.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_9a98c8acd1524dc2b0ada48aab8154d9_proc_2577154/confidence_filter_accuracy.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_9a98c8acd1524dc2b0ada48aab8154d9_proc_2577154/confidence_filter_test_accuracy.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_9a98c8acd1524dc2b0ada48aab8154d9_proc_2577154/confidence_filter_loss.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_9a98c8acd1524dc2b0ada48aab8154d9_proc_2577154/confidence_filter_accuracy.png"
+    ],
+    "vlm_feedback_summary": "Overall, ablation over confidence thresholds on the synthetic classification task shows that moderate thresholds (0.6\u20130.8) deliver fastest convergence and perfect generalization, whereas an extreme threshold (0.9) introduces minor accuracy loss, slower convergence, and a slight overfitting signature. For downstream co-adaptive explanation work, a midrange threshold (\u22480.8) is recommended; further validation on noisy or real-world data is needed.",
+    "exp_results_dir": "experiment_results/experiment_9a98c8acd1524dc2b0ada48aab8154d9_proc_2577154",
+    "ablation_name": "Confidence\u2010Filtered Pseudo\u2010Labeling",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_9a98c8acd1524dc2b0ada48aab8154d9_proc_2577154/experiment_data.npy"
+    ]
+  },
+  {
+    "overall_plan": "We will perform a two-part experimental study. First, we conduct a hyperparameter sweep over batch sizes for both AIModel and UserModel. For each (AI_batch_size, User_batch_size) pair, we reinitialize data loaders, models, and optimizers; train the AIModel for 15 epochs to generate predictions; then train the UserModel for 20 epochs; and record per-epoch train/val losses and accuracies and final test metrics, storing results keyed by batch sizes. Second, we introduce a class imbalance ablation: we generate a full synthetic dataset once and subsample it to three target class ratios (50:50, 70:30, 90:10). For each ratio, we shuffle and split into train/val/test, normalize features, train the AIModel to obtain pseudo-labels and probabilities, and then, using the same batch-size grid, train the UserModel and record metrics under each (ratio, batch_size) combination. All data are organized in a nested dictionary under \"class_imbalance\"\u2192ratio\u2192batch_size and saved to \"experiment_data.npy\". This combined design allows us to assess how batch size choices interact with varying degrees of class imbalance, yielding insights into robust hyperparameter settings across data distributions.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "train accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the training dataset",
+            "data": [
+              {
+                "dataset_name": "50_50",
+                "final_value": 0.9983,
+                "best_value": 0.9983
+              },
+              {
+                "dataset_name": "70_30",
+                "final_value": 0.9983,
+                "best_value": 0.9992
+              },
+              {
+                "dataset_name": "90_10",
+                "final_value": 0.9975,
+                "best_value": 1.0
+              }
+            ]
+          },
+          {
+            "metric_name": "validation accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the validation dataset",
+            "data": [
+              {
+                "dataset_name": "50_50",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "70_30",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "90_10",
+                "final_value": 1.0,
+                "best_value": 1.0
+              }
+            ]
+          },
+          {
+            "metric_name": "train loss",
+            "lower_is_better": true,
+            "description": "Cross-entropy loss on the training dataset",
+            "data": [
+              {
+                "dataset_name": "50_50",
+                "final_value": 0.0176,
+                "best_value": 0.0103
+              },
+              {
+                "dataset_name": "70_30",
+                "final_value": 0.0135,
+                "best_value": 0.0062
+              },
+              {
+                "dataset_name": "90_10",
+                "final_value": 0.0088,
+                "best_value": 0.0036
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Cross-entropy loss on the validation dataset",
+            "data": [
+              {
+                "dataset_name": "50_50",
+                "final_value": 0.0103,
+                "best_value": 0.0093
+              },
+              {
+                "dataset_name": "70_30",
+                "final_value": 0.0102,
+                "best_value": 0.0031
+              },
+              {
+                "dataset_name": "90_10",
+                "final_value": 0.0038,
+                "best_value": 0.0007
+              }
+            ]
+          },
+          {
+            "metric_name": "test accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy on the test dataset",
+            "data": [
+              {
+                "dataset_name": "50_50",
+                "final_value": 0.998,
+                "best_value": 0.998
+              },
+              {
+                "dataset_name": "70_30",
+                "final_value": 0.996,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "90_10",
+                "final_value": 0.998,
+                "best_value": 1.0
+              }
+            ]
+          },
+          {
+            "metric_name": "test F1 score",
+            "lower_is_better": false,
+            "description": "F1 score on the test dataset",
+            "data": [
+              {
+                "dataset_name": "50_50",
+                "final_value": 0.9979,
+                "best_value": 0.9979
+              },
+              {
+                "dataset_name": "70_30",
+                "final_value": 0.9914,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "90_10",
+                "final_value": 0.9811,
+                "best_value": 1.0
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.utils.data import Dataset, DataLoader\n\n# working directory\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# device & seeds\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\nnp.random.seed(0)\ntorch.manual_seed(0)\n\n# full synthetic data\nN, D = 2000, 2\nX_full = np.random.randn(N, D)\nw_true = np.array([2.0, -3.0])\nb_true = 0.5\nlogits = X_full.dot(w_true) + b_true\nprobs_full = 1 / (1 + np.exp(-logits))\ny_full = (np.random.rand(N) < probs_full).astype(int)\n\n\n# dataset classes\nclass SimpleDS(Dataset):\n    def __init__(self, X, y):\n        self.X = torch.from_numpy(X).float()\n        self.y = torch.from_numpy(y).long()\n\n    def __len__(self):\n        return len(self.y)\n\n    def __getitem__(self, i):\n        return {\"x\": self.X[i], \"y\": self.y[i]}\n\n\nclass UserDS(Dataset):\n    def __init__(self, feat, label):\n        self.X = torch.from_numpy(feat).float()\n        self.y = torch.from_numpy(label).long()\n\n    def __len__(self):\n        return len(self.y)\n\n    def __getitem__(self, i):\n        return {\"feat\": self.X[i], \"label\": self.y[i]}\n\n\n# model defs\nclass AIModel(nn.Module):\n    def __init__(self, inp_dim, hid_dim, out_dim):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(inp_dim, hid_dim), nn.ReLU(), nn.Linear(hid_dim, out_dim)\n        )\n\n    def forward(self, x):\n        return self.net(x)\n\n\nclass UserModel(nn.Module):\n    def __init__(self, inp_dim, hid_dim, out_dim):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(inp_dim, hid_dim), nn.ReLU(), nn.Linear(hid_dim, out_dim)\n        )\n\n    def forward(self, x):\n        return self.net(x)\n\n\n# hyperparameters\nai_batch_sizes = [16, 32, 64]\nusr_batch_sizes = [16, 32, 64]\n\n# prepare experiment container\nexperiment_data = {\"class_imbalance\": {}}\nratios = [0.5, 0.7, 0.9]\nnames = [\"50_50\", \"70_30\", \"90_10\"]\n\nfor ratio, name in zip(ratios, names):\n    # compute counts for class0 (majority) and class1\n    n0 = int(N * ratio)\n    n1 = N - n0\n    idx0 = np.where(y_full == 0)[0]\n    idx1 = np.where(y_full == 1)[0]\n    # sample with/without replacement\n    sel0 = np.random.choice(idx0, n0, replace=(len(idx0) < n0))\n    sel1 = np.random.choice(idx1, n1, replace=(len(idx1) < n1))\n    idxs = np.concatenate([sel0, sel1])\n    np.random.shuffle(idxs)\n    X, y = X_full[idxs], y_full[idxs]\n    # split\n    tr_i, val_i, te_i = np.arange(0, 1200), np.arange(1200, 1500), np.arange(1500, N)\n    X_train, y_train = X[tr_i], y[tr_i]\n    X_val, y_val = X[val_i], y[val_i]\n    X_test, y_test = X[te_i], y[te_i]\n    # normalize\n    mean, std = X_train.mean(0), X_train.std(0) + 1e-6\n    X_train = (X_train - mean) / std\n    X_val = (X_val - mean) / std\n    X_test = (X_test - mean) / std\n\n    experiment_data[\"class_imbalance\"][name] = {}\n\n    for ai_bs in ai_batch_sizes:\n        # AI loaders\n        ai_tr = DataLoader(SimpleDS(X_train, y_train), batch_size=ai_bs, shuffle=True)\n        ai_val = DataLoader(SimpleDS(X_val, y_val), batch_size=ai_bs)\n        # AI model\n        ai_model = AIModel(D, 16, 2).to(device)\n        crit_ai = nn.CrossEntropyLoss()\n        opt_ai = optim.Adam(ai_model.parameters(), lr=1e-2)\n        # train AI\n        for _ in range(15):\n            ai_model.train()\n            for b in ai_tr:\n                x = b[\"x\"].to(device)\n                yb = b[\"y\"].to(device)\n                out = ai_model(x)\n                loss = crit_ai(out, yb)\n                opt_ai.zero_grad()\n                loss.backward()\n                opt_ai.step()\n        # get probs & preds\n        ai_model.eval()\n        with torch.no_grad():\n            X_all = (\n                torch.from_numpy(np.vstack([X_train, X_val, X_test])).float().to(device)\n            )\n            logits_all = ai_model(X_all)\n            probs_all = torch.softmax(logits_all, 1).cpu().numpy()\n        p_tr = probs_all[: len(X_train)]\n        p_val = probs_all[len(X_train) : len(X_train) + len(X_val)]\n        p_te = probs_all[-len(X_test) :]\n        f_tr, f_val, f_te = p_tr.argmax(1), p_val.argmax(1), p_te.argmax(1)\n        # user features\n        X_usr_tr = np.hstack([X_train, p_tr])\n        X_usr_val = np.hstack([X_val, p_val])\n        X_usr_te = np.hstack([X_test, p_te])\n\n        for usr_bs in usr_batch_sizes:\n            usr_tr = DataLoader(UserDS(X_usr_tr, f_tr), batch_size=usr_bs, shuffle=True)\n            usr_val = DataLoader(UserDS(X_usr_val, f_val), batch_size=usr_bs)\n            usr_te = DataLoader(UserDS(X_usr_te, f_te), batch_size=usr_bs)\n            user_model = UserModel(D + 2, 8, 2).to(device)\n            crit_u = nn.CrossEntropyLoss()\n            opt_u = optim.Adam(user_model.parameters(), lr=1e-2)\n            train_accs, val_accs = [], []\n            train_losses, val_losses = [], []\n\n            # train user\n            for _ in range(20):\n                user_model.train()\n                t_loss, corr, tot = 0, 0, 0\n                for b in usr_tr:\n                    feat = b[\"feat\"].to(device)\n                    lbl = b[\"label\"].to(device)\n                    out = user_model(feat)\n                    loss = crit_u(out, lbl)\n                    opt_u.zero_grad()\n                    loss.backward()\n                    opt_u.step()\n                    t_loss += loss.item() * feat.size(0)\n                    preds = out.argmax(1)\n                    corr += (preds == lbl).sum().item()\n                    tot += lbl.size(0)\n                train_losses.append(t_loss / tot)\n                train_accs.append(corr / tot)\n                user_model.eval()\n                v_loss, v_corr, v_tot = 0, 0, 0\n                with torch.no_grad():\n                    for b in usr_val:\n                        feat = b[\"feat\"].to(device)\n                        lbl = b[\"label\"].to(device)\n                        out = user_model(feat)\n                        loss = crit_u(out, lbl)\n                        v_loss += loss.item() * feat.size(0)\n                        p = out.argmax(1)\n                        v_corr += (p == lbl).sum().item()\n                        v_tot += lbl.size(0)\n                val_losses.append(v_loss / v_tot)\n                val_accs.append(v_corr / v_tot)\n\n            # test user\n            test_preds, test_gt = [], []\n            user_model.eval()\n            with torch.no_grad():\n                for b in usr_te:\n                    feat = b[\"feat\"].to(device)\n                    lbl = b[\"label\"].to(device)\n                    out = user_model(feat)\n                    test_preds.extend(out.argmax(1).cpu().numpy().tolist())\n                    test_gt.extend(lbl.cpu().numpy().tolist())\n\n            key = f\"ai_bs_{ai_bs}_user_bs_{usr_bs}\"\n            experiment_data[\"class_imbalance\"][name][key] = {\n                \"metrics\": {\"train\": np.array(train_accs), \"val\": np.array(val_accs)},\n                \"losses\": {\n                    \"train\": np.array(train_losses),\n                    \"val\": np.array(val_losses),\n                },\n                \"predictions\": np.array(test_preds),\n                \"ground_truth\": np.array(test_gt),\n            }\n\n# save results\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n# Load data\ntry:\n    exp = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n    exp = {}\n\n# Iterate ratios\nfor ratio, data in exp.get(\"class_imbalance\", {}).items():\n    # Compute test accuracies\n    accs = {}\n    for key, d in data.items():\n        preds = d[\"predictions\"]\n        gt = d[\"ground_truth\"]\n        accs[key] = np.mean(preds == gt)\n    # Print metrics\n    print(f\"{ratio} test accuracies:\")\n    for k, v in accs.items():\n        print(f\"  {k}: {v:.3f}\")\n    # Bar plot of test accuracies\n    try:\n        plt.figure()\n        keys, vals = zip(*sorted(accs.items()))\n        plt.bar(range(len(vals)), vals, tick_label=keys)\n        plt.xticks(rotation=45, ha=\"right\")\n        plt.ylim(0, 1)\n        plt.title(f\"Test Accuracy for Class Imbalance {ratio}\")\n        plt.xlabel(\"Batch Size Settings\")\n        plt.ylabel(\"Accuracy\")\n        fname = f\"classimbalance_{ratio}_test_accuracy.png\"\n        plt.tight_layout()\n        plt.savefig(os.path.join(working_dir, fname))\n    except Exception as e:\n        print(f\"Error creating plot_{ratio}_testacc: {e}\")\n    finally:\n        plt.close()\n\n# Training/validation curves for two representative settings\nfor ratio in list(exp.get(\"class_imbalance\", {}))[:2]:\n    data = exp[\"class_imbalance\"][ratio]\n    # pick representative key\n    key = \"ai_bs_32_user_bs_32\"\n    if key not in data:\n        key = next(iter(data))\n    tr = data[key][\"metrics\"][\"train\"]\n    va = data[key][\"metrics\"][\"val\"]\n    try:\n        plt.figure()\n        plt.plot(tr, label=\"Train Acc\")\n        plt.plot(va, label=\"Val Acc\")\n        plt.title(f\"Train/Val Accuracy Curves {ratio}\\n(ai_bs_32_user_bs_32)\")\n        plt.xlabel(\"Epoch\")\n        plt.ylabel(\"Accuracy\")\n        plt.legend()\n        fname = f\"classimbalance_{ratio}_trainval_ai32_user32.png\"\n        plt.tight_layout()\n        plt.savefig(os.path.join(working_dir, fname))\n    except Exception as e:\n        print(f\"Error creating plot_{ratio}_trainval: {e}\")\n    finally:\n        plt.close()\n",
+    "plot_plan": "We will load the saved experiment data and iterate over each class\u2010imbalance setting. For each ratio, we compute and print the test accuracy for all AI/user batch\u2010size combinations. We then produce a bar chart of these accuracies per ratio, saving it under a descriptive filename. To illustrate training dynamics, we select two representative settings (e.g. ai_bs_32_user_bs_32) for the first two ratios and plot their train/validation accuracy curves. All plots are wrapped in try\u2010except blocks and use clear titles including the imbalance ratio and plot type. Figures are saved into the working directory with filenames that include the dataset ratio and plot description. Each figure is closed after saving to avoid resource leaks. Only existing data in experiment_data.npy is used, and no extra simulations are performed.",
+    "plot_analyses": [
+      {
+        "analysis": "Across all combinations of AI batch size and user batch size under the 70_30 class\u2013imbalance condition, test accuracy is constant at the maximum shown on the chart. There is no measurable difference in performance when varying the two batch sizes in this imbalance setting.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_ef723dac565c414b8b2fe812bb03a019_proc_2577154/classimbalance_70_30_test_accuracy.png"
+      },
+      {
+        "analysis": "Under the extreme 90_10 class\u2013imbalance setting, every AI/user batch\u2010size pairing again achieves the top\u2010level test accuracy. Batch sizes have no discernible impact on evaluation accuracy at this skewed ratio.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_ef723dac565c414b8b2fe812bb03a019_proc_2577154/classimbalance_90_10_test_accuracy.png"
+      },
+      {
+        "analysis": "With a balanced 50_50 class distribution, test accuracy remains uniformly at the chart\u2019s maximum across all AI and user batch size configurations. No batch\u2010size combination yields any advantage.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_ef723dac565c414b8b2fe812bb03a019_proc_2577154/classimbalance_50_50_test_accuracy.png"
+      },
+      {
+        "analysis": "For the 50_50 run with AI batch size 32 and user batch size 32, training accuracy starts low (~0.60) at epoch 0 then jumps to ~0.97 by epoch 2 and stabilizes around 0.99\u20131.00 thereafter. Validation accuracy begins at ~0.93, reaches ~0.98 by epoch 2, and remains near 0.99\u20131.00 with minimal fluctuation, indicating very rapid convergence and strong generalization with negligible overfitting.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_ef723dac565c414b8b2fe812bb03a019_proc_2577154/classimbalance_50_50_trainval_ai32_user32.png"
+      },
+      {
+        "analysis": "In the 70_30 setting (ai_bs_32, user_bs_32), training accuracy starts at ~0.88, climbs to ~0.99 by around epoch 2, and oscillates narrowly around 0.99\u20131.00. Validation accuracy begins at ~0.99, quickly reaches 1.00, and stays nearly perfect throughout. This reflects extremely fast learning and stable performance under class imbalance.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_ef723dac565c414b8b2fe812bb03a019_proc_2577154/classimbalance_70_30_trainval_ai32_user32.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_ef723dac565c414b8b2fe812bb03a019_proc_2577154/classimbalance_70_30_test_accuracy.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_ef723dac565c414b8b2fe812bb03a019_proc_2577154/classimbalance_90_10_test_accuracy.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_ef723dac565c414b8b2fe812bb03a019_proc_2577154/classimbalance_50_50_test_accuracy.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_ef723dac565c414b8b2fe812bb03a019_proc_2577154/classimbalance_50_50_trainval_ai32_user32.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_ef723dac565c414b8b2fe812bb03a019_proc_2577154/classimbalance_70_30_trainval_ai32_user32.png"
+    ],
+    "vlm_feedback_summary": "Test accuracy is effectively at ceiling across all batch\u2010size ablations and class imbalances, indicating that batch\u2010size variations within this range do not influence final performance. Training/validation curves show very rapid convergence to near\u2010perfect accuracy with strong generalization and minimal gap between train and val. These results suggest a ceiling effect: the task may be too easy or the model capacity too high to reveal differences among component settings. Future ablation should consider harder tasks, stronger regularization, or noise injection to surface more nuanced contributions of each module.",
+    "exp_results_dir": "experiment_results/experiment_ef723dac565c414b8b2fe812bb03a019_proc_2577154",
+    "ablation_name": "Class Imbalance Ablation",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_ef723dac565c414b8b2fe812bb03a019_proc_2577154/experiment_data.npy"
+    ]
+  },
+  {
+    "overall_plan": "We will conduct a systematic study of training hyperparameters and architectural choices in a teacher\u2013student distillation framework on a synthetic classification task. First, we explore the effect of varying batch sizes for both the teacher (AIModel) and student (UserModel) models by running nested loops over a predefined set of batch sizes. For each combination, we reinitialize data loaders, models, and optimizers, train the teacher for 15 epochs to generate soft labels, then train the student for 20 epochs using those soft labels. We record per\u2010epoch training and validation losses and accuracies, plus final test predictions and labels, organizing results in a nested dictionary keyed by the batch\u2010size pair and saving to \"experiment_data.npy\". Building on this, we perform an activation\u2010function ablation: we implement a self\u2010contained script that defines four activations (ReLU, Tanh, LeakyReLU, Linear) for both teacher and student. For each activation variant, we repeat the train\u2010teacher/generate\u2010labels/train\u2010student cycle, log the same metrics, and aggregate all data in a nested dictionary keyed by the activation choice. This unified approach allows us to comprehensively assess how both batch\u2010size settings and activation functions impact model convergence, knowledge transfer efficacy, and final predictive performance.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "AI model train cross-entropy loss",
+            "lower_is_better": true,
+            "description": "Cross-entropy loss for AI model on training data",
+            "data": [
+              {
+                "dataset_name": "synthetic (activation: relu)",
+                "final_value": 0.3032,
+                "best_value": 0.3032
+              },
+              {
+                "dataset_name": "synthetic (activation: tanh)",
+                "final_value": 0.3075,
+                "best_value": 0.3075
+              },
+              {
+                "dataset_name": "synthetic (activation: leaky_relu)",
+                "final_value": 0.3096,
+                "best_value": 0.3096
+              },
+              {
+                "dataset_name": "synthetic (activation: linear)",
+                "final_value": 0.3075,
+                "best_value": 0.3075
+              }
+            ]
+          },
+          {
+            "metric_name": "AI model validation cross-entropy loss",
+            "lower_is_better": true,
+            "description": "Cross-entropy loss for AI model on validation data",
+            "data": [
+              {
+                "dataset_name": "synthetic (activation: relu)",
+                "final_value": 0.3743,
+                "best_value": 0.3743
+              },
+              {
+                "dataset_name": "synthetic (activation: tanh)",
+                "final_value": 0.372,
+                "best_value": 0.372
+              },
+              {
+                "dataset_name": "synthetic (activation: leaky_relu)",
+                "final_value": 0.3756,
+                "best_value": 0.3756
+              },
+              {
+                "dataset_name": "synthetic (activation: linear)",
+                "final_value": 0.3744,
+                "best_value": 0.3744
+              }
+            ]
+          },
+          {
+            "metric_name": "AI model train accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy for AI model on training data",
+            "data": [
+              {
+                "dataset_name": "synthetic (activation: relu)",
+                "final_value": 0.86,
+                "best_value": 0.86
+              },
+              {
+                "dataset_name": "synthetic (activation: tanh)",
+                "final_value": 0.8583,
+                "best_value": 0.8583
+              },
+              {
+                "dataset_name": "synthetic (activation: leaky_relu)",
+                "final_value": 0.8625,
+                "best_value": 0.8625
+              },
+              {
+                "dataset_name": "synthetic (activation: linear)",
+                "final_value": 0.8567,
+                "best_value": 0.8567
+              }
+            ]
+          },
+          {
+            "metric_name": "AI model validation accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy for AI model on validation data",
+            "data": [
+              {
+                "dataset_name": "synthetic (activation: relu)",
+                "final_value": 0.83,
+                "best_value": 0.83
+              },
+              {
+                "dataset_name": "synthetic (activation: tanh)",
+                "final_value": 0.83,
+                "best_value": 0.83
+              },
+              {
+                "dataset_name": "synthetic (activation: leaky_relu)",
+                "final_value": 0.82,
+                "best_value": 0.82
+              },
+              {
+                "dataset_name": "synthetic (activation: linear)",
+                "final_value": 0.8433,
+                "best_value": 0.8433
+              }
+            ]
+          },
+          {
+            "metric_name": "User model train cross-entropy loss",
+            "lower_is_better": true,
+            "description": "Cross-entropy loss for user model on training data",
+            "data": [
+              {
+                "dataset_name": "synthetic (activation: relu)",
+                "final_value": 0.0131,
+                "best_value": 0.0131
+              },
+              {
+                "dataset_name": "synthetic (activation: tanh)",
+                "final_value": 0.0108,
+                "best_value": 0.0108
+              },
+              {
+                "dataset_name": "synthetic (activation: leaky_relu)",
+                "final_value": 0.0121,
+                "best_value": 0.0121
+              },
+              {
+                "dataset_name": "synthetic (activation: linear)",
+                "final_value": 0.0129,
+                "best_value": 0.0129
+              }
+            ]
+          },
+          {
+            "metric_name": "User model validation cross-entropy loss",
+            "lower_is_better": true,
+            "description": "Cross-entropy loss for user model on validation data",
+            "data": [
+              {
+                "dataset_name": "synthetic (activation: relu)",
+                "final_value": 0.0184,
+                "best_value": 0.0184
+              },
+              {
+                "dataset_name": "synthetic (activation: tanh)",
+                "final_value": 0.01,
+                "best_value": 0.01
+              },
+              {
+                "dataset_name": "synthetic (activation: leaky_relu)",
+                "final_value": 0.0132,
+                "best_value": 0.0132
+              },
+              {
+                "dataset_name": "synthetic (activation: linear)",
+                "final_value": 0.0138,
+                "best_value": 0.0138
+              }
+            ]
+          },
+          {
+            "metric_name": "User model train accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy for user model on training data",
+            "data": [
+              {
+                "dataset_name": "synthetic (activation: relu)",
+                "final_value": 0.9975,
+                "best_value": 0.9975
+              },
+              {
+                "dataset_name": "synthetic (activation: tanh)",
+                "final_value": 0.9983,
+                "best_value": 0.9983
+              },
+              {
+                "dataset_name": "synthetic (activation: leaky_relu)",
+                "final_value": 0.9983,
+                "best_value": 0.9983
+              },
+              {
+                "dataset_name": "synthetic (activation: linear)",
+                "final_value": 0.9967,
+                "best_value": 0.9967
+              }
+            ]
+          },
+          {
+            "metric_name": "User model validation accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy for user model on validation data",
+            "data": [
+              {
+                "dataset_name": "synthetic (activation: relu)",
+                "final_value": 0.9967,
+                "best_value": 0.9967
+              },
+              {
+                "dataset_name": "synthetic (activation: tanh)",
+                "final_value": 0.9967,
+                "best_value": 0.9967
+              },
+              {
+                "dataset_name": "synthetic (activation: leaky_relu)",
+                "final_value": 0.9967,
+                "best_value": 0.9967
+              },
+              {
+                "dataset_name": "synthetic (activation: linear)",
+                "final_value": 0.99,
+                "best_value": 0.99
+              }
+            ]
+          },
+          {
+            "metric_name": "User model test accuracy",
+            "lower_is_better": false,
+            "description": "Accuracy for user model on test data",
+            "data": [
+              {
+                "dataset_name": "synthetic (activation: relu)",
+                "final_value": 0.996,
+                "best_value": 0.996
+              },
+              {
+                "dataset_name": "synthetic (activation: tanh)",
+                "final_value": 0.992,
+                "best_value": 0.992
+              },
+              {
+                "dataset_name": "synthetic (activation: leaky_relu)",
+                "final_value": 0.996,
+                "best_value": 0.996
+              },
+              {
+                "dataset_name": "synthetic (activation: linear)",
+                "final_value": 0.994,
+                "best_value": 0.994
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.utils.data import Dataset, DataLoader\n\n# Set up working directory and device\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n\n# Reproducibility\nnp.random.seed(0)\ntorch.manual_seed(0)\n\n# Synthetic dataset generation\nN, D = 2000, 2\nX = np.random.randn(N, D)\nw_true = np.array([2.0, -3.0])\nb_true = 0.5\nlogits = X.dot(w_true) + b_true\nprobs = 1 / (1 + np.exp(-logits))\ny = (np.random.rand(N) < probs).astype(int)\n\n# Train/val/test split\nidx = np.random.permutation(N)\ntrain_idx, val_idx, test_idx = idx[:1200], idx[1200:1500], idx[1500:]\nX_train, y_train = X[train_idx], y[train_idx]\nX_val, y_val = X[val_idx], y[val_idx]\nX_test, y_test = X[test_idx], y[test_idx]\n\n# Normalize features\nmean, std = X_train.mean(0), X_train.std(0) + 1e-6\nX_train = (X_train - mean) / std\nX_val = (X_val - mean) / std\nX_test = (X_test - mean) / std\n\n\n# Dataset classes\nclass SimpleDS(Dataset):\n    def __init__(self, X, y):\n        self.X = torch.from_numpy(X).float()\n        self.y = torch.from_numpy(y).long()\n\n    def __len__(self):\n        return len(self.y)\n\n    def __getitem__(self, i):\n        return {\"x\": self.X[i], \"y\": self.y[i]}\n\n\nclass UserDS(Dataset):\n    def __init__(self, feat, label):\n        self.X = torch.from_numpy(feat).float()\n        self.y = torch.from_numpy(label).long()\n\n    def __len__(self):\n        return len(self.y)\n\n    def __getitem__(self, i):\n        return {\"feat\": self.X[i], \"label\": self.y[i]}\n\n\n# Activation factory\ndef get_activation(name):\n    if name == \"relu\":\n        return nn.ReLU()\n    if name == \"tanh\":\n        return nn.Tanh()\n    if name == \"leaky_relu\":\n        return nn.LeakyReLU()\n    if name == \"linear\":\n        return nn.Identity()\n    raise ValueError(f\"Unknown activation {name}\")\n\n\n# Model definitions parametrized by activation\nclass AIModel(nn.Module):\n    def __init__(self, inp, hid, out, act):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(inp, hid),\n            get_activation(act),\n            nn.Linear(hid, out),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n\n\nclass UserModel(nn.Module):\n    def __init__(self, inp, hid, out, act):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(inp, hid),\n            get_activation(act),\n            nn.Linear(hid, out),\n        )\n\n    def forward(self, x):\n        return self.net(x)\n\n\n# Ablation over activation functions\nactivation_variants = [\"relu\", \"tanh\", \"leaky_relu\", \"linear\"]\nexperiment_data = {}\n\n# Fixed hyperparameters\nai_bs, usr_bs = 32, 32\nai_epochs, usr_epochs = 15, 20\nlr = 1e-2\n\nfor act in activation_variants:\n    data_dict = {\n        \"ai_losses\": {\"train\": [], \"val\": []},\n        \"ai_metrics\": {\"train\": [], \"val\": []},\n        \"losses\": {\"train\": [], \"val\": []},\n        \"metrics\": {\"train\": [], \"val\": []},\n        \"predictions\": [],\n        \"ground_truth\": [],\n    }\n    # AI data loaders\n    ai_tr_loader = DataLoader(\n        SimpleDS(X_train, y_train), batch_size=ai_bs, shuffle=True\n    )\n    ai_val_loader = DataLoader(SimpleDS(X_val, y_val), batch_size=ai_bs)\n    # Initialize AI model\n    ai_model = AIModel(D, 16, 2, act).to(device)\n    criterion_ai = nn.CrossEntropyLoss()\n    opt_ai = optim.Adam(ai_model.parameters(), lr=lr)\n    # Train AI\n    for _ in range(ai_epochs):\n        ai_model.train()\n        t_loss, t_corr, t_tot = 0.0, 0, 0\n        for b in ai_tr_loader:\n            x, lbl = b[\"x\"].to(device), b[\"y\"].to(device)\n            out = ai_model(x)\n            loss = criterion_ai(out, lbl)\n            opt_ai.zero_grad()\n            loss.backward()\n            opt_ai.step()\n            t_loss += loss.item() * x.size(0)\n            preds = out.argmax(1)\n            t_corr += (preds == lbl).sum().item()\n            t_tot += x.size(0)\n        data_dict[\"ai_losses\"][\"train\"].append(t_loss / t_tot)\n        data_dict[\"ai_metrics\"][\"train\"].append(t_corr / t_tot)\n        ai_model.eval()\n        v_loss, v_corr, v_tot = 0.0, 0, 0\n        with torch.no_grad():\n            for b in ai_val_loader:\n                x, lbl = b[\"x\"].to(device), b[\"y\"].to(device)\n                out = ai_model(x)\n                loss = criterion_ai(out, lbl)\n                v_loss += loss.item() * x.size(0)\n                preds = out.argmax(1)\n                v_corr += (preds == lbl).sum().item()\n                v_tot += x.size(0)\n        data_dict[\"ai_losses\"][\"val\"].append(v_loss / v_tot)\n        data_dict[\"ai_metrics\"][\"val\"].append(v_corr / v_tot)\n    # Generate soft labels\n    ai_model.eval()\n    with torch.no_grad():\n        X_all = torch.from_numpy(np.vstack([X_train, X_val, X_test])).float().to(device)\n        logits_all = ai_model(X_all)\n        probs_all = torch.softmax(logits_all, dim=1).cpu().numpy()\n    p_train = probs_all[: len(X_train)]\n    p_val = probs_all[len(X_train) : len(X_train) + len(X_val)]\n    p_test = probs_all[-len(X_test) :]\n    f_train = p_train.argmax(1)\n    f_val = p_val.argmax(1)\n    f_test = p_test.argmax(1)\n    # User data loaders\n    X_usr_train = np.hstack([X_train, p_train])\n    X_usr_val = np.hstack([X_val, p_val])\n    X_usr_test = np.hstack([X_test, p_test])\n    usr_tr_loader = DataLoader(\n        UserDS(X_usr_train, f_train), batch_size=usr_bs, shuffle=True\n    )\n    usr_val_loader = DataLoader(UserDS(X_usr_val, f_val), batch_size=usr_bs)\n    usr_test_loader = DataLoader(UserDS(X_usr_test, f_test), batch_size=usr_bs)\n    # Initialize User model\n    user_model = UserModel(D + 2, 8, 2, act).to(device)\n    criterion_usr = nn.CrossEntropyLoss()\n    opt_usr = optim.Adam(user_model.parameters(), lr=lr)\n    # Train User\n    for _ in range(usr_epochs):\n        user_model.train()\n        t_loss, t_corr, t_tot = 0.0, 0, 0\n        for b in usr_tr_loader:\n            feat, lbl = b[\"feat\"].to(device), b[\"label\"].to(device)\n            out = user_model(feat)\n            loss = criterion_usr(out, lbl)\n            opt_usr.zero_grad()\n            loss.backward()\n            opt_usr.step()\n            t_loss += loss.item() * feat.size(0)\n            preds = out.argmax(1)\n            t_corr += (preds == lbl).sum().item()\n            t_tot += feat.size(0)\n        data_dict[\"losses\"][\"train\"].append(t_loss / t_tot)\n        data_dict[\"metrics\"][\"train\"].append(t_corr / t_tot)\n        user_model.eval()\n        v_loss, v_corr, v_tot = 0.0, 0, 0\n        with torch.no_grad():\n            for b in usr_val_loader:\n                feat, lbl = b[\"feat\"].to(device), b[\"label\"].to(device)\n                out = user_model(feat)\n                loss = criterion_usr(out, lbl)\n                v_loss += loss.item() * feat.size(0)\n                preds = out.argmax(1)\n                v_corr += (preds == lbl).sum().item()\n                v_tot += feat.size(0)\n        data_dict[\"losses\"][\"val\"].append(v_loss / v_tot)\n        data_dict[\"metrics\"][\"val\"].append(v_corr / v_tot)\n    # Test evaluation\n    test_preds, test_gt = [], []\n    user_model.eval()\n    with torch.no_grad():\n        for b in usr_test_loader:\n            feat, lbl = b[\"feat\"].to(device), b[\"label\"].to(device)\n            out = user_model(feat)\n            test_preds.extend(out.argmax(1).cpu().numpy().tolist())\n            test_gt.extend(lbl.cpu().numpy().tolist())\n    data_dict[\"predictions\"] = np.array(test_preds)\n    data_dict[\"ground_truth\"] = np.array(test_gt)\n    # Convert lists to numpy arrays\n    for k in [\"ai_losses\", \"ai_metrics\", \"losses\", \"metrics\"]:\n        for phase in [\"train\", \"val\"]:\n            data_dict[k][phase] = np.array(data_dict[k][phase])\n    experiment_data[act] = {\"synthetic\": data_dict}\n\n# Save all experiment data\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n# Load experiment data\ntry:\n    exp = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\n    acts = list(exp.keys())\n    synth = {act: exp[act][\"synthetic\"] for act in acts}\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n    synth = {}\n\n# Compute and print test accuracies\ntest_accs = {}\nfor act, data in synth.items():\n    preds = data[\"predictions\"]\n    gt = data[\"ground_truth\"]\n    acc = np.mean(preds == gt)\n    test_accs[act] = acc\n    print(f\"{act} test accuracy: {acc:.4f}\")\n\n# 1. AI loss curves\ntry:\n    plt.figure()\n    for act, data in synth.items():\n        plt.plot(data[\"ai_losses\"][\"train\"], label=f\"{act} train\")\n        plt.plot(data[\"ai_losses\"][\"val\"], linestyle=\"--\", label=f\"{act} val\")\n    plt.title(\"AI Loss Curves on Synthetic Dataset\\nSolid: Train, Dashed: Val\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Cross\u2010Entropy Loss\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_ai_loss_curves.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating plot1: {e}\")\n    plt.close()\n\n# 2. AI accuracy curves\ntry:\n    plt.figure()\n    for act, data in synth.items():\n        plt.plot(data[\"ai_metrics\"][\"train\"], label=f\"{act} train\")\n        plt.plot(data[\"ai_metrics\"][\"val\"], linestyle=\"--\", label=f\"{act} val\")\n    plt.title(\"AI Accuracy Curves on Synthetic Dataset\\nSolid: Train, Dashed: Val\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Accuracy\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_ai_accuracy_curves.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating plot2: {e}\")\n    plt.close()\n\n# 3. User loss curves\ntry:\n    plt.figure()\n    for act, data in synth.items():\n        plt.plot(data[\"losses\"][\"train\"], label=f\"{act} train\")\n        plt.plot(data[\"losses\"][\"val\"], linestyle=\"--\", label=f\"{act} val\")\n    plt.title(\"User Loss Curves on Synthetic Dataset\\nSolid: Train, Dashed: Val\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Cross\u2010Entropy Loss\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_user_loss_curves.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating plot3: {e}\")\n    plt.close()\n\n# 4. User accuracy curves\ntry:\n    plt.figure()\n    for act, data in synth.items():\n        plt.plot(data[\"metrics\"][\"train\"], label=f\"{act} train\")\n        plt.plot(data[\"metrics\"][\"val\"], linestyle=\"--\", label=f\"{act} val\")\n    plt.title(\"User Accuracy Curves on Synthetic Dataset\\nSolid: Train, Dashed: Val\")\n    plt.xlabel(\"Epoch\")\n    plt.ylabel(\"Accuracy\")\n    plt.legend()\n    plt.savefig(os.path.join(working_dir, \"synthetic_user_accuracy_curves.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating plot4: {e}\")\n    plt.close()\n\n# 5. Test accuracy bar chart\ntry:\n    plt.figure()\n    acts_list = list(test_accs.keys())\n    acc_list = [test_accs[a] for a in acts_list]\n    plt.bar(acts_list, acc_list)\n    plt.title(\"Test Accuracy by Activation on Synthetic Dataset\")\n    plt.xlabel(\"Activation\")\n    plt.ylabel(\"Test Accuracy\")\n    plt.savefig(os.path.join(working_dir, \"synthetic_test_accuracy.png\"))\n    plt.close()\nexcept Exception as e:\n    print(f\"Error creating plot5: {e}\")\n    plt.close()\n",
+    "plot_plan": "I will load the saved experiment results and extract the \u201csynthetic\u201d subset for all activation variants. First, I will compute and print the test accuracy per activation by comparing stored predictions and ground truth. Then I will create five standard plots in separate try\u2010except blocks: (1) AI train/validation loss curves across epochs for each activation, (2) AI train/validation accuracy curves, (3) User train/validation loss curves, (4) User train/validation accuracy curves, and (5) a bar chart of test accuracy by activation. Each figure will be titled to indicate the synthetic dataset and will note train vs. validation phases in a subtitle. All plots are saved to the working directory with descriptive filenames, and figures are closed after saving. Any loading or plotting errors are caught and printed to avoid runtime crashes.",
+    "plot_analyses": [
+      {
+        "analysis": "AI model accuracy quickly jumps above 0.85 by epoch 1 for all activation choices and then plateaus. Training curves for ReLU, tanh, leaky ReLU, and linear activations all oscillate insignificantly around 0.86 after the initial spike, while validation accuracy remains slightly lower (~0.82\u20130.84) with minor fluctuations. No activation shows a clear advantage in terms of steady-state accuracy or generalization on this synthetic task.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_f62911705c734b32a40898c9fdcd82de_proc_2577153/synthetic_ai_accuracy_curves.png"
+      },
+      {
+        "analysis": "Training cross-entropy loss for all activations collapses from ~0.50 at initialization to ~0.30 by epoch 2 and remains flat thereafter. Validation loss starts higher (0.36\u20130.39) but stabilizes around 0.37\u20130.38 with small jitters. Linear activation yields the smoothest validation loss curve, but differences across activations are marginal, indicating that they all achieve similar learning dynamics in this setting.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_f62911705c734b32a40898c9fdcd82de_proc_2577153/synthetic_ai_loss_curves.png"
+      },
+      {
+        "analysis": "User-model training loss falls from ~0.48\u20130.44 at epoch 0 to <0.05 by epoch 4 for all activations. Validation user loss follows a similar trend, hitting near-zero by epoch 6. Leaky ReLU shows a slightly slower initial drop but converges alongside other activations. Overall, user correction feedback is quickly learned regardless of activation function.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_f62911705c734b32a40898c9fdcd82de_proc_2577153/synthetic_user_loss_curves.png"
+      },
+      {
+        "analysis": "Final test accuracy by activation is nearly perfect for every variant (approximately 99.5\u2013100%). There is no meaningful gap across ReLU, tanh, leaky ReLU, or linear activations, confirming that all four produce comparable end-of-training performance on held-out data.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_f62911705c734b32a40898c9fdcd82de_proc_2577153/synthetic_test_accuracy.png"
+      },
+      {
+        "analysis": "User accuracy, both on training and validation, rises from 80\u201395% at epoch 0 to ~99%+ by epoch 2 and remains stable. Validation curves converge as quickly as training, suggesting minimal overfitting in the user model. Differences in convergence speed across activations are negligible.",
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_f62911705c734b32a40898c9fdcd82de_proc_2577153/synthetic_user_accuracy_curves.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_f62911705c734b32a40898c9fdcd82de_proc_2577153/synthetic_ai_accuracy_curves.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_f62911705c734b32a40898c9fdcd82de_proc_2577153/synthetic_ai_loss_curves.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_f62911705c734b32a40898c9fdcd82de_proc_2577153/synthetic_user_loss_curves.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_f62911705c734b32a40898c9fdcd82de_proc_2577153/synthetic_test_accuracy.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_f62911705c734b32a40898c9fdcd82de_proc_2577153/synthetic_user_accuracy_curves.png"
+    ],
+    "vlm_feedback_summary": "This ablation demonstrates that activation function choice has minimal impact on both AI and user-model performance in our synthetic setting. All variants converge rapidly to similar losses and high accuracies, with only slight differences in initial convergence rates. Given these outcomes, activation type does not appear to be a critical factor for our dual-channel co-adaptive framework on this dataset.",
+    "exp_results_dir": "experiment_results/experiment_f62911705c734b32a40898c9fdcd82de_proc_2577153",
+    "ablation_name": "Activation Function Ablation",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_f62911705c734b32a40898c9fdcd82de_proc_2577153/experiment_data.npy"
+    ]
+  }
+]

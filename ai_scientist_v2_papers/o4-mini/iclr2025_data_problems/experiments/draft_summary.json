@@ -1,0 +1,54 @@
+{
+  "Experiment_description": "We evaluated data valuation networks (DVNs) on synthetic tasks: first as a naive regression on batch\u2010aggregated features in binary classification (Node 3dae8cc\u2026), then as meta\u2010learned samplers integrated into training of sinusoidal regression models (Nodes c038abef\u2026, ecfb200246\u2026, a825ee139\u2026).",
+  "Significance": "These experiments reveal critical failure modes of DVN approaches: simple feature\u2010based regressors produce constant, uninformative outputs, while meta\u2010learned samplers can achieve moderate alignment with true sample contributions but are sensitive to implementation details and prone to overfitting or signal decay after early epochs. Understanding these behaviors is vital for designing robust data\u2010valuation and sampling algorithms.",
+  "Description": "On the binary classification task, we standardized data, trained a small MLP, and collected batch\u2010level loss and embedding\u2010diversity features to train a regression DVN, measuring Spearman correlation per epoch. On the regression tasks, we generated a noisy sinusoid, split into train/held\u2010out sets, and ran a two\u2010MLP meta\u2010learning loop: the DVN scores reweight per\u2010sample losses via softmax, the foundation model updates on these weights, and true contributions are measured by held\u2010out loss deltas after single\u2010sample updates. DVNs are then updated on (loss, contribution) pairs. We logged train/val losses and Spearman correlations each epoch.",
+  "List_of_included_plots": [
+    {
+      "path": "experiments/2025-06-08_16-25-53_meta_data_sampler_attempt_0/logs/0-run/experiment_results/experiment_3dae8cc301da4e1f92a3dc809acf11a3_proc_231370/synthetic_pred_vs_gt.png",
+      "description": "DVN Predictions vs Ground Truth (Node 3dae8cc\u2026) showing a near\u2010constant prediction around \u20130.22 versus true contributions ranging 0.0034\u20130.0071.",
+      "analysis": "The collapsed prediction variance and lack of alignment highlight that two simple batch features cannot capture sample\u2010level utility."
+    },
+    {
+      "path": "experiments/2025-06-08_16-25-53_meta_data_sampler_attempt_0/logs/0-run/experiment_results/experiment_c038abef030e46da87b56a9cbbe732c0_proc_231371/synthetic_correlation_curve.png",
+      "description": "Spearman correlation curve (Node c038abef\u2026) from +0.42 at epoch 1 to \u20130.27 by epoch 5.",
+      "analysis": "The rapid degradation suggests that the DVN\u2019s meta\u2010updates overfit noisy signals, losing ranking ability even though the foundation model converges smoothly."
+    },
+    {
+      "path": "experiments/2025-06-08_16-25-53_meta_data_sampler_attempt_0/logs/0-run/experiment_results/experiment_ecfb2002466e4b95826cdeb685b21f06_proc_231370/synthetic_correlation_curve.png",
+      "description": "Spearman correlation curve (Node ecfb2002) rising from \u20130.11 to a peak of +0.51 at epoch 4 then falling to +0.25 at epoch 5.",
+      "analysis": "Controlled seeding and a fully reproducible pipeline yield the best peak correlation, but signal decay post\u2010peak underscores the need for early stopping or stronger regularization."
+    },
+    {
+      "path": "experiments/2025-06-08_16-25-53_meta_data_sampler_attempt_0/logs/0-run/experiment_results/experiment_ecfb2002466e4b95826cdeb685b21f06_proc_231370/synthetic_contribution_dist_epoch_4.png",
+      "description": "Distribution of true vs DVN\u2010predicted contributions at epoch 4 (Node ecfb2002).",
+      "analysis": "The DVN predictions cluster tightly and fail to capture the bimodal true contribution distribution, indicating scale and calibration mismatches even when correlation is high."
+    }
+  ],
+  "Key_numerical_results": [
+    {
+      "result": -0.3208,
+      "description": "Final Spearman correlation of naive DVN (Node 3dae8cc\u2026).",
+      "analysis": "A strongly negative correlation confirms that batch\u2010feature regression DVNs can invert the true ranking and are unusable without richer inputs or architecture changes."
+    },
+    {
+      "result": 0.42,
+      "description": "Initial Spearman correlation at epoch 1 (Node c038abef\u2026).",
+      "analysis": "Early positive alignment likely arises by chance or from feature priors, but is not maintained after meta\u2010updates."
+    },
+    {
+      "result": -0.27,
+      "description": "Spearman correlation at epoch 5 (Node c038abef\u2026).",
+      "analysis": "Correlation inversion after a few epochs signals overfitting to noisy per\u2010sample updates."
+    },
+    {
+      "result": 0.51,
+      "description": "Peak Spearman correlation at epoch 4 (Node ecfb2002).",
+      "analysis": "Shows that, under careful seeding and pipeline control, the DVN can approach moderate predictive power before signal decay."
+    },
+    {
+      "result": 0.25,
+      "description": "Correlation at epoch 5 after peak (Node ecfb2002).",
+      "analysis": "Decline post\u2010peak demonstrates the need for early stopping or additional regularization to preserve learned sample ranking."
+    }
+  ]
+}

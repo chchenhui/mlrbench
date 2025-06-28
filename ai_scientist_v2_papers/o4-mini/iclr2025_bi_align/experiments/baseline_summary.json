@@ -1,0 +1,1268 @@
+{
+  "best node": {
+    "overall_plan": "We start by establishing a static explainer baseline on a synthetic 2D binary classification task: train a small MLP as the AI model, extract content\u2010justification explanations via its class probabilities, and then train a simple neural user network on the normalized features plus those probabilities to predict the AI\u2019s decisions. We monitor validation loss and Mental Model Alignment Accuracy throughout user\u2010model training, evaluate on a held\u2010out test set, and store all per\u2010epoch metrics, predictions, and ground\u2010truth AI decisions in an experiment_data dictionary. Building on this, we now perform a systematic hyperparameter sweep over batch sizes for both the AI model and the user model. For each (AI_batch_size, user_batch_size) pair, we reinitialize data loaders, models, and optimizers, train the AI for 15 epochs and generate its predictions, then train the user model for 20 epochs\u2014logging per\u2010epoch train/validation losses and accuracies and final test predictions/labels under a composite key. Finally, we save the aggregated experiment_data to experiment_data.npy. This integrated plan both implements the original static baseline and explores how batch\u2010size choices affect model performance and mental model alignment.",
+    "analysis": "",
+    "metric": {
+      "value": {
+        "metric_names": [
+          {
+            "metric_name": "train accuracy",
+            "lower_is_better": false,
+            "description": "Training accuracy",
+            "data": [
+              {
+                "dataset_name": "ai_bs_16_user_bs_16",
+                "final_value": 0.9933,
+                "best_value": 0.9933
+              },
+              {
+                "dataset_name": "ai_bs_16_user_bs_32",
+                "final_value": 0.9942,
+                "best_value": 0.9942
+              },
+              {
+                "dataset_name": "ai_bs_16_user_bs_64",
+                "final_value": 0.9983,
+                "best_value": 0.9983
+              },
+              {
+                "dataset_name": "ai_bs_32_user_bs_16",
+                "final_value": 0.9958,
+                "best_value": 0.9958
+              },
+              {
+                "dataset_name": "ai_bs_32_user_bs_32",
+                "final_value": 0.9958,
+                "best_value": 0.9958
+              },
+              {
+                "dataset_name": "ai_bs_32_user_bs_64",
+                "final_value": 0.9983,
+                "best_value": 0.9983
+              },
+              {
+                "dataset_name": "ai_bs_64_user_bs_16",
+                "final_value": 0.9975,
+                "best_value": 0.9975
+              },
+              {
+                "dataset_name": "ai_bs_64_user_bs_32",
+                "final_value": 0.9975,
+                "best_value": 0.9975
+              },
+              {
+                "dataset_name": "ai_bs_64_user_bs_64",
+                "final_value": 0.995,
+                "best_value": 0.995
+              }
+            ]
+          },
+          {
+            "metric_name": "train loss",
+            "lower_is_better": true,
+            "description": "Training loss",
+            "data": [
+              {
+                "dataset_name": "ai_bs_16_user_bs_16",
+                "final_value": 0.0152,
+                "best_value": 0.0152
+              },
+              {
+                "dataset_name": "ai_bs_16_user_bs_32",
+                "final_value": 0.0162,
+                "best_value": 0.0162
+              },
+              {
+                "dataset_name": "ai_bs_16_user_bs_64",
+                "final_value": 0.0195,
+                "best_value": 0.0195
+              },
+              {
+                "dataset_name": "ai_bs_32_user_bs_16",
+                "final_value": 0.014,
+                "best_value": 0.014
+              },
+              {
+                "dataset_name": "ai_bs_32_user_bs_32",
+                "final_value": 0.0142,
+                "best_value": 0.0142
+              },
+              {
+                "dataset_name": "ai_bs_32_user_bs_64",
+                "final_value": 0.0186,
+                "best_value": 0.0186
+              },
+              {
+                "dataset_name": "ai_bs_64_user_bs_16",
+                "final_value": 0.0119,
+                "best_value": 0.0119
+              },
+              {
+                "dataset_name": "ai_bs_64_user_bs_32",
+                "final_value": 0.0138,
+                "best_value": 0.0138
+              },
+              {
+                "dataset_name": "ai_bs_64_user_bs_64",
+                "final_value": 0.0188,
+                "best_value": 0.0188
+              }
+            ]
+          },
+          {
+            "metric_name": "validation accuracy",
+            "lower_is_better": false,
+            "description": "Validation accuracy",
+            "data": [
+              {
+                "dataset_name": "ai_bs_16_user_bs_16",
+                "final_value": 0.9933,
+                "best_value": 0.9933
+              },
+              {
+                "dataset_name": "ai_bs_16_user_bs_32",
+                "final_value": 1.0,
+                "best_value": 1.0
+              },
+              {
+                "dataset_name": "ai_bs_16_user_bs_64",
+                "final_value": 0.9933,
+                "best_value": 0.9933
+              },
+              {
+                "dataset_name": "ai_bs_32_user_bs_16",
+                "final_value": 0.9967,
+                "best_value": 0.9967
+              },
+              {
+                "dataset_name": "ai_bs_32_user_bs_32",
+                "final_value": 0.9967,
+                "best_value": 0.9967
+              },
+              {
+                "dataset_name": "ai_bs_32_user_bs_64",
+                "final_value": 0.9967,
+                "best_value": 0.9967
+              },
+              {
+                "dataset_name": "ai_bs_64_user_bs_16",
+                "final_value": 0.9867,
+                "best_value": 0.9867
+              },
+              {
+                "dataset_name": "ai_bs_64_user_bs_32",
+                "final_value": 0.99,
+                "best_value": 0.99
+              },
+              {
+                "dataset_name": "ai_bs_64_user_bs_64",
+                "final_value": 0.99,
+                "best_value": 0.99
+              }
+            ]
+          },
+          {
+            "metric_name": "validation loss",
+            "lower_is_better": true,
+            "description": "Validation loss",
+            "data": [
+              {
+                "dataset_name": "ai_bs_16_user_bs_16",
+                "final_value": 0.0095,
+                "best_value": 0.0095
+              },
+              {
+                "dataset_name": "ai_bs_16_user_bs_32",
+                "final_value": 0.0103,
+                "best_value": 0.0103
+              },
+              {
+                "dataset_name": "ai_bs_16_user_bs_64",
+                "final_value": 0.0157,
+                "best_value": 0.0157
+              },
+              {
+                "dataset_name": "ai_bs_32_user_bs_16",
+                "final_value": 0.0083,
+                "best_value": 0.0083
+              },
+              {
+                "dataset_name": "ai_bs_32_user_bs_32",
+                "final_value": 0.0212,
+                "best_value": 0.0212
+              },
+              {
+                "dataset_name": "ai_bs_32_user_bs_64",
+                "final_value": 0.0179,
+                "best_value": 0.0179
+              },
+              {
+                "dataset_name": "ai_bs_64_user_bs_16",
+                "final_value": 0.0345,
+                "best_value": 0.0345
+              },
+              {
+                "dataset_name": "ai_bs_64_user_bs_32",
+                "final_value": 0.0182,
+                "best_value": 0.0182
+              },
+              {
+                "dataset_name": "ai_bs_64_user_bs_64",
+                "final_value": 0.0186,
+                "best_value": 0.0186
+              }
+            ]
+          },
+          {
+            "metric_name": "test accuracy",
+            "lower_is_better": false,
+            "description": "Test accuracy",
+            "data": [
+              {
+                "dataset_name": "ai_bs_16_user_bs_16",
+                "final_value": 0.998,
+                "best_value": 0.998
+              },
+              {
+                "dataset_name": "ai_bs_16_user_bs_32",
+                "final_value": 0.996,
+                "best_value": 0.996
+              },
+              {
+                "dataset_name": "ai_bs_16_user_bs_64",
+                "final_value": 0.996,
+                "best_value": 0.996
+              },
+              {
+                "dataset_name": "ai_bs_32_user_bs_16",
+                "final_value": 0.992,
+                "best_value": 0.992
+              },
+              {
+                "dataset_name": "ai_bs_32_user_bs_32",
+                "final_value": 0.994,
+                "best_value": 0.994
+              },
+              {
+                "dataset_name": "ai_bs_32_user_bs_64",
+                "final_value": 0.994,
+                "best_value": 0.994
+              },
+              {
+                "dataset_name": "ai_bs_64_user_bs_16",
+                "final_value": 0.994,
+                "best_value": 0.994
+              },
+              {
+                "dataset_name": "ai_bs_64_user_bs_32",
+                "final_value": 0.994,
+                "best_value": 0.994
+              },
+              {
+                "dataset_name": "ai_bs_64_user_bs_64",
+                "final_value": 0.998,
+                "best_value": 0.998
+              }
+            ]
+          }
+        ]
+      },
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "import os\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.utils.data import Dataset, DataLoader\n\n# Set up working directory\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# Device config\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n\n# Reproducibility\nnp.random.seed(0)\ntorch.manual_seed(0)\n\n# Synthetic dataset generation\nN, D = 2000, 2\nX = np.random.randn(N, D)\nw_true = np.array([2.0, -3.0])\nb_true = 0.5\nlogits = X.dot(w_true) + b_true\nprobs = 1 / (1 + np.exp(-logits))\ny = (np.random.rand(N) < probs).astype(int)\n\n# Train/val/test split\nidx = np.random.permutation(N)\ntrain_idx, val_idx, test_idx = idx[:1200], idx[1200:1500], idx[1500:]\nX_train, y_train = X[train_idx], y[train_idx]\nX_val, y_val = X[val_idx], y[val_idx]\nX_test, y_test = X[test_idx], y[test_idx]\n\n# Normalize features\nmean, std = X_train.mean(0), X_train.std(0) + 1e-6\nX_train = (X_train - mean) / std\nX_val = (X_val - mean) / std\nX_test = (X_test - mean) / std\n\n\n# Dataset classes\nclass SimpleDS(Dataset):\n    def __init__(self, X, y):\n        self.X = torch.from_numpy(X).float()\n        self.y = torch.from_numpy(y).long()\n\n    def __len__(self):\n        return len(self.y)\n\n    def __getitem__(self, i):\n        return {\"x\": self.X[i], \"y\": self.y[i]}\n\n\nclass UserDS(Dataset):\n    def __init__(self, feat, label):\n        self.X = torch.from_numpy(feat).float()\n        self.y = torch.from_numpy(label).long()\n\n    def __len__(self):\n        return len(self.y)\n\n    def __getitem__(self, i):\n        return {\"feat\": self.X[i], \"label\": self.y[i]}\n\n\n# Model definitions\nclass AIModel(nn.Module):\n    def __init__(self, inp_dim, hid_dim, out_dim):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(inp_dim, hid_dim), nn.ReLU(), nn.Linear(hid_dim, out_dim)\n        )\n\n    def forward(self, x):\n        return self.net(x)\n\n\nclass UserModel(nn.Module):\n    def __init__(self, inp_dim, hid_dim, out_dim):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(inp_dim, hid_dim), nn.ReLU(), nn.Linear(hid_dim, out_dim)\n        )\n\n    def forward(self, x):\n        return self.net(x)\n\n\n# Hyperparameter grid\nai_batch_sizes = [16, 32, 64]\nusr_batch_sizes = [16, 32, 64]\n\n# Container for all results\nexperiment_data = {\"batch_size\": {}}\n\nfor ai_bs in ai_batch_sizes:\n    # AI data loaders\n    ai_tr_loader = DataLoader(\n        SimpleDS(X_train, y_train), batch_size=ai_bs, shuffle=True\n    )\n    ai_val_loader = DataLoader(SimpleDS(X_val, y_val), batch_size=ai_bs)\n\n    # Initialize AI model\n    ai_model = AIModel(D, 16, 2).to(device)\n    criterion_ai = nn.CrossEntropyLoss()\n    optimizer_ai = optim.Adam(ai_model.parameters(), lr=1e-2)\n\n    # Train AI model\n    for _ in range(15):\n        ai_model.train()\n        for batch in ai_tr_loader:\n            x = batch[\"x\"].to(device)\n            yb = batch[\"y\"].to(device)\n            out = ai_model(x)\n            loss = criterion_ai(out, yb)\n            optimizer_ai.zero_grad()\n            loss.backward()\n            optimizer_ai.step()\n\n    # Generate AI probabilities\n    ai_model.eval()\n    with torch.no_grad():\n        X_all = torch.from_numpy(np.vstack([X_train, X_val, X_test])).float().to(device)\n        logits_all = ai_model(X_all)\n        probs_all = torch.softmax(logits_all, dim=1).cpu().numpy()\n    p_train = probs_all[: len(X_train)]\n    p_val = probs_all[len(X_train) : len(X_train) + len(X_val)]\n    p_test = probs_all[-len(X_test) :]\n    f_train = p_train.argmax(axis=1)\n    f_val = p_val.argmax(axis=1)\n    f_test = p_test.argmax(axis=1)\n\n    # Prepare user features\n    X_usr_train = np.hstack([X_train, p_train])\n    X_usr_val = np.hstack([X_val, p_val])\n    X_usr_test = np.hstack([X_test, p_test])\n\n    for usr_bs in usr_batch_sizes:\n        # User data loaders\n        usr_tr_loader = DataLoader(\n            UserDS(X_usr_train, f_train), batch_size=usr_bs, shuffle=True\n        )\n        usr_val_loader = DataLoader(UserDS(X_usr_val, f_val), batch_size=usr_bs)\n        usr_test_loader = DataLoader(UserDS(X_usr_test, f_test), batch_size=usr_bs)\n\n        # Initialize User model\n        user_model = UserModel(D + 2, 8, 2).to(device)\n        criterion_usr = nn.CrossEntropyLoss()\n        optimizer_usr = optim.Adam(user_model.parameters(), lr=1e-2)\n\n        train_accs, val_accs = [], []\n        train_losses, val_losses = [], []\n\n        # Train User model\n        for _ in range(20):\n            user_model.train()\n            t_loss, corr, tot = 0.0, 0, 0\n            for batch in usr_tr_loader:\n                feat = batch[\"feat\"].to(device)\n                lbl = batch[\"label\"].to(device)\n                out = user_model(feat)\n                loss = criterion_usr(out, lbl)\n                optimizer_usr.zero_grad()\n                loss.backward()\n                optimizer_usr.step()\n                t_loss += loss.item() * feat.size(0)\n                preds = out.argmax(dim=1)\n                corr += (preds == lbl).sum().item()\n                tot += lbl.size(0)\n            train_losses.append(t_loss / tot)\n            train_accs.append(corr / tot)\n\n            user_model.eval()\n            v_loss, v_corr, v_tot = 0.0, 0, 0\n            with torch.no_grad():\n                for batch in usr_val_loader:\n                    feat = batch[\"feat\"].to(device)\n                    lbl = batch[\"label\"].to(device)\n                    out = user_model(feat)\n                    loss = criterion_usr(out, lbl)\n                    v_loss += loss.item() * feat.size(0)\n                    preds = out.argmax(dim=1)\n                    v_corr += (preds == lbl).sum().item()\n                    v_tot += lbl.size(0)\n            val_losses.append(v_loss / v_tot)\n            val_accs.append(v_corr / v_tot)\n\n        # Test evaluation\n        test_preds, test_gt = [], []\n        user_model.eval()\n        with torch.no_grad():\n            for batch in usr_test_loader:\n                feat = batch[\"feat\"].to(device)\n                lbl = batch[\"label\"].to(device)\n                out = user_model(feat)\n                p = out.argmax(dim=1).cpu().numpy()\n                test_preds.extend(p.tolist())\n                test_gt.extend(lbl.cpu().numpy().tolist())\n\n        key = f\"ai_bs_{ai_bs}_user_bs_{usr_bs}\"\n        experiment_data[\"batch_size\"][key] = {\n            \"metrics\": {\"train\": np.array(train_accs), \"val\": np.array(val_accs)},\n            \"losses\": {\"train\": np.array(train_losses), \"val\": np.array(val_losses)},\n            \"predictions\": np.array(test_preds),\n            \"ground_truth\": np.array(test_gt),\n        }\n\n# Save all experiment data\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\n# Load experiment data\ntry:\n    exp = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n\n# Select five evenly spaced configurations\nkeys = list(exp[\"batch_size\"].keys())\nif len(keys) > 5:\n    idxs = [int(i * (len(keys) - 1) / 4) for i in range(5)]\nelse:\n    idxs = list(range(len(keys)))\nselected = [keys[i] for i in idxs]\n\n# Plot train/val accuracy and loss for each selected config\nfor key in selected:\n    try:\n        data = exp[\"batch_size\"][key]\n        epochs = range(1, len(data[\"metrics\"][\"train\"]) + 1)\n        fig, axs = plt.subplots(1, 2, figsize=(10, 4))\n        # Accuracy subplot\n        axs[0].plot(epochs, data[\"metrics\"][\"train\"], label=\"Train\")\n        axs[0].plot(epochs, data[\"metrics\"][\"val\"], label=\"Validation\")\n        axs[0].set_title(\"Accuracy\")\n        axs[0].set_xlabel(\"Epoch\")\n        axs[0].legend()\n        # Loss subplot\n        axs[1].plot(epochs, data[\"losses\"][\"train\"], label=\"Train\")\n        axs[1].plot(epochs, data[\"losses\"][\"val\"], label=\"Validation\")\n        axs[1].set_title(\"Loss\")\n        axs[1].set_xlabel(\"Epoch\")\n        axs[1].legend()\n        # Composite title\n        fig.suptitle(f\"Synthetic binary dataset - {key}\")\n        # Save and close\n        fname = os.path.join(working_dir, f\"{key}_train_val_curves.png\")\n        plt.savefig(fname)\n        plt.close()\n    except Exception as e:\n        print(f\"Error creating plot for {key}: {e}\")\n        plt.close()\n",
+    "plot_plan": "We will load the saved experiment data and extract the batch\u2010size keys. To avoid overcrowding, we select exactly five configurations evenly spaced across all combinations. For each selected run, we create a single figure with two side\u2010by\u2010side subplots: one for training vs. validation accuracy, and one for training vs. validation loss over epochs. Each subplot is clearly titled (\u201cAccuracy\u201d and \u201cLoss\u201d) and we add a composite suptitle indicating the synthetic binary dataset and the specific batch\u2010size setting. All figures are saved into the working directory under descriptive filenames. Each plotting routine is wrapped in a try\u2010except to ensure errors are caught and figures closed.",
+    "plot_analyses": [
+      {
+        "analysis": "Synthetic binary dataset - ai_bs_64_user_bs_64: Training accuracy ramps up from about 91.5% at epoch 1 to above 99% by epoch 3 and then plateaus with minor oscillations around 99.3\u201399.8%. Validation accuracy closely tracks training, peaking near 99.5% by epoch 10. Training and validation losses both begin high (~0.40 and ~0.22) and decay rapidly to near zero by epoch 10. There is no sign of overfitting; both curves remain well\u2010aligned throughout. Given this rapid convergence, you could reduce the total number of epochs or introduce early stopping around epoch 8 without sacrificing performance.",
+        "valid_plots_received": true,
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_a21677197dda42a9aa2af18492cef91e_proc_2565128/ai_bs_64_user_bs_64_train_val_curves.png"
+      },
+      {
+        "analysis": "Synthetic binary dataset - ai_bs_32_user_bs_32: Accuracy jumps from around 60% at epoch 1 to 98% by epoch 3 and almost 100% by epoch 5. Validation accuracy follows closely, with only small dips around epoch 8 and epoch 16 but never falling below 95%. Loss curves start higher (~0.53 train, ~0.35 val) but drop sharply to below 0.02 by epoch 8. Convergence is slightly faster than with batch size 64, and there is again no evidence of overfitting. Consider reducing epochs to 6\u20138 or experimenting with a slightly lower learning rate to smooth out minor validation fluctuations.",
+        "valid_plots_received": true,
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_a21677197dda42a9aa2af18492cef91e_proc_2565128/ai_bs_32_user_bs_32_train_val_curves.png"
+      },
+      {
+        "analysis": "Synthetic binary dataset - ai_bs_16_user_bs_64: Training accuracy moves from 65% at epoch 1 to 97% by epoch 4 and stabilizes above 98.5% thereafter. Validation accuracy closely follows, peaking near 99.8% around epoch 10. Loss starts around 0.63 (train) and 0.48 (val), and steadily declines to ~0.02 by epoch 10. The initial slow ramp suggests noisier gradients with the smaller AI batch but longer stability despite the larger user batch. This combination achieves high final performance but could benefit from a warmup schedule or a slightly higher initial learning rate to speed up the early epochs.",
+        "valid_plots_received": true,
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_a21677197dda42a9aa2af18492cef91e_proc_2565128/ai_bs_16_user_bs_64_train_val_curves.png"
+      },
+      {
+        "analysis": "Synthetic binary dataset - ai_bs_16_user_bs_16: Accuracy surges to ~99% by epoch 2 and hovers between 99.5% and 100% thereafter. Validation accuracy consistently tracks at or above training. Loss falls from ~0.42 (train) and ~0.10 (val) at epoch 1 to near zero by epoch 5, with only minor noise later. Small batch sizes produce very fast convergence but also slightly noisier loss curves in later epochs. You could experiment with gradient\u2010noise reduction techniques (e.g., gradient clipping or learning rate decay) to further stabilize training.",
+        "valid_plots_received": true,
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_a21677197dda42a9aa2af18492cef91e_proc_2565128/ai_bs_16_user_bs_16_train_val_curves.png"
+      },
+      {
+        "analysis": "Synthetic binary dataset - ai_bs_64_user_bs_16: Training accuracy climbs from ~90% at epoch 1 to above 98% by epoch 3, then plateaus around 99.2\u201399.8%. Validation accuracy mirrors training, though it dips to ~98.3% around epoch 10 before rebounding. Loss starts around 0.31 (train) and 0.06 (val), dropping to under 0.02 by epoch 8. This mixed\u2010batch configuration converges almost as rapidly as the all\u2010small\u2010batch setup but with slightly smoother late\u2010epoch loss. You might reduce total epochs to 8\u201310 and tune the learning\u2010rate schedule for marginal speed gains.",
+        "valid_plots_received": true,
+        "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_a21677197dda42a9aa2af18492cef91e_proc_2565128/ai_bs_64_user_bs_16_train_val_curves.png"
+      }
+    ],
+    "plot_paths": [
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_a21677197dda42a9aa2af18492cef91e_proc_2565128/ai_bs_64_user_bs_64_train_val_curves.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_a21677197dda42a9aa2af18492cef91e_proc_2565128/ai_bs_32_user_bs_32_train_val_curves.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_a21677197dda42a9aa2af18492cef91e_proc_2565128/ai_bs_16_user_bs_64_train_val_curves.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_a21677197dda42a9aa2af18492cef91e_proc_2565128/ai_bs_16_user_bs_16_train_val_curves.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_a21677197dda42a9aa2af18492cef91e_proc_2565128/ai_bs_64_user_bs_16_train_val_curves.png"
+    ],
+    "vlm_feedback_summary": "All five batch\u2010size configurations achieve near\u2010perfect performance on the synthetic binary dataset with no overfitting detected. Smaller AI batch sizes (16, 32) reach high accuracy faster, while larger validation batches provide slightly smoother loss curves. Training beyond epoch 8 yields diminishing returns; consider early stopping or epoch reduction and fine\u2010tuned learning rate schedules to optimize training time without architecture changes.",
+    "exp_results_dir": "experiment_results/experiment_a21677197dda42a9aa2af18492cef91e_proc_2565128",
+    "exp_results_npy_files": [
+      "experiment_results/experiment_a21677197dda42a9aa2af18492cef91e_proc_2565128/experiment_data.npy"
+    ]
+  },
+  "best node with different seeds": [
+    {
+      "overall_plan": "We will conduct a two\u2010stage experiment on a synthetic 2D binary classification task. First, we establish a static explainer baseline: train a small MLP as the AI model, extract its class\u2010probability explanations, and train a neural user model on normalized features plus AI probabilities to predict the AI\u2019s decisions. We track validation loss and Mental Model Alignment Accuracy during training, evaluate on a held\u2010out test set, and store all per\u2010epoch metrics, predictions, and ground\u2010truth AI decisions in an experiment_data dictionary. Second, we perform a systematic hyperparameter sweep over batch sizes for both the AI and user models. For each (AI_batch_size, user_batch_size) pair, we reinitialize data loaders, models, and optimizers, train the AI for 15 epochs to generate predictions, then train the user model for 20 epochs\u2014logging per\u2010epoch train/validation losses and accuracies and final test predictions/labels under a composite key. Finally, we save the aggregated experiment_data to experiment_data.npy. The current node is a seed node, so no further adjustments are made at this time.",
+      "analysis": "",
+      "metric": {
+        "value": {
+          "metric_names": [
+            {
+              "metric_name": "train accuracy",
+              "lower_is_better": false,
+              "description": "Accuracy on the training set",
+              "data": [
+                {
+                  "dataset_name": "ai_bs_16_user_bs_16",
+                  "final_value": 0.9933,
+                  "best_value": 0.9933
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_32",
+                  "final_value": 0.9942,
+                  "best_value": 0.9942
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_64",
+                  "final_value": 0.9983,
+                  "best_value": 0.9983
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_16",
+                  "final_value": 0.9958,
+                  "best_value": 0.9958
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_32",
+                  "final_value": 0.9958,
+                  "best_value": 0.9958
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_64",
+                  "final_value": 0.9983,
+                  "best_value": 0.9983
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_16",
+                  "final_value": 0.9975,
+                  "best_value": 0.9975
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_32",
+                  "final_value": 0.9975,
+                  "best_value": 0.9975
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_64",
+                  "final_value": 0.995,
+                  "best_value": 0.995
+                }
+              ]
+            },
+            {
+              "metric_name": "train loss",
+              "lower_is_better": true,
+              "description": "Loss on the training set",
+              "data": [
+                {
+                  "dataset_name": "ai_bs_16_user_bs_16",
+                  "final_value": 0.0152,
+                  "best_value": 0.0152
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_32",
+                  "final_value": 0.0162,
+                  "best_value": 0.0162
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_64",
+                  "final_value": 0.0195,
+                  "best_value": 0.0195
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_16",
+                  "final_value": 0.014,
+                  "best_value": 0.014
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_32",
+                  "final_value": 0.0142,
+                  "best_value": 0.0142
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_64",
+                  "final_value": 0.0186,
+                  "best_value": 0.0186
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_16",
+                  "final_value": 0.0119,
+                  "best_value": 0.0119
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_32",
+                  "final_value": 0.0138,
+                  "best_value": 0.0138
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_64",
+                  "final_value": 0.0188,
+                  "best_value": 0.0188
+                }
+              ]
+            },
+            {
+              "metric_name": "validation accuracy",
+              "lower_is_better": false,
+              "description": "Accuracy on the validation set",
+              "data": [
+                {
+                  "dataset_name": "ai_bs_16_user_bs_16",
+                  "final_value": 0.9933,
+                  "best_value": 0.9933
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_32",
+                  "final_value": 1.0,
+                  "best_value": 1.0
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_64",
+                  "final_value": 0.9933,
+                  "best_value": 0.9933
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_16",
+                  "final_value": 0.9967,
+                  "best_value": 0.9967
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_32",
+                  "final_value": 0.9967,
+                  "best_value": 0.9967
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_64",
+                  "final_value": 0.9967,
+                  "best_value": 0.9967
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_16",
+                  "final_value": 0.9867,
+                  "best_value": 0.9867
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_32",
+                  "final_value": 0.99,
+                  "best_value": 0.99
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_64",
+                  "final_value": 0.99,
+                  "best_value": 0.99
+                }
+              ]
+            },
+            {
+              "metric_name": "validation loss",
+              "lower_is_better": true,
+              "description": "Loss on the validation set",
+              "data": [
+                {
+                  "dataset_name": "ai_bs_16_user_bs_16",
+                  "final_value": 0.0095,
+                  "best_value": 0.0095
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_32",
+                  "final_value": 0.0103,
+                  "best_value": 0.0103
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_64",
+                  "final_value": 0.0157,
+                  "best_value": 0.0157
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_16",
+                  "final_value": 0.0083,
+                  "best_value": 0.0083
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_32",
+                  "final_value": 0.0212,
+                  "best_value": 0.0212
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_64",
+                  "final_value": 0.0179,
+                  "best_value": 0.0179
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_16",
+                  "final_value": 0.0345,
+                  "best_value": 0.0345
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_32",
+                  "final_value": 0.0182,
+                  "best_value": 0.0182
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_64",
+                  "final_value": 0.0186,
+                  "best_value": 0.0186
+                }
+              ]
+            },
+            {
+              "metric_name": "test accuracy",
+              "lower_is_better": false,
+              "description": "Accuracy on the test set",
+              "data": [
+                {
+                  "dataset_name": "ai_bs_16_user_bs_16",
+                  "final_value": 0.998,
+                  "best_value": 0.998
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_32",
+                  "final_value": 0.996,
+                  "best_value": 0.996
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_64",
+                  "final_value": 0.996,
+                  "best_value": 0.996
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_16",
+                  "final_value": 0.992,
+                  "best_value": 0.992
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_32",
+                  "final_value": 0.994,
+                  "best_value": 0.994
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_64",
+                  "final_value": 0.994,
+                  "best_value": 0.994
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_16",
+                  "final_value": 0.994,
+                  "best_value": 0.994
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_32",
+                  "final_value": 0.994,
+                  "best_value": 0.994
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_64",
+                  "final_value": 0.998,
+                  "best_value": 0.998
+                }
+              ]
+            }
+          ]
+        },
+        "maximize": null,
+        "name": null,
+        "description": null
+      },
+      "code": "# Set random seed\nimport random\nimport numpy as np\nimport torch\n\nseed = 2\nrandom.seed(seed)\nnp.random.seed(seed)\ntorch.manual_seed(seed)\nif torch.cuda.is_available():\n    torch.cuda.manual_seed(seed)\n\nimport os\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.utils.data import Dataset, DataLoader\n\n# Set up working directory\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# Device config\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n\n# Reproducibility\nnp.random.seed(0)\ntorch.manual_seed(0)\n\n# Synthetic dataset generation\nN, D = 2000, 2\nX = np.random.randn(N, D)\nw_true = np.array([2.0, -3.0])\nb_true = 0.5\nlogits = X.dot(w_true) + b_true\nprobs = 1 / (1 + np.exp(-logits))\ny = (np.random.rand(N) < probs).astype(int)\n\n# Train/val/test split\nidx = np.random.permutation(N)\ntrain_idx, val_idx, test_idx = idx[:1200], idx[1200:1500], idx[1500:]\nX_train, y_train = X[train_idx], y[train_idx]\nX_val, y_val = X[val_idx], y[val_idx]\nX_test, y_test = X[test_idx], y[test_idx]\n\n# Normalize features\nmean, std = X_train.mean(0), X_train.std(0) + 1e-6\nX_train = (X_train - mean) / std\nX_val = (X_val - mean) / std\nX_test = (X_test - mean) / std\n\n\n# Dataset classes\nclass SimpleDS(Dataset):\n    def __init__(self, X, y):\n        self.X = torch.from_numpy(X).float()\n        self.y = torch.from_numpy(y).long()\n\n    def __len__(self):\n        return len(self.y)\n\n    def __getitem__(self, i):\n        return {\"x\": self.X[i], \"y\": self.y[i]}\n\n\nclass UserDS(Dataset):\n    def __init__(self, feat, label):\n        self.X = torch.from_numpy(feat).float()\n        self.y = torch.from_numpy(label).long()\n\n    def __len__(self):\n        return len(self.y)\n\n    def __getitem__(self, i):\n        return {\"feat\": self.X[i], \"label\": self.y[i]}\n\n\n# Model definitions\nclass AIModel(nn.Module):\n    def __init__(self, inp_dim, hid_dim, out_dim):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(inp_dim, hid_dim), nn.ReLU(), nn.Linear(hid_dim, out_dim)\n        )\n\n    def forward(self, x):\n        return self.net(x)\n\n\nclass UserModel(nn.Module):\n    def __init__(self, inp_dim, hid_dim, out_dim):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(inp_dim, hid_dim), nn.ReLU(), nn.Linear(hid_dim, out_dim)\n        )\n\n    def forward(self, x):\n        return self.net(x)\n\n\n# Hyperparameter grid\nai_batch_sizes = [16, 32, 64]\nusr_batch_sizes = [16, 32, 64]\n\n# Container for all results\nexperiment_data = {\"batch_size\": {}}\n\nfor ai_bs in ai_batch_sizes:\n    # AI data loaders\n    ai_tr_loader = DataLoader(\n        SimpleDS(X_train, y_train), batch_size=ai_bs, shuffle=True\n    )\n    ai_val_loader = DataLoader(SimpleDS(X_val, y_val), batch_size=ai_bs)\n\n    # Initialize AI model\n    ai_model = AIModel(D, 16, 2).to(device)\n    criterion_ai = nn.CrossEntropyLoss()\n    optimizer_ai = optim.Adam(ai_model.parameters(), lr=1e-2)\n\n    # Train AI model\n    for _ in range(15):\n        ai_model.train()\n        for batch in ai_tr_loader:\n            x = batch[\"x\"].to(device)\n            yb = batch[\"y\"].to(device)\n            out = ai_model(x)\n            loss = criterion_ai(out, yb)\n            optimizer_ai.zero_grad()\n            loss.backward()\n            optimizer_ai.step()\n\n    # Generate AI probabilities\n    ai_model.eval()\n    with torch.no_grad():\n        X_all = torch.from_numpy(np.vstack([X_train, X_val, X_test])).float().to(device)\n        logits_all = ai_model(X_all)\n        probs_all = torch.softmax(logits_all, dim=1).cpu().numpy()\n    p_train = probs_all[: len(X_train)]\n    p_val = probs_all[len(X_train) : len(X_train) + len(X_val)]\n    p_test = probs_all[-len(X_test) :]\n    f_train = p_train.argmax(axis=1)\n    f_val = p_val.argmax(axis=1)\n    f_test = p_test.argmax(axis=1)\n\n    # Prepare user features\n    X_usr_train = np.hstack([X_train, p_train])\n    X_usr_val = np.hstack([X_val, p_val])\n    X_usr_test = np.hstack([X_test, p_test])\n\n    for usr_bs in usr_batch_sizes:\n        # User data loaders\n        usr_tr_loader = DataLoader(\n            UserDS(X_usr_train, f_train), batch_size=usr_bs, shuffle=True\n        )\n        usr_val_loader = DataLoader(UserDS(X_usr_val, f_val), batch_size=usr_bs)\n        usr_test_loader = DataLoader(UserDS(X_usr_test, f_test), batch_size=usr_bs)\n\n        # Initialize User model\n        user_model = UserModel(D + 2, 8, 2).to(device)\n        criterion_usr = nn.CrossEntropyLoss()\n        optimizer_usr = optim.Adam(user_model.parameters(), lr=1e-2)\n\n        train_accs, val_accs = [], []\n        train_losses, val_losses = [], []\n\n        # Train User model\n        for _ in range(20):\n            user_model.train()\n            t_loss, corr, tot = 0.0, 0, 0\n            for batch in usr_tr_loader:\n                feat = batch[\"feat\"].to(device)\n                lbl = batch[\"label\"].to(device)\n                out = user_model(feat)\n                loss = criterion_usr(out, lbl)\n                optimizer_usr.zero_grad()\n                loss.backward()\n                optimizer_usr.step()\n                t_loss += loss.item() * feat.size(0)\n                preds = out.argmax(dim=1)\n                corr += (preds == lbl).sum().item()\n                tot += lbl.size(0)\n            train_losses.append(t_loss / tot)\n            train_accs.append(corr / tot)\n\n            user_model.eval()\n            v_loss, v_corr, v_tot = 0.0, 0, 0\n            with torch.no_grad():\n                for batch in usr_val_loader:\n                    feat = batch[\"feat\"].to(device)\n                    lbl = batch[\"label\"].to(device)\n                    out = user_model(feat)\n                    loss = criterion_usr(out, lbl)\n                    v_loss += loss.item() * feat.size(0)\n                    preds = out.argmax(dim=1)\n                    v_corr += (preds == lbl).sum().item()\n                    v_tot += lbl.size(0)\n            val_losses.append(v_loss / v_tot)\n            val_accs.append(v_corr / v_tot)\n\n        # Test evaluation\n        test_preds, test_gt = [], []\n        user_model.eval()\n        with torch.no_grad():\n            for batch in usr_test_loader:\n                feat = batch[\"feat\"].to(device)\n                lbl = batch[\"label\"].to(device)\n                out = user_model(feat)\n                p = out.argmax(dim=1).cpu().numpy()\n                test_preds.extend(p.tolist())\n                test_gt.extend(lbl.cpu().numpy().tolist())\n\n        key = f\"ai_bs_{ai_bs}_user_bs_{usr_bs}\"\n        experiment_data[\"batch_size\"][key] = {\n            \"metrics\": {\"train\": np.array(train_accs), \"val\": np.array(val_accs)},\n            \"losses\": {\"train\": np.array(train_losses), \"val\": np.array(val_losses)},\n            \"predictions\": np.array(test_preds),\n            \"ground_truth\": np.array(test_gt),\n        }\n\n# Save all experiment data\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+      "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\n# Load experiment data\ntry:\n    exp = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n\n# Select five evenly spaced configurations\nkeys = list(exp[\"batch_size\"].keys())\nif len(keys) > 5:\n    idxs = [int(i * (len(keys) - 1) / 4) for i in range(5)]\nelse:\n    idxs = list(range(len(keys)))\nselected = [keys[i] for i in idxs]\n\n# Plot train/val accuracy and loss for each selected config\nfor key in selected:\n    try:\n        data = exp[\"batch_size\"][key]\n        epochs = range(1, len(data[\"metrics\"][\"train\"]) + 1)\n        fig, axs = plt.subplots(1, 2, figsize=(10, 4))\n        # Accuracy subplot\n        axs[0].plot(epochs, data[\"metrics\"][\"train\"], label=\"Train\")\n        axs[0].plot(epochs, data[\"metrics\"][\"val\"], label=\"Validation\")\n        axs[0].set_title(\"Accuracy\")\n        axs[0].set_xlabel(\"Epoch\")\n        axs[0].legend()\n        # Loss subplot\n        axs[1].plot(epochs, data[\"losses\"][\"train\"], label=\"Train\")\n        axs[1].plot(epochs, data[\"losses\"][\"val\"], label=\"Validation\")\n        axs[1].set_title(\"Loss\")\n        axs[1].set_xlabel(\"Epoch\")\n        axs[1].legend()\n        # Composite title\n        fig.suptitle(f\"Synthetic binary dataset - {key}\")\n        # Save and close\n        fname = os.path.join(working_dir, f\"{key}_train_val_curves.png\")\n        plt.savefig(fname)\n        plt.close()\n    except Exception as e:\n        print(f\"Error creating plot for {key}: {e}\")\n        plt.close()\n",
+      "plot_analyses": [
+        {
+          "analysis": "Synthetic binary dataset \u2013 ai_bs_64_user_bs_64 accuracy starts at ~0.915 for training and ~0.990 for validation in epoch 1, then jumps above 0.99 by epoch 2 and remains flat around 0.995 thereafter. Loss drops steeply from ~0.40 (train) and ~0.22 (validation) to below 0.02 by epoch 10. Very fast convergence, minimal generalization gap (\u22640.5%). No signs of over- or under-fitting with this large batch configuration.",
+          "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_3e554f7f44604e0894bd0e6d91ed7346_proc_2565129/ai_bs_64_user_bs_64_train_val_curves.png"
+        },
+        {
+          "analysis": "Synthetic binary dataset \u2013 ai_bs_32_user_bs_32 training accuracy begins lower, ~0.60 in epoch 1, but reaches ~0.97 by epoch 2 and plateaus at ~0.995 from epoch 4 onward. Validation accuracy follows closely, rising from ~0.90 to ~0.995. Loss trends mirror the accuracy; initial train/val loss ~0.53/0.35 drop to ~0.02 by epoch 8. Slightly slower warm-up than 64+64 but still very rapid convergence and tight train/val alignment.",
+          "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_3e554f7f44604e0894bd0e6d91ed7346_proc_2565129/ai_bs_32_user_bs_32_train_val_curves.png"
+        },
+        {
+          "analysis": "Synthetic binary dataset \u2013 ai_bs_16_user_bs_64 shows a similar pattern: training starts around 0.66 and validation around 0.91 in epoch 1, then both exceed 0.97 by epoch 2 and settle near 0.995. Loss falls from ~0.63 (train) and ~0.46 (val) to ~0.02 by epoch 10. Convergence speed and final performance on par with other settings, though initial learning appears a bit slower due to smaller AI batch size.",
+          "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_3e554f7f44604e0894bd0e6d91ed7346_proc_2565129/ai_bs_16_user_bs_64_train_val_curves.png"
+        },
+        {
+          "analysis": "Synthetic binary dataset \u2013 ai_bs_16_user_bs_16 achieves ~0.77 train and ~0.995 validation accuracy in epoch 1, hitting ~0.995/0.995 by epoch 3. Loss declines from ~0.41/0.10 to ~0.01 by epoch 8. Validation accuracy is anomalously high from the first epoch, suggesting very stable performance but worth checking data shuffling or evaluation frequency. Overall, still fast convergence with negligible gap.",
+          "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_3e554f7f44604e0894bd0e6d91ed7346_proc_2565129/ai_bs_16_user_bs_16_train_val_curves.png"
+        },
+        {
+          "analysis": "Synthetic binary dataset \u2013 ai_bs_64_user_bs_16 starts training around 0.90/0.99 (train/val) in epoch 1, then both climb above 0.98 by epoch 2 and plateau near 0.995. Loss drops from ~0.30/0.06 to below 0.02 by epoch 8. Equally strong performance with large AI batch and smaller user batch. Consistent, balanced curves, indicating robustness across batch-size settings.",
+          "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_3e554f7f44604e0894bd0e6d91ed7346_proc_2565129/ai_bs_64_user_bs_16_train_val_curves.png"
+        }
+      ],
+      "plot_paths": [
+        "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_3e554f7f44604e0894bd0e6d91ed7346_proc_2565129/ai_bs_64_user_bs_64_train_val_curves.png",
+        "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_3e554f7f44604e0894bd0e6d91ed7346_proc_2565129/ai_bs_32_user_bs_32_train_val_curves.png",
+        "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_3e554f7f44604e0894bd0e6d91ed7346_proc_2565129/ai_bs_16_user_bs_64_train_val_curves.png",
+        "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_3e554f7f44604e0894bd0e6d91ed7346_proc_2565129/ai_bs_16_user_bs_16_train_val_curves.png",
+        "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_3e554f7f44604e0894bd0e6d91ed7346_proc_2565129/ai_bs_64_user_bs_16_train_val_curves.png"
+      ],
+      "vlm_feedback_summary": "All five hyperparameter configurations converge extremely quickly to ~99.5% accuracy with very low loss and minimal train-validation gap. Larger AI batch sizes (64) offer the fastest initial ramp-up, while smaller AI batches (16, 32) still reach identical final performance within a few epochs. Given the plateau by epoch 5\u20138, epochs could be reduced to save compute. Next, introduce real\u2010world binary classification benchmarks to test generalization beyond synthetic data, for example the GLUE SST-2 sentiment dataset and the UCI Bank Marketing dataset from HuggingFace, to validate the co\u2010adaptive explainer under more challenging, noisy conditions.",
+      "exp_results_dir": "experiment_results/experiment_3e554f7f44604e0894bd0e6d91ed7346_proc_2565129",
+      "exp_results_npy_files": [
+        "experiment_results/experiment_3e554f7f44604e0894bd0e6d91ed7346_proc_2565129/experiment_data.npy"
+      ]
+    },
+    {
+      "overall_plan": "We will first establish a static explainer baseline on a synthetic 2D binary classification task by training a small MLP and using its class probabilities as content\u2010justification explanations. Next, we train a simple neural user network that consumes the normalized feature inputs along with the AI model\u2019s predicted probabilities to predict the AI\u2019s decisions. Throughout user\u2010model training, we monitor validation loss and Mental Model Alignment Accuracy, and finally evaluate on a held\u2010out test set. We log all per\u2010epoch metrics, predictions, and ground\u2010truth AI decisions in a centralized experiment_data dictionary. Building on this baseline, we conduct a systematic hyperparameter sweep over batch sizes for both the AI and user networks: for each batch size combination, we reinitialize data loaders, models, and optimizers, train the AI for 15 epochs and record its predictions, then train the user model for 20 epochs while logging per\u2010epoch train/validation losses and accuracies, and capture final test predictions and labels under composite keys in experiment_data. Finally, we save the aggregated experiment_data to experiment_data.npy. The current node serves as the seed stage for this end\u2010to\u2010end experiment pipeline without introducing additional modifications at this time.",
+      "analysis": "",
+      "metric": {
+        "value": {
+          "metric_names": [
+            {
+              "metric_name": "train accuracy",
+              "lower_is_better": false,
+              "description": "Training accuracy",
+              "data": [
+                {
+                  "dataset_name": "ai_bs_16_user_bs_16",
+                  "final_value": 0.9933,
+                  "best_value": 0.9933
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_32",
+                  "final_value": 0.9942,
+                  "best_value": 0.9942
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_64",
+                  "final_value": 0.9983,
+                  "best_value": 0.9983
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_16",
+                  "final_value": 0.9958,
+                  "best_value": 0.9958
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_32",
+                  "final_value": 0.9958,
+                  "best_value": 0.9958
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_64",
+                  "final_value": 0.9983,
+                  "best_value": 0.9983
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_16",
+                  "final_value": 0.9975,
+                  "best_value": 0.9975
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_32",
+                  "final_value": 0.9975,
+                  "best_value": 0.9975
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_64",
+                  "final_value": 0.995,
+                  "best_value": 0.995
+                }
+              ]
+            },
+            {
+              "metric_name": "train loss",
+              "lower_is_better": true,
+              "description": "Training loss",
+              "data": [
+                {
+                  "dataset_name": "ai_bs_16_user_bs_16",
+                  "final_value": 0.0152,
+                  "best_value": 0.0152
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_32",
+                  "final_value": 0.0162,
+                  "best_value": 0.0162
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_64",
+                  "final_value": 0.0195,
+                  "best_value": 0.0195
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_16",
+                  "final_value": 0.014,
+                  "best_value": 0.014
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_32",
+                  "final_value": 0.0142,
+                  "best_value": 0.0142
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_64",
+                  "final_value": 0.0186,
+                  "best_value": 0.0186
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_16",
+                  "final_value": 0.0119,
+                  "best_value": 0.0119
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_32",
+                  "final_value": 0.0138,
+                  "best_value": 0.0138
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_64",
+                  "final_value": 0.0188,
+                  "best_value": 0.0188
+                }
+              ]
+            },
+            {
+              "metric_name": "validation accuracy",
+              "lower_is_better": false,
+              "description": "Validation accuracy",
+              "data": [
+                {
+                  "dataset_name": "ai_bs_16_user_bs_16",
+                  "final_value": 0.9933,
+                  "best_value": 0.9933
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_32",
+                  "final_value": 1.0,
+                  "best_value": 1.0
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_64",
+                  "final_value": 0.9933,
+                  "best_value": 0.9933
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_16",
+                  "final_value": 0.9967,
+                  "best_value": 0.9967
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_32",
+                  "final_value": 0.9967,
+                  "best_value": 0.9967
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_64",
+                  "final_value": 0.9967,
+                  "best_value": 0.9967
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_16",
+                  "final_value": 0.9867,
+                  "best_value": 0.9867
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_32",
+                  "final_value": 0.99,
+                  "best_value": 0.99
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_64",
+                  "final_value": 0.99,
+                  "best_value": 0.99
+                }
+              ]
+            },
+            {
+              "metric_name": "validation loss",
+              "lower_is_better": true,
+              "description": "Validation loss",
+              "data": [
+                {
+                  "dataset_name": "ai_bs_16_user_bs_16",
+                  "final_value": 0.0095,
+                  "best_value": 0.0095
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_32",
+                  "final_value": 0.0103,
+                  "best_value": 0.0103
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_64",
+                  "final_value": 0.0157,
+                  "best_value": 0.0157
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_16",
+                  "final_value": 0.0083,
+                  "best_value": 0.0083
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_32",
+                  "final_value": 0.0212,
+                  "best_value": 0.0212
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_64",
+                  "final_value": 0.0179,
+                  "best_value": 0.0179
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_16",
+                  "final_value": 0.0345,
+                  "best_value": 0.0345
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_32",
+                  "final_value": 0.0182,
+                  "best_value": 0.0182
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_64",
+                  "final_value": 0.0186,
+                  "best_value": 0.0186
+                }
+              ]
+            },
+            {
+              "metric_name": "test accuracy",
+              "lower_is_better": false,
+              "description": "Test accuracy",
+              "data": [
+                {
+                  "dataset_name": "ai_bs_16_user_bs_16",
+                  "final_value": 0.998,
+                  "best_value": 0.998
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_32",
+                  "final_value": 0.996,
+                  "best_value": 0.996
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_64",
+                  "final_value": 0.996,
+                  "best_value": 0.996
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_16",
+                  "final_value": 0.992,
+                  "best_value": 0.992
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_32",
+                  "final_value": 0.994,
+                  "best_value": 0.994
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_64",
+                  "final_value": 0.994,
+                  "best_value": 0.994
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_16",
+                  "final_value": 0.994,
+                  "best_value": 0.994
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_32",
+                  "final_value": 0.994,
+                  "best_value": 0.994
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_64",
+                  "final_value": 0.998,
+                  "best_value": 0.998
+                }
+              ]
+            }
+          ]
+        },
+        "maximize": null,
+        "name": null,
+        "description": null
+      },
+      "code": "# Set random seed\nimport random\nimport numpy as np\nimport torch\n\nseed = 0\nrandom.seed(seed)\nnp.random.seed(seed)\ntorch.manual_seed(seed)\nif torch.cuda.is_available():\n    torch.cuda.manual_seed(seed)\n\nimport os\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.utils.data import Dataset, DataLoader\n\n# Set up working directory\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# Device config\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n\n# Reproducibility\nnp.random.seed(0)\ntorch.manual_seed(0)\n\n# Synthetic dataset generation\nN, D = 2000, 2\nX = np.random.randn(N, D)\nw_true = np.array([2.0, -3.0])\nb_true = 0.5\nlogits = X.dot(w_true) + b_true\nprobs = 1 / (1 + np.exp(-logits))\ny = (np.random.rand(N) < probs).astype(int)\n\n# Train/val/test split\nidx = np.random.permutation(N)\ntrain_idx, val_idx, test_idx = idx[:1200], idx[1200:1500], idx[1500:]\nX_train, y_train = X[train_idx], y[train_idx]\nX_val, y_val = X[val_idx], y[val_idx]\nX_test, y_test = X[test_idx], y[test_idx]\n\n# Normalize features\nmean, std = X_train.mean(0), X_train.std(0) + 1e-6\nX_train = (X_train - mean) / std\nX_val = (X_val - mean) / std\nX_test = (X_test - mean) / std\n\n\n# Dataset classes\nclass SimpleDS(Dataset):\n    def __init__(self, X, y):\n        self.X = torch.from_numpy(X).float()\n        self.y = torch.from_numpy(y).long()\n\n    def __len__(self):\n        return len(self.y)\n\n    def __getitem__(self, i):\n        return {\"x\": self.X[i], \"y\": self.y[i]}\n\n\nclass UserDS(Dataset):\n    def __init__(self, feat, label):\n        self.X = torch.from_numpy(feat).float()\n        self.y = torch.from_numpy(label).long()\n\n    def __len__(self):\n        return len(self.y)\n\n    def __getitem__(self, i):\n        return {\"feat\": self.X[i], \"label\": self.y[i]}\n\n\n# Model definitions\nclass AIModel(nn.Module):\n    def __init__(self, inp_dim, hid_dim, out_dim):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(inp_dim, hid_dim), nn.ReLU(), nn.Linear(hid_dim, out_dim)\n        )\n\n    def forward(self, x):\n        return self.net(x)\n\n\nclass UserModel(nn.Module):\n    def __init__(self, inp_dim, hid_dim, out_dim):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(inp_dim, hid_dim), nn.ReLU(), nn.Linear(hid_dim, out_dim)\n        )\n\n    def forward(self, x):\n        return self.net(x)\n\n\n# Hyperparameter grid\nai_batch_sizes = [16, 32, 64]\nusr_batch_sizes = [16, 32, 64]\n\n# Container for all results\nexperiment_data = {\"batch_size\": {}}\n\nfor ai_bs in ai_batch_sizes:\n    # AI data loaders\n    ai_tr_loader = DataLoader(\n        SimpleDS(X_train, y_train), batch_size=ai_bs, shuffle=True\n    )\n    ai_val_loader = DataLoader(SimpleDS(X_val, y_val), batch_size=ai_bs)\n\n    # Initialize AI model\n    ai_model = AIModel(D, 16, 2).to(device)\n    criterion_ai = nn.CrossEntropyLoss()\n    optimizer_ai = optim.Adam(ai_model.parameters(), lr=1e-2)\n\n    # Train AI model\n    for _ in range(15):\n        ai_model.train()\n        for batch in ai_tr_loader:\n            x = batch[\"x\"].to(device)\n            yb = batch[\"y\"].to(device)\n            out = ai_model(x)\n            loss = criterion_ai(out, yb)\n            optimizer_ai.zero_grad()\n            loss.backward()\n            optimizer_ai.step()\n\n    # Generate AI probabilities\n    ai_model.eval()\n    with torch.no_grad():\n        X_all = torch.from_numpy(np.vstack([X_train, X_val, X_test])).float().to(device)\n        logits_all = ai_model(X_all)\n        probs_all = torch.softmax(logits_all, dim=1).cpu().numpy()\n    p_train = probs_all[: len(X_train)]\n    p_val = probs_all[len(X_train) : len(X_train) + len(X_val)]\n    p_test = probs_all[-len(X_test) :]\n    f_train = p_train.argmax(axis=1)\n    f_val = p_val.argmax(axis=1)\n    f_test = p_test.argmax(axis=1)\n\n    # Prepare user features\n    X_usr_train = np.hstack([X_train, p_train])\n    X_usr_val = np.hstack([X_val, p_val])\n    X_usr_test = np.hstack([X_test, p_test])\n\n    for usr_bs in usr_batch_sizes:\n        # User data loaders\n        usr_tr_loader = DataLoader(\n            UserDS(X_usr_train, f_train), batch_size=usr_bs, shuffle=True\n        )\n        usr_val_loader = DataLoader(UserDS(X_usr_val, f_val), batch_size=usr_bs)\n        usr_test_loader = DataLoader(UserDS(X_usr_test, f_test), batch_size=usr_bs)\n\n        # Initialize User model\n        user_model = UserModel(D + 2, 8, 2).to(device)\n        criterion_usr = nn.CrossEntropyLoss()\n        optimizer_usr = optim.Adam(user_model.parameters(), lr=1e-2)\n\n        train_accs, val_accs = [], []\n        train_losses, val_losses = [], []\n\n        # Train User model\n        for _ in range(20):\n            user_model.train()\n            t_loss, corr, tot = 0.0, 0, 0\n            for batch in usr_tr_loader:\n                feat = batch[\"feat\"].to(device)\n                lbl = batch[\"label\"].to(device)\n                out = user_model(feat)\n                loss = criterion_usr(out, lbl)\n                optimizer_usr.zero_grad()\n                loss.backward()\n                optimizer_usr.step()\n                t_loss += loss.item() * feat.size(0)\n                preds = out.argmax(dim=1)\n                corr += (preds == lbl).sum().item()\n                tot += lbl.size(0)\n            train_losses.append(t_loss / tot)\n            train_accs.append(corr / tot)\n\n            user_model.eval()\n            v_loss, v_corr, v_tot = 0.0, 0, 0\n            with torch.no_grad():\n                for batch in usr_val_loader:\n                    feat = batch[\"feat\"].to(device)\n                    lbl = batch[\"label\"].to(device)\n                    out = user_model(feat)\n                    loss = criterion_usr(out, lbl)\n                    v_loss += loss.item() * feat.size(0)\n                    preds = out.argmax(dim=1)\n                    v_corr += (preds == lbl).sum().item()\n                    v_tot += lbl.size(0)\n            val_losses.append(v_loss / v_tot)\n            val_accs.append(v_corr / v_tot)\n\n        # Test evaluation\n        test_preds, test_gt = [], []\n        user_model.eval()\n        with torch.no_grad():\n            for batch in usr_test_loader:\n                feat = batch[\"feat\"].to(device)\n                lbl = batch[\"label\"].to(device)\n                out = user_model(feat)\n                p = out.argmax(dim=1).cpu().numpy()\n                test_preds.extend(p.tolist())\n                test_gt.extend(lbl.cpu().numpy().tolist())\n\n        key = f\"ai_bs_{ai_bs}_user_bs_{usr_bs}\"\n        experiment_data[\"batch_size\"][key] = {\n            \"metrics\": {\"train\": np.array(train_accs), \"val\": np.array(val_accs)},\n            \"losses\": {\"train\": np.array(train_losses), \"val\": np.array(val_losses)},\n            \"predictions\": np.array(test_preds),\n            \"ground_truth\": np.array(test_gt),\n        }\n\n# Save all experiment data\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+      "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\n# Load experiment data\ntry:\n    exp = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n\n# Select five evenly spaced configurations\nkeys = list(exp[\"batch_size\"].keys())\nif len(keys) > 5:\n    idxs = [int(i * (len(keys) - 1) / 4) for i in range(5)]\nelse:\n    idxs = list(range(len(keys)))\nselected = [keys[i] for i in idxs]\n\n# Plot train/val accuracy and loss for each selected config\nfor key in selected:\n    try:\n        data = exp[\"batch_size\"][key]\n        epochs = range(1, len(data[\"metrics\"][\"train\"]) + 1)\n        fig, axs = plt.subplots(1, 2, figsize=(10, 4))\n        # Accuracy subplot\n        axs[0].plot(epochs, data[\"metrics\"][\"train\"], label=\"Train\")\n        axs[0].plot(epochs, data[\"metrics\"][\"val\"], label=\"Validation\")\n        axs[0].set_title(\"Accuracy\")\n        axs[0].set_xlabel(\"Epoch\")\n        axs[0].legend()\n        # Loss subplot\n        axs[1].plot(epochs, data[\"losses\"][\"train\"], label=\"Train\")\n        axs[1].plot(epochs, data[\"losses\"][\"val\"], label=\"Validation\")\n        axs[1].set_title(\"Loss\")\n        axs[1].set_xlabel(\"Epoch\")\n        axs[1].legend()\n        # Composite title\n        fig.suptitle(f\"Synthetic binary dataset - {key}\")\n        # Save and close\n        fname = os.path.join(working_dir, f\"{key}_train_val_curves.png\")\n        plt.savefig(fname)\n        plt.close()\n    except Exception as e:\n        print(f\"Error creating plot for {key}: {e}\")\n        plt.close()\n",
+      "plot_analyses": [
+        {
+          "analysis": "Training accuracy rapidly increases, achieving ~0.99 by epoch 5, and validation accuracy closely follows. Training loss decays from ~0.40 to ~0.01, with validation loss from ~0.22 to ~0.01. Minimal gap indicates no overfitting and stable convergence.",
+          "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_7825e809747547f8a44853d045bf88a6_proc_2565128/ai_bs_64_user_bs_64_train_val_curves.png"
+        },
+        {
+          "analysis": "Initial training accuracy starts lower (~0.60) but climbs above 0.98 by epoch 4, reaching ~0.99 thereafter; validation accuracy mirrors this trend, starting at ~0.90. Training loss decays from ~0.53 to ~0.015, validation loss from ~0.35 to ~0.015. Convergence is stable with low variance.",
+          "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_7825e809747547f8a44853d045bf88a6_proc_2565128/ai_bs_32_user_bs_32_train_val_curves.png"
+        },
+        {
+          "analysis": "Training accuracy begins at ~0.66, rises to ~0.98 by epoch 4, and plateaus near ~0.995; validation accuracy follows a similar trajectory. Training loss decreases from ~0.63 to ~0.02, validation loss from ~0.47 to ~0.02. Slightly slower early convergence due to smaller AI batch size, but eventual performance matches others.",
+          "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_7825e809747547f8a44853d045bf88a6_proc_2565128/ai_bs_16_user_bs_64_train_val_curves.png"
+        },
+        {
+          "analysis": "Training accuracy starts at ~0.76, reaches ~0.995 by epoch 7, and validation accuracy remains around ~0.99\u20131.0. Training loss falls from ~0.415 to ~0.01, validation loss from ~0.10 to ~0.01. Dynamics are balanced with no noticeable overfitting.",
+          "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_7825e809747547f8a44853d045bf88a6_proc_2565128/ai_bs_16_user_bs_16_train_val_curves.png"
+        },
+        {
+          "analysis": "Training accuracy begins at ~0.90 and rises to ~0.995, while validation accuracy stays around ~0.99. Training loss decays from ~0.31 to ~0.01, and validation loss from ~0.05 to ~0.03, with slight fluctuations in validation loss after epoch 10, potentially due to the smaller user batch size. Overall convergence remains strong.",
+          "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_7825e809747547f8a44853d045bf88a6_proc_2565128/ai_bs_64_user_bs_16_train_val_curves.png"
+        }
+      ],
+      "plot_paths": [
+        "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_7825e809747547f8a44853d045bf88a6_proc_2565128/ai_bs_64_user_bs_64_train_val_curves.png",
+        "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_7825e809747547f8a44853d045bf88a6_proc_2565128/ai_bs_32_user_bs_32_train_val_curves.png",
+        "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_7825e809747547f8a44853d045bf88a6_proc_2565128/ai_bs_16_user_bs_64_train_val_curves.png",
+        "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_7825e809747547f8a44853d045bf88a6_proc_2565128/ai_bs_16_user_bs_16_train_val_curves.png",
+        "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_7825e809747547f8a44853d045bf88a6_proc_2565128/ai_bs_64_user_bs_16_train_val_curves.png"
+      ],
+      "vlm_feedback_summary": "All five batch-size configurations yield near-perfect performance on the synthetic binary dataset, characterized by rapid loss decay and high accuracy. Smaller AI batch sizes slow initial convergence but catch up by epoch 5, while larger user batch sizes produce smoother validation curves. The ai_bs_32_user_bs_32 pairing offers an excellent balance between convergence speed and stability.",
+      "exp_results_dir": "experiment_results/experiment_7825e809747547f8a44853d045bf88a6_proc_2565128",
+      "exp_results_npy_files": [
+        "experiment_results/experiment_7825e809747547f8a44853d045bf88a6_proc_2565128/experiment_data.npy"
+      ]
+    },
+    {
+      "overall_plan": "We begin by initializing the experimental environment (random seeds, data splits, configurations, and logging) to ensure reproducibility. Next, we implement a static explainer baseline on a synthetic 2D binary classification task: train a small MLP to obtain class probability explanations, then train a neural user model on normalized inputs plus these probabilities to predict the AI\u2019s decisions. We monitor validation loss and mental model alignment accuracy throughout and record per-epoch metrics, predictions, and ground-truth AI outputs. Building on this baseline, we systematically sweep over AI and user model batch sizes: for each (AI_batch_size, user_batch_size) pair, we reinitialize data loaders, models, and optimizers; train the AI model for 15 epochs; generate its predictions; then train the user model for 20 epochs, logging all train/validation losses and accuracies and final test predictions/labels under a composite key. Finally, we aggregate all experiment_data into a single file (experiment_data.npy) for downstream analysis.",
+      "analysis": "",
+      "metric": {
+        "value": {
+          "metric_names": [
+            {
+              "metric_name": "train accuracy",
+              "lower_is_better": false,
+              "description": "Training accuracy for each dataset",
+              "data": [
+                {
+                  "dataset_name": "ai_bs_16_user_bs_16",
+                  "final_value": 0.9933,
+                  "best_value": 0.9933
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_32",
+                  "final_value": 0.9942,
+                  "best_value": 0.9942
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_64",
+                  "final_value": 0.9983,
+                  "best_value": 0.9983
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_16",
+                  "final_value": 0.9958,
+                  "best_value": 0.9958
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_32",
+                  "final_value": 0.9958,
+                  "best_value": 0.9958
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_64",
+                  "final_value": 0.9983,
+                  "best_value": 0.9983
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_16",
+                  "final_value": 0.9975,
+                  "best_value": 0.9975
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_32",
+                  "final_value": 0.9975,
+                  "best_value": 0.9975
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_64",
+                  "final_value": 0.995,
+                  "best_value": 0.995
+                }
+              ]
+            },
+            {
+              "metric_name": "train loss",
+              "lower_is_better": true,
+              "description": "Training loss for each dataset",
+              "data": [
+                {
+                  "dataset_name": "ai_bs_16_user_bs_16",
+                  "final_value": 0.0152,
+                  "best_value": 0.0152
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_32",
+                  "final_value": 0.0162,
+                  "best_value": 0.0162
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_64",
+                  "final_value": 0.0195,
+                  "best_value": 0.0195
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_16",
+                  "final_value": 0.014,
+                  "best_value": 0.014
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_32",
+                  "final_value": 0.0142,
+                  "best_value": 0.0142
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_64",
+                  "final_value": 0.0186,
+                  "best_value": 0.0186
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_16",
+                  "final_value": 0.0119,
+                  "best_value": 0.0119
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_32",
+                  "final_value": 0.0138,
+                  "best_value": 0.0138
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_64",
+                  "final_value": 0.0188,
+                  "best_value": 0.0188
+                }
+              ]
+            },
+            {
+              "metric_name": "validation accuracy",
+              "lower_is_better": false,
+              "description": "Validation accuracy for each dataset",
+              "data": [
+                {
+                  "dataset_name": "ai_bs_16_user_bs_16",
+                  "final_value": 0.9933,
+                  "best_value": 0.9933
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_32",
+                  "final_value": 1.0,
+                  "best_value": 1.0
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_64",
+                  "final_value": 0.9933,
+                  "best_value": 0.9933
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_16",
+                  "final_value": 0.9967,
+                  "best_value": 0.9967
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_32",
+                  "final_value": 0.9967,
+                  "best_value": 0.9967
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_64",
+                  "final_value": 0.9967,
+                  "best_value": 0.9967
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_16",
+                  "final_value": 0.9867,
+                  "best_value": 0.9867
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_32",
+                  "final_value": 0.99,
+                  "best_value": 0.99
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_64",
+                  "final_value": 0.99,
+                  "best_value": 0.99
+                }
+              ]
+            },
+            {
+              "metric_name": "validation loss",
+              "lower_is_better": true,
+              "description": "Validation loss for each dataset",
+              "data": [
+                {
+                  "dataset_name": "ai_bs_16_user_bs_16",
+                  "final_value": 0.0095,
+                  "best_value": 0.0095
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_32",
+                  "final_value": 0.0103,
+                  "best_value": 0.0103
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_64",
+                  "final_value": 0.0157,
+                  "best_value": 0.0157
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_16",
+                  "final_value": 0.0083,
+                  "best_value": 0.0083
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_32",
+                  "final_value": 0.0212,
+                  "best_value": 0.0212
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_64",
+                  "final_value": 0.0179,
+                  "best_value": 0.0179
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_16",
+                  "final_value": 0.0345,
+                  "best_value": 0.0345
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_32",
+                  "final_value": 0.0182,
+                  "best_value": 0.0182
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_64",
+                  "final_value": 0.0186,
+                  "best_value": 0.0186
+                }
+              ]
+            },
+            {
+              "metric_name": "test accuracy",
+              "lower_is_better": false,
+              "description": "Test accuracy for each dataset",
+              "data": [
+                {
+                  "dataset_name": "ai_bs_16_user_bs_16",
+                  "final_value": 0.998,
+                  "best_value": 0.998
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_32",
+                  "final_value": 0.996,
+                  "best_value": 0.996
+                },
+                {
+                  "dataset_name": "ai_bs_16_user_bs_64",
+                  "final_value": 0.996,
+                  "best_value": 0.996
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_16",
+                  "final_value": 0.992,
+                  "best_value": 0.992
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_32",
+                  "final_value": 0.994,
+                  "best_value": 0.994
+                },
+                {
+                  "dataset_name": "ai_bs_32_user_bs_64",
+                  "final_value": 0.994,
+                  "best_value": 0.994
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_16",
+                  "final_value": 0.994,
+                  "best_value": 0.994
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_32",
+                  "final_value": 0.994,
+                  "best_value": 0.994
+                },
+                {
+                  "dataset_name": "ai_bs_64_user_bs_64",
+                  "final_value": 0.998,
+                  "best_value": 0.998
+                }
+              ]
+            }
+          ]
+        },
+        "maximize": null,
+        "name": null,
+        "description": null
+      },
+      "code": "# Set random seed\nimport random\nimport numpy as np\nimport torch\n\nseed = 1\nrandom.seed(seed)\nnp.random.seed(seed)\ntorch.manual_seed(seed)\nif torch.cuda.is_available():\n    torch.cuda.manual_seed(seed)\n\nimport os\nimport numpy as np\nimport torch\nimport torch.nn as nn\nimport torch.optim as optim\nfrom torch.utils.data import Dataset, DataLoader\n\n# Set up working directory\nworking_dir = os.path.join(os.getcwd(), \"working\")\nos.makedirs(working_dir, exist_ok=True)\n\n# Device config\ndevice = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n\n# Reproducibility\nnp.random.seed(0)\ntorch.manual_seed(0)\n\n# Synthetic dataset generation\nN, D = 2000, 2\nX = np.random.randn(N, D)\nw_true = np.array([2.0, -3.0])\nb_true = 0.5\nlogits = X.dot(w_true) + b_true\nprobs = 1 / (1 + np.exp(-logits))\ny = (np.random.rand(N) < probs).astype(int)\n\n# Train/val/test split\nidx = np.random.permutation(N)\ntrain_idx, val_idx, test_idx = idx[:1200], idx[1200:1500], idx[1500:]\nX_train, y_train = X[train_idx], y[train_idx]\nX_val, y_val = X[val_idx], y[val_idx]\nX_test, y_test = X[test_idx], y[test_idx]\n\n# Normalize features\nmean, std = X_train.mean(0), X_train.std(0) + 1e-6\nX_train = (X_train - mean) / std\nX_val = (X_val - mean) / std\nX_test = (X_test - mean) / std\n\n\n# Dataset classes\nclass SimpleDS(Dataset):\n    def __init__(self, X, y):\n        self.X = torch.from_numpy(X).float()\n        self.y = torch.from_numpy(y).long()\n\n    def __len__(self):\n        return len(self.y)\n\n    def __getitem__(self, i):\n        return {\"x\": self.X[i], \"y\": self.y[i]}\n\n\nclass UserDS(Dataset):\n    def __init__(self, feat, label):\n        self.X = torch.from_numpy(feat).float()\n        self.y = torch.from_numpy(label).long()\n\n    def __len__(self):\n        return len(self.y)\n\n    def __getitem__(self, i):\n        return {\"feat\": self.X[i], \"label\": self.y[i]}\n\n\n# Model definitions\nclass AIModel(nn.Module):\n    def __init__(self, inp_dim, hid_dim, out_dim):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(inp_dim, hid_dim), nn.ReLU(), nn.Linear(hid_dim, out_dim)\n        )\n\n    def forward(self, x):\n        return self.net(x)\n\n\nclass UserModel(nn.Module):\n    def __init__(self, inp_dim, hid_dim, out_dim):\n        super().__init__()\n        self.net = nn.Sequential(\n            nn.Linear(inp_dim, hid_dim), nn.ReLU(), nn.Linear(hid_dim, out_dim)\n        )\n\n    def forward(self, x):\n        return self.net(x)\n\n\n# Hyperparameter grid\nai_batch_sizes = [16, 32, 64]\nusr_batch_sizes = [16, 32, 64]\n\n# Container for all results\nexperiment_data = {\"batch_size\": {}}\n\nfor ai_bs in ai_batch_sizes:\n    # AI data loaders\n    ai_tr_loader = DataLoader(\n        SimpleDS(X_train, y_train), batch_size=ai_bs, shuffle=True\n    )\n    ai_val_loader = DataLoader(SimpleDS(X_val, y_val), batch_size=ai_bs)\n\n    # Initialize AI model\n    ai_model = AIModel(D, 16, 2).to(device)\n    criterion_ai = nn.CrossEntropyLoss()\n    optimizer_ai = optim.Adam(ai_model.parameters(), lr=1e-2)\n\n    # Train AI model\n    for _ in range(15):\n        ai_model.train()\n        for batch in ai_tr_loader:\n            x = batch[\"x\"].to(device)\n            yb = batch[\"y\"].to(device)\n            out = ai_model(x)\n            loss = criterion_ai(out, yb)\n            optimizer_ai.zero_grad()\n            loss.backward()\n            optimizer_ai.step()\n\n    # Generate AI probabilities\n    ai_model.eval()\n    with torch.no_grad():\n        X_all = torch.from_numpy(np.vstack([X_train, X_val, X_test])).float().to(device)\n        logits_all = ai_model(X_all)\n        probs_all = torch.softmax(logits_all, dim=1).cpu().numpy()\n    p_train = probs_all[: len(X_train)]\n    p_val = probs_all[len(X_train) : len(X_train) + len(X_val)]\n    p_test = probs_all[-len(X_test) :]\n    f_train = p_train.argmax(axis=1)\n    f_val = p_val.argmax(axis=1)\n    f_test = p_test.argmax(axis=1)\n\n    # Prepare user features\n    X_usr_train = np.hstack([X_train, p_train])\n    X_usr_val = np.hstack([X_val, p_val])\n    X_usr_test = np.hstack([X_test, p_test])\n\n    for usr_bs in usr_batch_sizes:\n        # User data loaders\n        usr_tr_loader = DataLoader(\n            UserDS(X_usr_train, f_train), batch_size=usr_bs, shuffle=True\n        )\n        usr_val_loader = DataLoader(UserDS(X_usr_val, f_val), batch_size=usr_bs)\n        usr_test_loader = DataLoader(UserDS(X_usr_test, f_test), batch_size=usr_bs)\n\n        # Initialize User model\n        user_model = UserModel(D + 2, 8, 2).to(device)\n        criterion_usr = nn.CrossEntropyLoss()\n        optimizer_usr = optim.Adam(user_model.parameters(), lr=1e-2)\n\n        train_accs, val_accs = [], []\n        train_losses, val_losses = [], []\n\n        # Train User model\n        for _ in range(20):\n            user_model.train()\n            t_loss, corr, tot = 0.0, 0, 0\n            for batch in usr_tr_loader:\n                feat = batch[\"feat\"].to(device)\n                lbl = batch[\"label\"].to(device)\n                out = user_model(feat)\n                loss = criterion_usr(out, lbl)\n                optimizer_usr.zero_grad()\n                loss.backward()\n                optimizer_usr.step()\n                t_loss += loss.item() * feat.size(0)\n                preds = out.argmax(dim=1)\n                corr += (preds == lbl).sum().item()\n                tot += lbl.size(0)\n            train_losses.append(t_loss / tot)\n            train_accs.append(corr / tot)\n\n            user_model.eval()\n            v_loss, v_corr, v_tot = 0.0, 0, 0\n            with torch.no_grad():\n                for batch in usr_val_loader:\n                    feat = batch[\"feat\"].to(device)\n                    lbl = batch[\"label\"].to(device)\n                    out = user_model(feat)\n                    loss = criterion_usr(out, lbl)\n                    v_loss += loss.item() * feat.size(0)\n                    preds = out.argmax(dim=1)\n                    v_corr += (preds == lbl).sum().item()\n                    v_tot += lbl.size(0)\n            val_losses.append(v_loss / v_tot)\n            val_accs.append(v_corr / v_tot)\n\n        # Test evaluation\n        test_preds, test_gt = [], []\n        user_model.eval()\n        with torch.no_grad():\n            for batch in usr_test_loader:\n                feat = batch[\"feat\"].to(device)\n                lbl = batch[\"label\"].to(device)\n                out = user_model(feat)\n                p = out.argmax(dim=1).cpu().numpy()\n                test_preds.extend(p.tolist())\n                test_gt.extend(lbl.cpu().numpy().tolist())\n\n        key = f\"ai_bs_{ai_bs}_user_bs_{usr_bs}\"\n        experiment_data[\"batch_size\"][key] = {\n            \"metrics\": {\"train\": np.array(train_accs), \"val\": np.array(val_accs)},\n            \"losses\": {\"train\": np.array(train_losses), \"val\": np.array(val_losses)},\n            \"predictions\": np.array(test_preds),\n            \"ground_truth\": np.array(test_gt),\n        }\n\n# Save all experiment data\nnp.save(os.path.join(working_dir, \"experiment_data.npy\"), experiment_data)\n",
+      "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\n# Load experiment data\ntry:\n    exp = np.load(\n        os.path.join(working_dir, \"experiment_data.npy\"), allow_pickle=True\n    ).item()\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n\n# Select five evenly spaced configurations\nkeys = list(exp[\"batch_size\"].keys())\nif len(keys) > 5:\n    idxs = [int(i * (len(keys) - 1) / 4) for i in range(5)]\nelse:\n    idxs = list(range(len(keys)))\nselected = [keys[i] for i in idxs]\n\n# Plot train/val accuracy and loss for each selected config\nfor key in selected:\n    try:\n        data = exp[\"batch_size\"][key]\n        epochs = range(1, len(data[\"metrics\"][\"train\"]) + 1)\n        fig, axs = plt.subplots(1, 2, figsize=(10, 4))\n        # Accuracy subplot\n        axs[0].plot(epochs, data[\"metrics\"][\"train\"], label=\"Train\")\n        axs[0].plot(epochs, data[\"metrics\"][\"val\"], label=\"Validation\")\n        axs[0].set_title(\"Accuracy\")\n        axs[0].set_xlabel(\"Epoch\")\n        axs[0].legend()\n        # Loss subplot\n        axs[1].plot(epochs, data[\"losses\"][\"train\"], label=\"Train\")\n        axs[1].plot(epochs, data[\"losses\"][\"val\"], label=\"Validation\")\n        axs[1].set_title(\"Loss\")\n        axs[1].set_xlabel(\"Epoch\")\n        axs[1].legend()\n        # Composite title\n        fig.suptitle(f\"Synthetic binary dataset - {key}\")\n        # Save and close\n        fname = os.path.join(working_dir, f\"{key}_train_val_curves.png\")\n        plt.savefig(fname)\n        plt.close()\n    except Exception as e:\n        print(f\"Error creating plot for {key}: {e}\")\n        plt.close()\n",
+      "plot_analyses": [
+        {
+          "analysis": "synthetic binary dataset - ai_bs_64_user_bs_64 exhibits rapid convergence, with training accuracy climbing from ~0.92 to ~0.99 by epoch 3 and validation accuracy following closely from ~0.99 onward. Loss curves drop sharply in the first five epochs and level off near zero, indicating stable training without overfitting. The smooth descent and tight train/val alignment suggest that a batch size of 64 for both AI and user channels yields reliable gradient estimates and effective bias-correction feedback.",
+          "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_14836264e96244ab803c267b614bfeb9_proc_2565127/ai_bs_64_user_bs_64_train_val_curves.png"
+        },
+        {
+          "analysis": "synthetic binary dataset - ai_bs_32_user_bs_32 shows a slightly slower start, with training accuracy rising from ~0.60 to ~0.97 by epoch 3, and validation accuracy stabilizing near 0.98\u20130.99 after epoch 4. Initial loss is higher (~0.53) but falls steeply to below 0.02 by epoch 10. This mid\u2010size batch configuration still reaches high performance with minimal generalization gap, though it requires a few more epochs to match the larger-batch run.",
+          "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_14836264e96244ab803c267b614bfeb9_proc_2565127/ai_bs_32_user_bs_32_train_val_curves.png"
+        },
+        {
+          "analysis": "synthetic binary dataset - ai_bs_16_user_bs_64 yields a modest training start (~0.66) but catches up to ~0.98 by epoch 4, with validation accuracy mirroring at ~0.97\u20130.99 thereafter. Loss declines quickly, albeit with a slightly longer tail than in larger-AI-batch cases. The combination of small AI batch and large user batch offers fine-grained model updates alongside stable user-bias estimates, trading off a bit of initial convergence speed for smooth long-term accuracy.",
+          "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_14836264e96244ab803c267b614bfeb9_proc_2565127/ai_bs_16_user_bs_64_train_val_curves.png"
+        },
+        {
+          "analysis": "synthetic binary dataset - ai_bs_16_user_bs_16 reaches nearly 1.00 on both train and validation by epoch 4, beginning from ~0.77 accuracy at epoch 1. Loss drops precipitously to ~0.01 by epoch 5, but slight fluctuations in validation loss indicate more noise due to smaller batches on both sides. This dual-small batch configuration can achieve top accuracy fastest in the medium term, but at the cost of more variance in each update step.",
+          "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_14836264e96244ab803c267b614bfeb9_proc_2565127/ai_bs_16_user_bs_16_train_val_curves.png"
+        },
+        {
+          "analysis": "synthetic binary dataset - ai_bs_64_user_bs_16 delivers strong initial training (~0.90) and validation (~0.99) accuracy by epoch 2, with both settling around ~0.98\u20130.99. Early loss is moderate (~0.31 train, ~0.05 val) and decreases to near zero by epoch 10. While the AI side benefits from large batch stability, the small user batch introduces occasional swings in validation loss. Overall this mix converges quickly but shows some late\u2010epoch jitter in user\u2010feedback adaptation.",
+          "plot_path": "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_14836264e96244ab803c267b614bfeb9_proc_2565127/ai_bs_64_user_bs_16_train_val_curves.png"
+        }
+      ],
+      "plot_paths": [
+        "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_14836264e96244ab803c267b614bfeb9_proc_2565127/ai_bs_64_user_bs_64_train_val_curves.png",
+        "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_14836264e96244ab803c267b614bfeb9_proc_2565127/ai_bs_32_user_bs_32_train_val_curves.png",
+        "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_14836264e96244ab803c267b614bfeb9_proc_2565127/ai_bs_16_user_bs_64_train_val_curves.png",
+        "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_14836264e96244ab803c267b614bfeb9_proc_2565127/ai_bs_16_user_bs_16_train_val_curves.png",
+        "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_14836264e96244ab803c267b614bfeb9_proc_2565127/ai_bs_64_user_bs_16_train_val_curves.png"
+      ],
+      "vlm_feedback_summary": "All five batch-size configurations converge to >98% accuracy and near-zero loss within 10 epochs, with differences in convergence speed and stability. Larger AI batch sizes speed up early accuracy gains while larger user batches smooth out validation fluctuations. Mid\u2010range batch sizes (e.g., ai_bs=32, user_bs=32) offer a balanced tradeoff. To further evaluate generality, test the co-adaptive interface on real-world binary tasks such as the HuggingFace \u201cimdb\u201d sentiment dataset and \u201cyelp_polarity\u201d reviews dataset.",
+      "exp_results_dir": "experiment_results/experiment_14836264e96244ab803c267b614bfeb9_proc_2565127",
+      "exp_results_npy_files": [
+        "experiment_results/experiment_14836264e96244ab803c267b614bfeb9_proc_2565127/experiment_data.npy"
+      ]
+    }
+  ],
+  "aggregated results of nodes with different seeds": {
+    "overall_plan": "We will first establish a static explainer baseline on our synthetic 2D binary classification task: train a small MLP as the AI model, extract content-justification explanations via its class probabilities, and train a simple neural user model on the normalized features plus those probabilities to predict the AI\u2019s decisions. During training, we will log per-epoch train/validation losses and accuracies and compute a Mental Model Alignment Accuracy, then evaluate and store all predictions and metrics on a held-out test set. Building on this, we will perform a systematic hyperparameter sweep over batch sizes for both the AI and user models: for each (AI_batch_size, user_batch_size) pair, we will reinitialize data loaders and model parameters, train the AI for 15 epochs (logging metrics and saving predictions), then train the user model for 20 epochs (logging metrics and final test results), and store all data under composite keys in experiment_data. Finally, to ensure robustness, we will repeat the entire suite of experiments across multiple random seeds, aggregating results by computing summary statistics (means and variances) for all logged performance and alignment measures, and save the fully aggregated experiment_data to experiment_data.npy.",
+    "metric": {
+      "value": null,
+      "maximize": null,
+      "name": null,
+      "description": null
+    },
+    "code": "# plotting aggregation code",
+    "plot_code": "import matplotlib.pyplot as plt\nimport numpy as np\nimport os\n\nworking_dir = os.path.join(os.getcwd(), \"working\")\n\n# Load all experiment data\ntry:\n    root_dir = os.getenv(\"AI_SCIENTIST_ROOT\", os.getcwd())\n    experiment_data_path_list = [\n        \"experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_7825e809747547f8a44853d045bf88a6_proc_2565128/experiment_data.npy\",\n        \"experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_14836264e96244ab803c267b614bfeb9_proc_2565127/experiment_data.npy\",\n        \"experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/experiment_3e554f7f44604e0894bd0e6d91ed7346_proc_2565129/experiment_data.npy\",\n    ]\n    all_data = []\n    for p in experiment_data_path_list:\n        full_path = os.path.join(root_dir, p)\n        exp = np.load(full_path, allow_pickle=True).item()\n        all_data.append(exp)\nexcept Exception as e:\n    print(f\"Error loading experiment data: {e}\")\n\n# Determine common batch_size keys and select up to 5\ncommon_keys = set(all_data[0][\"batch_size\"].keys())\nfor d in all_data[1:]:\n    common_keys &= set(d[\"batch_size\"].keys())\ncommon_keys = sorted(common_keys)\nif len(common_keys) > 5:\n    idxs = [int(i * (len(common_keys) - 1) / 4) for i in range(5)]\n    selected_keys = [common_keys[i] for i in idxs]\nelse:\n    selected_keys = common_keys\n\n# Plot aggregated curves per batch size\nfor key in selected_keys:\n    try:\n        acc_trains, acc_vals = [], []\n        loss_trains, loss_vals = [], []\n        for d in all_data:\n            cfg = d[\"batch_size\"][key]\n            acc_trains.append(np.array(cfg[\"metrics\"][\"train\"]))\n            acc_vals.append(np.array(cfg[\"metrics\"][\"val\"]))\n            loss_trains.append(np.array(cfg[\"losses\"][\"train\"]))\n            loss_vals.append(np.array(cfg[\"losses\"][\"val\"]))\n        min_ep = min(len(x) for x in acc_trains)\n        acc_trains = np.vstack([x[:min_ep] for x in acc_trains])\n        acc_vals = np.vstack([x[:min_ep] for x in acc_vals])\n        loss_trains = np.vstack([x[:min_ep] for x in loss_trains])\n        loss_vals = np.vstack([x[:min_ep] for x in loss_vals])\n        mean_at = acc_trains.mean(axis=0)\n        sem_at = acc_trains.std(axis=0, ddof=1) / np.sqrt(acc_trains.shape[0])\n        mean_av = acc_vals.mean(axis=0)\n        sem_av = acc_vals.std(axis=0, ddof=1) / np.sqrt(acc_vals.shape[0])\n        mean_lt = loss_trains.mean(axis=0)\n        sem_lt = loss_trains.std(axis=0, ddof=1) / np.sqrt(loss_trains.shape[0])\n        mean_lv = loss_vals.mean(axis=0)\n        sem_lv = loss_vals.std(axis=0, ddof=1) / np.sqrt(loss_vals.shape[0])\n        epochs = np.arange(1, min_ep + 1)\n\n        fig, axs = plt.subplots(1, 2, figsize=(10, 4))\n        axs[0].errorbar(epochs, mean_at, yerr=sem_at, label=\"Train\", capsize=3)\n        axs[0].errorbar(epochs, mean_av, yerr=sem_av, label=\"Validation\", capsize=3)\n        axs[0].set_title(\"Accuracy\")\n        axs[0].set_xlabel(\"Epoch\")\n        axs[0].legend()\n        axs[1].errorbar(epochs, mean_lt, yerr=sem_lt, label=\"Train\", capsize=3)\n        axs[1].errorbar(epochs, mean_lv, yerr=sem_lv, label=\"Validation\", capsize=3)\n        axs[1].set_title(\"Loss\")\n        axs[1].set_xlabel(\"Epoch\")\n        axs[1].legend()\n        fig.suptitle(f\"Synthetic binary dataset - batch_size {key} (Aggregated)\")\n        fname = os.path.join(\n            working_dir, f\"synthetic_binary_dataset_agg_batch_size_{key}_metrics.png\"\n        )\n        plt.savefig(fname)\n        plt.close()\n        print(f\"batch_size {key}: Final Val Acc = {mean_av[-1]:.4f} \u00b1 {sem_av[-1]:.4f}\")\n    except Exception as e:\n        print(f\"Error creating aggregated plot for batch_size {key}: {e}\")\n        plt.close()\n",
+    "plot_analyses": [],
+    "plot_paths": [
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/seed_aggregation_c255d3ad366b41249cbb5ed9c2987413/synthetic_binary_dataset_agg_batch_size_ai_bs_64_user_bs_64_metrics.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/seed_aggregation_c255d3ad366b41249cbb5ed9c2987413/synthetic_binary_dataset_agg_batch_size_ai_bs_32_user_bs_32_metrics.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/seed_aggregation_c255d3ad366b41249cbb5ed9c2987413/synthetic_binary_dataset_agg_batch_size_ai_bs_16_user_bs_64_metrics.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/seed_aggregation_c255d3ad366b41249cbb5ed9c2987413/synthetic_binary_dataset_agg_batch_size_ai_bs_64_user_bs_16_metrics.png",
+      "experiments/2025-05-29_15-59-15_coadaptive_explanation_alignment_attempt_0/logs/0-run/experiment_results/seed_aggregation_c255d3ad366b41249cbb5ed9c2987413/synthetic_binary_dataset_agg_batch_size_ai_bs_16_user_bs_16_metrics.png"
+    ],
+    "vlm_feedback_summary": [],
+    "exp_results_dir": "experiment_results/seed_aggregation_c255d3ad366b41249cbb5ed9c2987413",
+    "exp_results_npy_files": []
+  }
+}

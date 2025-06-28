@@ -1,0 +1,33 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-written and the core idea of Perturbation-Induced Uncertainty (PIU) is clearly articulated in the abstract and introduction. The structure is logical. However, due to its brevity (3 pages of main content), some methodological details are concise. For example, the exact calculation of 'Embedding KL' for classification tasks could be more explicit in the main text. The mention of SBERT for open-ended outputs (Section 4) is not directly relevant to the experiments performed (sentiment classification), which could cause minor confusion. Overall, the paper is easy to follow but would benefit from slight elaboration in certain areas for full clarity without relying on supplementary materials or code."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper proposes PIU, a model-agnostic method using semantically equivalent prompt ensembles for uncertainty quantification. While the concept of using input perturbations for robustness or calibration has been explored (as acknowledged by the authors for small models), its systematic application for UQ in potentially closed-source Large Language Models (LLMs) with minimal forward passes (K≈5) is a valuable and timely contribution. The specific combination of lightweight paraphrasing techniques and divergence metrics (especially KL divergence on output distributions) for this purpose, focusing on practicality for modern large models, presents a notable advancement. It's more of an effective and practical adaptation/extension to a critical problem area rather than a completely groundbreaking idea."
+    },
+    "Soundness": {
+        "score": 9,
+        "justification": "The methods are sound: using paraphrases to generate semantic variants and employing standard divergence metrics (vote disagreement, KL divergence) are appropriate. The experimental setup involves fine-tuning BERT-base on three standard sentiment classification benchmarks (SST-2, Yelp Polarity, IMDb), which is a valid testbed. Baselines (self-confidence, MC-dropout) are appropriate for comparison. The paper's claims are strongly supported by the provided code and experimental logs in `research_summary.json`. Specifically, the ROC-AUC values reported in Table 1 for PIU (KL-divergence) (SST-2: 0.78, Yelp: 0.89, IMDb: 0.86) are almost identical to those found in the `research_summary.json` metrics (SST-2: 0.7788, Yelp: 0.8876, IMDb: 0.8526), indicating high reliability and reproducibility of the core results. The figures described also appear to be based on these real experiments. A minor point is the use of 'misclassification detection as a proxy for hallucinations'; while related to reliability, it's not a direct measure of generative model hallucination, but this is an acceptable simplification for a workshop paper introducing the method."
+    },
+    "Significance": {
+        "score": 8,
+        "justification": "The paper addresses a critical and highly relevant problem: uncertainty quantification and error detection in foundation models. The proposed PIU method is significant due to its model-agnostic nature and practicality, especially for closed-source APIs, as it requires no internal model access and only a few additional forward passes. The experimental results are reproducible and demonstrate a clear improvement over baselines on the tested sentiment classification tasks (ROC-AUC 0.78–0.90 for PIU-KL). If the method's effectiveness extends to more complex generative tasks (as outlined in future work), it has the potential for a lasting impact on deploying LLMs more reliably. The simplicity and efficiency of PIU are strong advantages."
+    },
+    "Overall": {
+        "score": 8,
+        "strengths": [
+            "Addresses a critical need for practical uncertainty quantification in foundation models, particularly for closed-source systems.",
+            "The proposed PIU method is model-agnostic, lightweight (few forward passes), and does not require model internals or retraining.",
+            "Strong empirical results on three sentiment classification benchmarks, demonstrating superior misclassification detection performance compared to baselines.",
+            "Excellent reproducibility, with experimental results in the paper closely matching those derived from the provided code and logs (`research_summary.json`)."
+        ],
+        "weaknesses": [
+            "The paper is very concise, and some methodological details could be expanded in the main text for better standalone understanding.",
+            "The current experimental validation is limited to sentiment classification tasks (detecting misclassifications). While this serves as a proxy, direct evaluation on generative tasks is needed to fully substantiate claims about detecting 'hallucinations' in LLMs.",
+            "The reliance on lightweight paraphrasing methods like WordNet substitution might limit the diversity and quality of semantic variants, potentially impacting the robustness of the uncertainty signal, though the paper notes back-translation can improve results."
+        ]
+    },
+    "Confidence": 5
+}

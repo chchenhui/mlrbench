@@ -1,0 +1,69 @@
+{
+  "Experiment_description": "Contrastive retrieval of dynamically equivalent code snippets via triplet margin training on synthetic datasets: small arithmetic functions and toy Python function variants. We compare three encoder architectures\u2014character\u2010level embedding + MLP, lightweight Transformer, and LSTM\u2014using dynamic execution traces for positive pair generation and random negatives.",
+  "Significance": "These experiments establish the first baselines for dynamic\u2010trace\u2010augmented contrastive pre\u2010training in code retrieval. They demonstrate how dataset simplicity can lead to trivial perfect accuracy or overfitting, while more challenging synthetic arithmetic benchmarks yield moderate retrieval performance. The findings underscore the importance of dataset complexity and hard negative mining for robust contrastive code\u2010representation learning.",
+  "Description": "Each pipeline generates synthetic code snippets grouped by identical dynamic traces on random inputs. Code is char\u2010tokenized or tokenized, padded, and fed through an encoder (character\u2010level + MLP, Transformer, or LSTM) to produce embeddings. Training uses a triplet margin loss with one positive (same trace group) and one negative example per anchor. At each epoch, we record training/validation losses and Top\u20101 trace\u2010equivalence retrieval accuracy by nearest\u2010neighbor ranking in the learned embedding space.",
+  "List_of_included_plots": [
+    {
+      "path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_0337a5d77c6d4eccbe6147dfd6c195f6_proc_382491/synthetic_loss.png",
+      "description": "Loss decreases steadily for both training and validation splits, starting around 0.95 and 0.93 respectively at epoch 1 and falling to roughly 0.49 (training) and 0.42 (validation) by epoch 10.",
+      "analysis": "The close tracking of train and validation losses, with no divergence or overfitting, indicates stable optimization. Continued downward curvature suggests further epochs would yield only diminishing returns on this simple baseline."
+    },
+    {
+      "path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_0337a5d77c6d4eccbe6147dfd6c195f6_proc_382491/synthetic_retrieval_accuracy.png",
+      "description": "Retrieval accuracy on both training and validation starts at ~66.7% and ~77.8% respectively, then plateaus at ~83.3% by epoch 7.",
+      "analysis": "Accuracy saturates early despite ongoing loss reduction, revealing that the embedding space captures most trace\u2010equivalence signal by epoch 7. This plateau suggests the synthetic arithmetic task is moderately challenging but limited in complexity."
+    },
+    {
+      "path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_63f223fd2abe4199b548b5b24232e550_proc_382492/trace_dataset_loss_curves.png",
+      "description": "Training loss begins around 0.84 at epoch 1 and drops sharply to about 0.18 by epoch 2, then near zero by epoch 3. Validation loss mirrors this trend, hovering around zero with minor fluctuations.",
+      "analysis": "The extremely rapid convergence to near-zero loss indicates the Transformer easily fits the toy corpus, suggesting that negatives are too easy or the dataset too small to meaningfully challenge the model."
+    },
+    {
+      "path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_63f223fd2abe4199b548b5b24232e550_proc_382492/trace_dataset_retrieval_accuracy.png",
+      "description": "Both training and validation accuracy sit exactly at 100% across all epochs.",
+      "analysis": "Perfect flat accuracy confirms task triviality. This outcome underscores the need for more diverse code variants, harder negative mining, or larger datasets to properly evaluate model generalization."
+    },
+    {
+      "path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_70241602ee6f4d26a04db7350577e588_proc_382491/synthetic_accuracy_curve.png",
+      "description": "Training accuracy jumps from 50% to 100% by epoch 6; validation accuracy remains at 50% until epoch 8, then reaches 75% by epoch 10.",
+      "analysis": "The lag in validation improvement and eventual plateau at 75% shows overfitting on synthetic arithmetic data. The model memorizes training examples early but only generalizes partially to held-out variants."
+    },
+    {
+      "path": "experiments/2025-06-09_06-11-57_tracecode_dynamic_contrastive_attempt_0/logs/0-run/experiment_results/experiment_70241602ee6f4d26a04db7350577e588_proc_382491/synthetic_confusion_matrix.png",
+      "description": "Confusion matrix shows perfect classification for class 6 but one misclassification for class 9.",
+      "analysis": "This class\u2010level confusion highlights dataset simplicity and uneven difficulty across groups. It further confirms that without harder negatives, even an LSTM can partially confuse semantic variants."
+    }
+  ],
+  "Key_numerical_results": [
+    {
+      "result": 0.8333,
+      "description": "Final Top\u20101 retrieval accuracy (char\u2010level MLP on arithmetic data)",
+      "analysis": "This moderate plateau indicates the task is nontrivial and that the embedding captures key dynamic\u2010trace features but leaves room for improvement with more expressive models or data."
+    },
+    {
+      "result": 0.4203,
+      "description": "Final validation loss (char\u2010level MLP on arithmetic data)",
+      "analysis": "A stable, moderately low loss that tracks training loss confirms well\u2010regularized learning without overfitting on this baseline."
+    },
+    {
+      "result": 1.0,
+      "description": "Final Top\u20101 retrieval accuracy (Transformer on toy Python corpus)",
+      "analysis": "Perfect accuracy reveals an overly simple dataset or ineffective negative sampling; it suggests the need to increase data complexity for meaningful evaluation."
+    },
+    {
+      "result": 0.0,
+      "description": "Final validation loss (Transformer on toy Python corpus)",
+      "analysis": "Zero loss further indicates the task's triviality and warns against relying solely on loss metrics without assessing dataset hardness."
+    },
+    {
+      "result": 0.75,
+      "description": "Final validation accuracy (LSTM on arithmetic data)",
+      "analysis": "The 75% plateau reveals partial generalization, pointing to overfitting and dataset constraints, and motivating the incorporation of harder negatives or richer code variants."
+    },
+    {
+      "result": 0.5151,
+      "description": "Final validation loss (LSTM on arithmetic data)",
+      "analysis": "A notable gap from the training loss (0.2674) quantifies overfitting and suggests room for improved regularization or more challenging data."
+    }
+  ]
+}

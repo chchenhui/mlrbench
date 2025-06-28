@@ -1,0 +1,35 @@
+{
+    "Clarity": {
+        "score": 7,
+        "justification": "The paper presents its core idea clearly and concisely. The structure follows a logical flow from introduction to method to experiments. The UGC method is explained in a straightforward two-phase approach: gradient extraction/clustering followed by group-robust training. The figures effectively illustrate performance differences across learning rates. However, the paper is extremely brief (only 3 pages plus appendix), reading more like an extended abstract than a full paper. The theoretical justification is minimal, consisting of just one sentence in the main text and another in the appendix. The experimental section lacks depth, with only a simple synthetic dataset being used and minimal details about implementation choices."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper introduces a novel approach to addressing spurious correlations without requiring group annotations. The core idea of clustering per-sample gradient vectors to discover latent groups is innovative and distinguishes itself from prior work like Group DRO (which requires group labels) and JTT (which uses scalar loss values rather than gradient vectors). The related work section effectively positions this contribution within the literature. However, the novelty is somewhat incremental as it combines existing techniques (gradient analysis, clustering, and group-robust optimization) rather than proposing a fundamentally new algorithm or theoretical framework."
+    },
+    "Soundness": {
+        "score": 3,
+        "justification": "The paper's most significant weakness is its limited empirical validation. The method is only tested on a simple synthetic dataset with a binary spurious feature, which is insufficient to demonstrate real-world applicability. The theoretical justification is extremely brief and only applies to linear models, not the MLP used in experiments. The paper mentions plans to scale to real-world vision datasets (Waterbirds, CelebA) in the conclusion but doesn't actually test on them. The ablation studies in the supplementary material explore important aspects like feature normalization, weight decay, and cluster counts, but these are not thoroughly analyzed in the main text. The code verification confirms that the reported results on the synthetic dataset are reproducible, but this doesn't address the fundamental limitation of testing only on synthetic data."
+    },
+    "Significance": {
+        "score": 5,
+        "justification": "The problem of mitigating spurious correlations without group annotations is highly significant for real-world applications. If the proposed method were demonstrated to work on complex, real-world datasets, it would have substantial impact. The approach is simple and could potentially be integrated into existing pipelines with minimal overhead. However, the current paper only demonstrates effectiveness on a synthetic dataset, which severely limits its demonstrated significance. The conclusion mentions potential applications to real-world vision datasets, but without actual results on these datasets, the significance remains largely potential rather than demonstrated. The method's performance on more complex datasets with multiple spurious features or non-binary groups remains unknown."
+    },
+    "Overall": {
+        "score": 4,
+        "strengths": [
+            "Proposes a novel, unsupervised approach to discover latent groups for robust training without requiring group annotations",
+            "Method is conceptually simple and could potentially be integrated into existing pipelines with minimal overhead",
+            "Results on the synthetic dataset show that the method can match oracle Group DRO performance without group labels",
+            "Comprehensive ablation studies explore important aspects like feature normalization, weight decay, and cluster counts"
+        ],
+        "weaknesses": [
+            "Empirical validation is limited to a single, simple synthetic dataset; no real-world datasets are tested despite being mentioned in the conclusion",
+            "Theoretical justification is minimal and only applies to linear models, not the MLP used in experiments",
+            "The paper is extremely brief, lacking depth in both methodology and experimental analysis",
+            "No comparison with other unsupervised methods for addressing spurious correlations",
+            "The method's scalability to high-dimensional data and complex models is not demonstrated"
+        ]
+    },
+    "Confidence": 5
+}
