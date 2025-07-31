@@ -1,0 +1,8 @@
+1. Title:  
+Dynamic Compressive Memory with Adaptive Routing for Sub-Quadratic Long-Context Models
+
+2. Motivation:  
+Existing transformer‐based foundation models suffer from quadratic growth in their key/value (KV) cache when processing long contexts or streaming data. This limits inference speed, memory efficiency, and adaptability to evolving tasks (e.g., real-time news summarization or multi-turn dialog). A sub-quadratic mechanism that compresses older context while preserving critical information could dramatically boost efficiency without sacrificing performance.
+
+3. Main Idea:  
+We introduce an end-to-end trainable framework that (a) applies differentiable online clustering to group and summarize past KV pairs into a fixed set of “super-KV” representations, and (b) employs an adaptive gating network (inspired by mixture-of-experts) to dynamically route each query to raw KV, compressed super-KV, or an external retrieval store. A multi-term loss—combining reconstruction fidelity, compression budget, and retrieval relevance—guides joint fine-tuning with a foundation model backbone. This approach achieves constant-size memory, sub-quadratic attention complexity, and fluid integration of new information. We will evaluate on tasks requiring ultra-long context (streaming summarization, long-form QA, dialog), expecting 2–5× speedups, 70%+ memory savings, and near-lossless accuracy.

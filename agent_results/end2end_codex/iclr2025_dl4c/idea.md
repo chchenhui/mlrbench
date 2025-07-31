@@ -1,0 +1,7 @@
+Title: AutoIssue – RL-based Autonomous Agent for GitHub Issue Resolution
+
+Motivation:  
+Manual triage and bug fixing in open-source repositories is time-consuming and error-prone. An autonomous, agentic system that understands issues, generates fixes, and validates them can accelerate development, improve code quality, and reduce developer workload.
+
+Main Idea:  
+We propose a two-stage framework. Stage 1: Pretrain a retrieval-augmented code model on large issue-PR histories to learn representations of issue descriptions and corresponding patches. Stage 2: Fine-tune via reinforcement learning in a simulated GitHub environment where the agent (i) reads issue text, (ii) drafts patch candidates, (iii) runs tests and static analyzers, and (iv) receives a composite reward combining test pass rate, linter scores, and small-scale human preference (RLHF). A gated controller iterates drafts until quality thresholds are met. We’ll evaluate on active open-source projects, measuring fix acceptance rate, latency, and maintainability. Expected impact: a scalable agent that autonomously resolves common issues, significantly boosting developer productivity and offering a blueprint for responsible deployment of coding agents.

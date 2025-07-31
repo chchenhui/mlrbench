@@ -1,0 +1,7 @@
+Title: Task-Conditioned Diffusion Models in Weight Space for Rapid Transfer
+
+Motivation:  
+Training large neural networks from scratch on new tasks is computationally expensive and time-consuming. By learning to generate useful weight initializations conditioned on task metadata, we can dramatically reduce training time, lower energy consumption, and democratize access to high-performance models in low-data or resource-constrained settings.
+
+Main Idea:  
+We propose to treat pre-trained model weights as samples from a conditional distribution and train a diffusion model that generates neural network weights given a task descriptor. First, collect a model zoo of diverse architectures paired with task embeddings (e.g., dataset statistics, domain features). Flatten and normalize weights, then train a task-conditioned diffusion process to learn their distribution. At deployment, extract meta-features from a few task examples, sample initial weights via the diffusion model, and perform lightweight fine-tuning. We expect (1) faster convergence versus random initialization, (2) better few-shot generalization, and (3) applicability across architectures and domains. This approach establishes a scalable pipeline for on-demand model synthesis and paves the way for “zero-to-one” transfers in weight space.

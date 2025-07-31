@@ -1,0 +1,7 @@
+Title: Uncertainty-Driven Co-Adaptation for Bidirectional Human-AI Alignment
+
+Motivation:  
+Static one-way alignment fails to capture evolving user needs and undermines human agency. A co-adaptive framework that lets AI surface its own uncertainties and invites targeted human feedback can dynamically align system behavior with user values while empowering users to refine their mental models of the AI.
+
+Main Idea:  
+We propose an interactive alignment loop in which the AI system continuously estimates uncertainty over a Bayesian user-preference model and actively queries users only when value ambiguity is high. Queries take the form of concise demonstrations, preference rankings, or counterfactual examples presented through a lightweight UI that visualizes uncertainty. User responses update the Bayesian model via active learning, refining the AI’s decision policy (AI-centered alignment). Concurrently, the AI surfaces alternative action paths alongside confidence indicators, prompting users to critically evaluate system suggestions and adjust their own strategy (human-centered alignment). We will validate on recommendation and planning benchmarks using metrics for preference calibration error, decision quality, and user trust. This approach fosters scalable, transparent, and dynamic bidirectional alignment for real-world AI systems.

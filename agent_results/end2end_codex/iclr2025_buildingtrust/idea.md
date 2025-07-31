@@ -1,0 +1,7 @@
+Title: Influence-based Selective Unlearning for Trusted LLMs
+
+Motivation:  
+As LLMs absorb massive datasets, they may inadvertently memorize sensitive information or harmful biases. Efficiently removing specific knowledge (“unlearning”) without full retraining is critical for regulatory compliance, privacy guarantees, and maintaining user trust in deployed systems.
+
+Main Idea:  
+We propose a two-stage, influence-driven unlearning framework. First, we compute per-sample influence scores using a lightweight approximation of influence functions to identify training examples most responsible for undesired behaviors (e.g., PII leakage or biased outputs). Second, we perform targeted unlearning by projecting out the gradient contributions of those examples from the model’s parameters, combined with a constrained fine-tuning step to preserve overall performance. To prevent catastrophic forgetting, we incorporate a small distilled replay set drawn from the remaining data distribution. We will evaluate on benchmarks for privacy (removal of inserted “canaries”) and fairness (elimination of gender bias), measuring both unlearning efficacy and retention of general language capabilities. This approach enables rapid, surgical knowledge removal, enhancing compliance and user trust without expensive end-to-end retraining.

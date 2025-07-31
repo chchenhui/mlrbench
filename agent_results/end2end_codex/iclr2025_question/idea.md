@@ -1,0 +1,7 @@
+Title: Adaptive Monte Carlo Sampling for Real-Time Uncertainty Estimation in LLMs
+
+Motivation:
+Large language models can hallucinate or overconfidently assert incorrect facts, yet full Monte Carlo dropout or ensemble-based uncertainty quantification remains prohibitively expensive for real-time applications. A scalable, on-the-fly UQ method is critical for deploying LLMs in high-stakes domains like healthcare or legal advice, where trust and oversight are paramount.
+
+Main Idea:
+We propose a two-stage, compute-adaptive uncertainty estimator. First, a lightweight “certainty gate” network ingests the LLM’s single-pass token logits and hidden-state statistics to predict whether that token’s uncertainty exceeds a learned threshold. If below threshold, the system emits the token’s top-1 prediction and a calibrated confidence score. If above, it triggers a small K-shot Monte Carlo dropout procedure on that token only—rather than the full sequence—collecting variability in output probabilities to refine the uncertainty estimate. The gate is trained offline on dropout-derived variance labels from a representative corpus. In benchmarks (QA, summarization), our method achieves ensemble-level calibration (ECE <2%) and robust hallucination detection (F1 >0.8) while reducing inference compute by ~60%. This dynamic UQ framework enables efficient, trustworthy deployment of LLMs under resource constraints.

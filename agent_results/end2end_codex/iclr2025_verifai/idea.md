@@ -1,0 +1,7 @@
+Title: LemmaGen: LLM-Assisted Lemma Generation for Scalable Theorem Proving
+
+Motivation:  
+Formal theorem provers often face combinatorial proof searches that stall without carefully crafted lemmas, a process requiring deep expertise and extensive manual effort. Automating lemma synthesis using large language models can reduce this bottleneck, speeding up proof development and lowering the barrier to adoption.
+
+Main Idea:  
+We propose embedding a fine-tuned LLM inside an interactive theorem prover (e.g., Coq or Lean). At each proof state, the current goal, local hypotheses, and proof context are serialized into a prompt for the LLM, which then generates candidate lemmas. These lemmas are filtered by lightweight syntactic and type checks before being injected into the proof context. The prover’s heuristic search leverages these new lemmas to prioritize promising branches. Each successful lemma proposal is recorded to form an evolving training set, enabling reinforcement-style updates that improve future suggestions. We will benchmark on CoqGym and related libraries, measuring proof success rates and time-to-first-proof improvements. If successful, LemmaGen will democratize formal verification by reducing expert intervention and scaling proofs to more complex, real-world domains.
