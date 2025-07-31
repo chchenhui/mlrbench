@@ -1,0 +1,7 @@
+Title: Adaptive Invariant Feature Extraction using Synthetic Interventions (AIFS)
+
+Motivation:  
+Deep models often latch onto unknown spurious cues because standard training lacks explicit signals about what features to ignore. Reliance on such shortcuts undermines robustness and generalization, especially when group labels or annotator guidance are unavailable. AIFS aims to automatically discover and neutralize these hidden spurious factors, yielding models that focus on truly causal patterns.
+
+Main Idea:  
+AIFS integrates a generative intervention loop into model training. First, a pretrained encoder maps inputs into a latent representation. A lightweight intervention module then applies randomized “style” perturbations in selected latent subspaces (via learned masks), simulating distributional shifts without manual group labels. A dual-objective loss encourages the classifier to maintain consistent predictions under these interventions (invariance) while penalizing over-reliance on perturbed dimensions (sensitivity loss). Periodically, gradient-based attribution identifies the most sensitive latent directions, which are then prioritized for future interventions. Over successive rounds, the model increasingly discounts spurious latent factors and reinforces predictions on invariant, causal features. Experiments on image and tabular benchmarks with hidden spurious correlations will measure robustness gains. AIFS is modality-agnostic and requires no explicit spurious labels, making it broadly applicable for building more reliable AI systems.

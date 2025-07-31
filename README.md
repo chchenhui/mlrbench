@@ -58,6 +58,7 @@ export OPENAI_API_KEY="your-openai-api-key-here"
 export ANTHROPIC_API_KEY="your-anthropic-api-key-here"
 export OPENROUTER_API_KEY="your-openrouter-api-key-here"
 ```
+Also, remember to ```huggingface-cli login``` for dataset/model downloads.
 
 ## 🚀 MLR Agent
 

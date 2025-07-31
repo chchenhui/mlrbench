@@ -28,10 +28,16 @@ def parse_arguments():
         help="Model to use for the MLR agent",
     )
     parser.add_argument(
-        "--task_folder",
+        "--lit_engine_name",
         type=str,
-        default="end2end_claude",
-        help="Model to use for the MLR agent",
+        default="gpt-4o-search-preview-2025-03-11",
+        help="Literature engine to use for the MLR agent",
+    )
+    parser.add_argument(
+        "--coding_agent",
+        type=str,
+        default="claude_code",
+        help="Coding agent to use for the MLR agent",
     )
     return parser.parse_args()
 
@@ -39,6 +45,7 @@ def parse_arguments():
 def run_mlr_agent(
     model_name, 
     lit_engine_name,
+    coding_agent,
     task_path,
     ):
     """
@@ -46,14 +53,14 @@ def run_mlr_agent(
     """   
     # Check the environment
     logging.info("Checking environment...")
-    if "claude" in model_name:
+    if "claude" in model_name or "claude" in coding_agent:
         api_key = os.getenv("ANTHROPIC_API_KEY")
         if not api_key:
             raise NotImplementedError("API_KEY is not set in environment variables.")
         if not shutil.which("claude"):
             raise NotImplementedError("Claude Code is not installed. Please install it first.")
     
-    if "gpt" in model_name or "gpt" in lit_engine_name:
+    if "gpt" in model_name or "gpt" in lit_engine_name or "codex" in coding_agent:
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             raise NotImplementedError("API_KEY is not set in environment variables.")
@@ -79,7 +86,7 @@ def run_mlr_agent(
     logging.info("Proposal generated.")
     # Run the experiment
     logging.info("Running experiment...")
-    run_experiment(model_name, task_path)
+    run_experiment(coding_agent, task_path)
     logging.info("Experiment completed.")
     # Write the paper
     logging.info("Writing paper...")
@@ -91,13 +98,20 @@ def run_mlr_agent(
 def main():
     args = parse_arguments()
     model_name = args.model_name
-    lit_engine_name="gpt-4o-search-preview-2025-03-11"
+    # model_name="claude-3-7-sonnet-20250219"
+    # model_name = "google/gemini-2.5-pro-preview"
+    lit_engine_name = args.lit_engine_name
+    coding_agent = args.coding_agent
     if "claude" in model_name:
         simple_name = "claude"
     elif "gemini" in model_name:
         simple_name = "gemini"
+        if "gemini" in coding_agent:
+            simple_name = "gemini-cli"
     elif "o4-mini" in model_name:
         simple_name = "o4-mini"
+        if "codex" in coding_agent:
+            simple_name = "codex"
     # Set up logging
     logging.basicConfig(
         level=logging.INFO,
@@ -107,8 +121,7 @@ def main():
             logging.StreamHandler()
         ]
     )
-    # task_folder = f"end2end_{simple_name}"
-    task_folder = args.task_folder
+    task_folder = f"end2end_{simple_name}"
     if not os.path.exists(task_folder):
         raise NotImplementedError(f"Task folder {task_folder} does not exist.")
     tasklist = get_tasklist(task_folder)
@@ -120,6 +133,7 @@ def main():
         logging.info(f"Running MLR agent for task: {task_name}")
         run_mlr_agent(model_name=model_name, 
                       lit_engine_name=lit_engine_name,
+                      coding_agent=coding_agent,
                       task_path=task_path)
     logging.info("All tasks completed.")
     
