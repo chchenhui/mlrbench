@@ -1,0 +1,33 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-written, with a logical structure that is easy to follow (Abstract, Introduction, Methodology, etc.). The core idea of an 'Adaptive Deprecation Score' is clearly articulated, and the components of the score are defined with mathematical formulas. The proposed system, from data ingestion to notification, is explained in a coherent manner. The paper effectively frames its limited experiment as a 'minimal proof-of-concept', which manages expectations. However, it could be clearer about the specific proxy formula used for the citation signal in the experiment, as it differs from the general formula proposed in the methodology."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper addresses the important but often-neglected area of dataset lifecycle management. While prior work like Luccioni et al. [9] has proposed manual deprecation frameworks, this paper's primary novelty lies in its proposal for an automated, adaptive scoring mechanism. The idea of combining multiple signals (citation-age, update frequency, community issues, reproducibility, FAIR compliance) into a single, interpretable score is a valuable and original contribution to the field. It represents a significant step towards operationalizing data stewardship at scale in large repositories."
+    },
+    "Soundness": {
+        "score": 2,
+        "justification": "The paper suffers from critical soundness issues. Firstly, there is a major discrepancy between the experimental methodology described and the provided code. The paper claims to use equal weights for citation-age and reproducibility signals (w_{\\\\text{cite}}=w_{\\\\text{rep}}=0.5), but the code (`run_experiment.py`) completely ignores the reproducibility signal in the final score calculation (`D = weights['cite'] * S_cite` where `weights['cite']` is 1.0). This means the reported results in Table 1 (D=1.00, 0.96) do not correspond to the stated method (which would have yielded D=0.5, 0.48). Secondly, the experiment itself is trivial, using only two datasets and one effective signal (age), which is insufficient to validate the framework's utility. Thirdly, several references ([2], [3], [5], [6], [7]) have impossible future arXiv IDs (e.g., '2503.22754'), indicating they are fabricated and undermining the paper's scholarly integrity. These flaws make the conclusions unreliable."
+    },
+    "Significance": {
+        "score": 4,
+        "justification": "The paper addresses a problem of high significance: the need for better data practices and lifecycle management in machine learning. An automated system for flagging outdated or problematic datasets would be a major contribution to platforms like Hugging Face or OpenML and the research community at large. However, the significance of this specific paper is severely diminished by its lack of soundness. The experimental results are not reliable or reproducible based on the paper's description, and the contribution is limited to a proposal rather than a validated system. While the idea is significant, the work presented does not deliver a trustworthy or impactful result."
+    },
+    "Overall": {
+        "score": 2,
+        "strengths": [
+            "Addresses a highly relevant and important problem in the ML data ecosystem.",
+            "The proposed framework is intuitive, well-structured, and clearly explained.",
+            "The paper is well-written and easy to read."
+        ],
+        "weaknesses": [
+            "The experimental results are based on a methodology that contradicts the one described in the paper, making the findings unsound.",
+            "The experiment is extremely limited (two datasets, one effective signal) and fails to provide meaningful validation for the proposed framework.",
+            "The inclusion of multiple fake references with future dates fatally damages the paper's credibility.",
+            "The proposed signal formulas are presented without justification."
+        ]
+    },
+    "Confidence": 5
+}

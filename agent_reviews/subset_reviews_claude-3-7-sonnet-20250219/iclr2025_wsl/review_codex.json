@@ -1,0 +1,36 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-structured and presents its ideas in a logical flow. The authors clearly articulate their approach of using diffusion models for weight space generation, with well-defined sections covering methodology, experiments, and results. The mathematical formulations for weight flattening, normalization, and the diffusion process are precisely presented. However, there are a few areas that could benefit from additional clarity: (1) The task descriptor construction could be explained in more detail, (2) The equivariance modules implementation is somewhat vague, and (3) The initial higher loss of diffusion-initialized models (mentioned in Section 6) could use more explanation."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper presents a novel application of diffusion models to neural network weight space generation, which is a relatively unexplored area. The task-conditioning aspect adds another layer of novelty, allowing for targeted weight generation based on task characteristics. The authors acknowledge related work in weight space processing and equivariant architectures, but differentiate their approach by leveraging diffusion processes specifically. While the core components (diffusion models, weight space learning) exist separately in literature, their combination and application to rapid transfer learning represents a meaningful contribution. However, the approach is somewhat incremental rather than revolutionary, as it applies an established generative framework (diffusion) to a new domain."
+    },
+    "Soundness": {
+        "score": 5,
+        "justification": "The paper has several methodological concerns that affect its soundness. First, the experimental validation is limited to synthetic Gaussian classification tasks with small 2-layer MLPs, which is a significant limitation for a paper proposing a general framework. Second, examining the provided code reveals discrepancies with the paper's description - the implemented diffusion model is a simple MLP rather than the described MLP U-Net with equivariant modules. Third, the results in Figure 1 (from the code) show that while diffusion initialization eventually outperforms random initialization, it starts with significantly higher loss, contradicting the claimed 2×–5× faster convergence. The paper also lacks ablation studies on hyperparameters, and the model zoo size (20 models in code vs. claimed 10^4) is much smaller than stated. These issues raise concerns about the reproducibility and generalizability of the results."
+    },
+    "Significance": {
+        "score": 6,
+        "justification": "The concept of treating neural network weights as a generative modality has significant potential impact on transfer learning, meta-learning, and efficient model adaptation. If the approach scales to real-world tasks and larger architectures, it could meaningfully reduce computational costs for model training. However, the current work's significance is limited by several factors: (1) The evaluation is restricted to toy problems, (2) The computational advantage is demonstrated only on very small networks, (3) The paper doesn't compare against other transfer learning methods like fine-tuning from pretrained models, and (4) The practical applications remain theoretical rather than demonstrated. The authors acknowledge these limitations, but they substantially reduce the immediate significance of the contribution."
+    },
+    "Overall": {
+        "score": 5,
+        "justification": "The paper presents an interesting conceptual contribution with potential significance, but is hampered by limited experimental validation and methodological concerns. The discrepancies between the described methodology and implemented code are particularly concerning for reproducibility.",
+        "strengths": [
+            "Novel application of diffusion models to weight space generation",
+            "Clear mathematical formulation of the approach",
+            "Promising initial results on synthetic tasks",
+            "Well-positioned within the emerging field of weight space learning"
+        ],
+        "weaknesses": [
+            "Significant discrepancy between described methodology and provided code implementation",
+            "Extremely limited experimental validation on toy problems only",
+            "Lack of comparison with established transfer learning methods",
+            "Contradictory results regarding initial performance (higher initial loss but claimed faster convergence)",
+            "Missing ablation studies and analysis of hyperparameter sensitivity"
+        ]
+    },
+    "Confidence": 4
+}

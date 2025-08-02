@@ -1,0 +1,34 @@
+{
+    "Clarity": {
+        "score": 7,
+        "justification": "The paper presents its ideas in a generally clear and structured manner. The introduction effectively establishes the problem of quadratic compute and linear memory growth in transformers. The methodology section provides mathematical formulations for the key components: compressive clustering, adaptive routing, and joint loss. However, there are some areas that could be improved. The paper lacks detailed explanations of how the three information sources (raw KV, compressed KV, and retrieval) interact during inference. Additionally, while the mathematical formulations are present, some implementation details are missing, such as how the cluster centers are initialized and updated during streaming."
+    },
+    "Novelty": {
+        "score": 6,
+        "justification": "The paper combines several existing techniques (KV compression, adaptive routing, and retrieval augmentation) into a unified framework, which represents an incremental advance rather than a fundamentally new approach. The soft-clustering for KV compression builds upon the Compressive Transformer [11], while the routing mechanism draws from MoE literature [1,4,6]. The integration of these components is novel, particularly the three-way routing between raw KV, compressed KV, and retrieval sources. However, each individual component appears to be an adaptation of existing methods rather than a completely new innovation."
+    },
+    "Soundness": {
+        "score": 4,
+        "justification": "There are significant concerns about the soundness of the experimental results. The code provided shows that the experiments only compare BART-large-CNN and LED-base-16384 models without implementing the proposed compressive memory and adaptive routing framework. The results in Table 1 and Figure 2 from the paper do not match the actual implementation in the code. The paper claims '4× speedups and 70% memory savings' but the code shows the LED model is actually 3.4× slower and uses 28% more memory than BART. The paper also claims '<2% ROUGE drop' but the code shows a much larger performance gap (ROUGE-1 drops from 0.313 to 0.159, ROUGE-2 from 0.125 to 0.057, and ROUGE-L from 0.214 to 0.099). These discrepancies suggest the experimental results may be fabricated or misrepresented."
+    },
+    "Significance": {
+        "score": 5,
+        "justification": "The problem addressed by the paper—efficient processing of long contexts in transformer models—is highly relevant to the field. If the proposed method worked as claimed, it would represent a significant contribution to making long-context models more practical for deployment. The claimed benefits of constant memory usage and sub-quadratic attention would be valuable for streaming applications. However, the significance is undermined by the apparent lack of reliable experimental validation. The paper also doesn't provide comparisons with all relevant baselines mentioned in Section 4, making it difficult to assess the true impact of the proposed approach relative to the state of the art."
+    },
+    "Overall": {
+        "score": 4,
+        "justification": "While the paper addresses an important problem and presents an interesting conceptual framework, the serious discrepancies between the claimed results and the provided code significantly undermine its credibility. The lack of implementation of the actual proposed method in the code raises serious concerns about whether the method was actually developed and tested as described.",
+        "strengths": [
+            "The paper addresses an important problem in the field: making transformer models efficient for long-context processing",
+            "The conceptual framework combining compression, routing, and retrieval is interesting and potentially valuable",
+            "The mathematical formulation of the approach is clear and appears theoretically sound"
+        ],
+        "weaknesses": [
+            "The experimental results appear to be misrepresented or fabricated, as the provided code does not implement the proposed method and shows contradictory results",
+            "The paper claims performance improvements that are directly contradicted by the actual code results (speedups vs. slowdowns, memory savings vs. increased memory usage)",
+            "The evaluation lacks comparisons with several baselines mentioned in the paper",
+            "Implementation details necessary for reproducibility are missing"
+        ]
+    },
+    "Confidence": 5
+}

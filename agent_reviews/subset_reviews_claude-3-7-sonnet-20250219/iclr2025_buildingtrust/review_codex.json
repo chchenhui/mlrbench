@@ -1,0 +1,35 @@
+{
+    "Clarity": {
+        "score": 7,
+        "justification": "The paper is generally well-written with a clear structure that follows standard scientific format. The methodology is explained with appropriate mathematical notation and the four components of the IDSU approach are logically presented. However, there are some areas that could be improved: (1) The explanation of the influence approximation could be more accessible to readers without deep optimization background; (2) The experimental setup section lacks details on how the canary was injected and evaluated; (3) The results section is extremely brief with only a small table and two figures, making it difficult to fully understand the effectiveness of the approach."
+    },
+    "Novelty": {
+        "score": 6,
+        "justification": "The paper presents an interesting combination of existing techniques rather than a fundamentally new approach. The authors combine influence functions (which have been used for unlearning before), gradient projection methods, and replay-based fine-tuning. While this specific combination appears to be novel, each component draws heavily from existing literature. The related work section adequately positions this work relative to other unlearning approaches, but doesn't clearly articulate what specific technical innovation this paper contributes beyond the combination of known techniques."
+    },
+    "Soundness": {
+        "score": 4,
+        "justification": "There are several significant issues with the experimental validation: (1) The experiment is described as a 'quick proof-of-concept' with only one epoch of training, which is insufficient for meaningful conclusions; (2) Both methods yield 0% test accuracy according to Table 1, suggesting fundamental issues with the experimental setup; (3) The code reveals that only a tiny subset of SST2 was used (1000 examples), further limiting validity; (4) The loss curves figure in the code output shows an unusual x-axis with negative epochs and a very limited range, suggesting potential implementation issues; (5) The paper claims the projection method reduces canary probability by ~15.4%, but this is a modest reduction that may not be practically significant for real unlearning applications."
+    },
+    "Significance": {
+        "score": 3,
+        "justification": "The significance of this work is severely limited by the preliminary nature of the experiments. While unlearning for LLMs is an important problem aligned with the workshop's focus on trustworthiness, this paper: (1) Only demonstrates a small effect on a tiny dataset with a single injected canary; (2) Shows 0% test accuracy for both methods, suggesting the approach may not preserve model utility; (3) Lacks evaluation on larger models or more realistic scenarios; (4) Does not provide comparisons against other unlearning methods from the literature to demonstrate relative advantages. The authors acknowledge these limitations, but they fundamentally undermine the paper's significance."
+    },
+    "Overall": {
+        "score": 4,
+        "strengths": [
+            "The paper addresses an important problem in LLM trustworthiness (selective unlearning)",
+            "The mathematical formulation of the approach is clear and theoretically sound",
+            "The combination of influence functions with gradient projection is a reasonable approach to selective unlearning",
+            "The authors provide code that implements their approach"
+        ],
+        "weaknesses": [
+            "Extremely limited experimental validation with only one epoch of training on a tiny dataset",
+            "Both methods yield 0% test accuracy, suggesting fundamental issues with the experimental setup",
+            "The reduction in canary probability is modest (from 0.3038 to 0.2569) and may not be practically significant",
+            "No comparison with other unlearning methods to demonstrate advantages of this approach",
+            "The figures in the code output suggest potential implementation issues (negative epochs, limited range)"
+        ]
+    },
+    "Confidence": 4
+}

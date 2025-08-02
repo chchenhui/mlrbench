@@ -1,0 +1,33 @@
+{
+    "Clarity": {
+        "score": 7,
+        "justification": "The paper is generally well-written and the high-level idea of a two-stage adaptive UQ framework is presented clearly. The structure is logical. However, there is a significant lack of clarity stemming from the disconnect between the proposed method and the actual experiment conducted. The paper proposes a full UQ framework but the experiment only compares two standard fine-tuning strategies for a classification task, which is confusing for the reader and misrepresents the paper's contribution. The abstract makes bold quantitative claims that are never addressed in the results, further muddying the paper's message."
+    },
+    "Novelty": {
+        "score": 5,
+        "justification": "The core idea of using a lightweight, adaptive 'certainty gate' to selectively apply more computationally expensive UQ methods like MC dropout is interesting and potentially novel. It addresses a practical need for efficient UQ in real-time applications. However, the paper presents this only as an idea. There is no implementation or empirical evidence to support its novelty or effectiveness. The concept of adaptive computation or early exits exists in other domains, and the paper does not sufficiently differentiate its approach. The experimental contribution is negligible, as it simply confirms the well-known fact that full fine-tuning outperforms head-only fine-tuning."
+    },
+    "Soundness": {
+        "score": 3,
+        "justification": "The paper suffers from a critical flaw in soundness: the experiments do not validate the proposed method. The paper's central claims about achieving low calibration error (ECE < 2%), high hallucination detection (F1 > 0.8), and significant compute reduction (~60%) are completely unsubstantiated by the provided results. The experiment is a 'proof of concept' on sentiment classification, which has no direct bearing on the efficacy of the proposed UQ framework. For instance, the paper describes training the gate on MC-dropout variance labels, but the code trains a standard classifier on sentiment labels. While the code itself is reproducible and the reported numbers for the limited experiment are correct (verified against the log files), the conclusions drawn about the main UQ method are entirely unsupported by any data. This represents a major flaw in the paper's scientific methodology."
+    },
+    "Significance": {
+        "score": 3,
+        "justification": "The problem of efficient uncertainty quantification for LLMs is highly significant. A successful solution as described would be a major contribution. However, this paper's contribution is minimal. It presents an idea without validation. The only demonstrated result—that full fine-tuning is better than head-only fine-tuning on a small dataset—is not significant and is widely known. As it stands, the paper is more of a proposal or position paper than a completed research work. It does not provide the community with a new, validated technique, and therefore its impact on the field is likely to be negligible."
+    },
+    "Overall": {
+        "score": 3,
+        "strengths": [
+            "Identifies a very important and timely research problem: efficient and reliable UQ for LLMs.",
+            "The proposed high-level concept of an adaptive gating mechanism for UQ is intuitive and well-motivated.",
+            "The limited experiment that was conducted is reproducible, with code and logs provided that match the paper's reported numbers."
+        ],
+        "weaknesses": [
+            "There is a fundamental and critical disconnect between the proposed method and the experiments. The paper claims to introduce a UQ framework but the experiments do not implement or evaluate it.",
+            "The abstract and introduction make specific, quantitative claims about performance (ECE, F1 for hallucination, compute savings) that are entirely aspirational and unsupported by any empirical evidence in the paper.",
+            "The experimental contribution is trivial, merely showing that full fine-tuning outperforms head-only fine-tuning, which is an expected and well-known result.",
+            "The paper is misleadingly framed as a completed study, when it is, at best, a research proposal."
+        ]
+    },
+    "Confidence": 5
+}

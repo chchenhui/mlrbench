@@ -1,0 +1,36 @@
+{
+    "Clarity": {
+        "score": 7,
+        "justification": "The paper is generally well-written with a clear structure that follows a logical flow from problem statement to methodology to experiments. The three-stage pipeline (clustering, counterfactual generation, and robustification) is explained in a coherent manner with appropriate mathematical formulations. However, there are some areas that could be improved: (1) The explanation of the adversarial consistency training could be more detailed, particularly regarding how the counterfactuals are generated during training; (2) The figures lack detailed captions and analysis; (3) Some technical details about the implementation of counterfactual generation are vague, especially for image and audio modalities which weren't tested in the experiments."
+    },
+    "Novelty": {
+        "score": 6,
+        "justification": "The paper presents an interesting approach to automatically detect and mitigate unknown spurious correlations without manual group labels, which addresses a gap in existing literature. The three-component pipeline (detection, benchmarking, and robustification) offers a more comprehensive solution than many existing approaches. However, the individual components largely build on existing techniques: K-means clustering of embeddings, counterfactual generation using pretrained models, and consistency training are all established methods. The main novelty lies in their integration into an end-to-end pipeline rather than in developing fundamentally new algorithms. Additionally, the proof-of-concept implementation is quite limited, using only simple synonym replacement for text, which reduces the novelty of the practical demonstration."
+    },
+    "Soundness": {
+        "score": 4,
+        "justification": "There are several methodological concerns that affect the soundness of the paper: (1) The experimental validation is extremely limited - using only 500 training samples and 200 validation samples from SST-2, which is insufficient to draw robust conclusions; (2) The counterfactual generation method is overly simplistic (just synonym replacement for top-5 frequent words in a cluster); (3) The code shows that the 'robust' model is simply trained on a dataset augmented with counterfactuals, rather than using the adversarial consistency loss described in the methodology section; (4) No statistical significance testing is performed; (5) The paper claims improvements in validation accuracy from 82.5% to 85.5%, but with such small sample sizes, this difference may not be meaningful; (6) The paper doesn't evaluate the model on the actual SpurBench that it claims to create; (7) There's a disconnect between the ambitious multimodal framework described and the single-modality text experiment conducted."
+    },
+    "Significance": {
+        "score": 5,
+        "justification": "The problem of automatically detecting and mitigating unknown spurious correlations is important and relevant to the workshop's focus. If fully realized, the proposed framework could have significant impact on developing more robust models. However, the current implementation and experimental validation are too limited to demonstrate real-world significance. The paper only shows a small improvement on a tiny subset of SST-2 using a simple text perturbation method, without testing on more challenging datasets or multiple modalities as proposed in the methodology. The lack of comparison with existing robustification methods (like Group DRO or IRM mentioned in the references) makes it difficult to assess the relative significance of the approach. The potential significance is there, but not adequately demonstrated in the current work."
+    },
+    "Overall": {
+        "score": 5,
+        "justification": "The paper presents a promising framework for addressing an important problem, but falls short in experimental validation and implementation of the proposed methods. The disconnect between the ambitious multimodal framework described and the limited single-modality experiment conducted is particularly concerning.",
+        "strengths": [
+            "Addresses an important problem in ML robustness - detecting and mitigating unknown spurious correlations without manual group labels",
+            "Proposes a comprehensive three-stage pipeline that covers detection, benchmarking, and robustification",
+            "The approach is modality-agnostic in principle, which could make it widely applicable",
+            "The code provided confirms that the basic experiment was actually run, with results matching those reported in the paper"
+        ],
+        "weaknesses": [
+            "Extremely limited experimental validation (tiny dataset, single modality, simplistic perturbation method)",
+            "Mismatch between the described methodology and the implemented code (particularly for the adversarial consistency training)",
+            "No comparison with existing robustification methods to demonstrate relative effectiveness",
+            "The multimodal aspects of the framework are described but not tested at all",
+            "The improvement in validation accuracy is small and not tested for statistical significance"
+        ]
+    },
+    "Confidence": 4
+}

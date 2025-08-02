@@ -1,0 +1,36 @@
+{
+    "Clarity": {
+        "score": 7,
+        "justification": "The paper is generally well-written with a clear structure that follows a logical flow from introduction to conclusion. The methodology section is particularly well-organized with distinct subsections for each component of the framework. Mathematical formulations of the signals and scoring mechanism are presented clearly with proper notation. However, there are some areas that could be improved: (1) The experiment section is minimal and lacks sufficient detail on implementation choices; (2) The paper doesn't adequately explain why only two signals were implemented in the experiment when five were proposed; (3) Some technical terms (e.g., 'FAIR-compliance drift') are used without sufficient explanation for readers unfamiliar with these concepts."
+    },
+    "Novelty": {
+        "score": 6,
+        "justification": "The paper presents an incremental advance over existing work rather than a groundbreaking innovation. The authors acknowledge that Luccioni et al. [9] already proposed a Dataset Deprecation Framework, and this work primarily automates and quantifies that process. The combination of multiple signals into a unified deprecation score is somewhat novel, but the individual signals themselves (citation patterns, update frequency, etc.) are standard metrics in software maintenance. The mathematical formulations for the signals are straightforward adaptations of common metrics. While the integration into repository UIs is useful, it represents an engineering implementation of existing concepts rather than a fundamentally new approach to dataset lifecycle management."
+    },
+    "Soundness": {
+        "score": 4,
+        "justification": "The paper has several methodological weaknesses that undermine its soundness: (1) The experimental validation is extremely limited, using only two datasets and implementing only one signal fully (S_cite), despite proposing five signals; (2) The code reveals that the citation signal is actually just based on dataset age, not actual citation counts as described in the methodology; (3) The reproducibility signal (S_rep) is mentioned in the paper as being implemented, but the code shows it was not actually used in the final score calculation (weights = {'cite': 1.0}); (4) The results show both datasets receiving extremely high deprecation scores (1.00 and 0.96) based solely on age, which doesn't demonstrate the discriminative power of the framework; (5) There's no validation against ground truth deprecation decisions to evaluate the effectiveness of the scoring system; (6) The weight tuning process described in section 3.3 was not implemented or tested."
+    },
+    "Significance": {
+        "score": 5,
+        "justification": "The paper addresses an important problem in ML dataset management that aligns well with the workshop's focus. Standardized dataset deprecation is a recognized need in the community. However, the significance is limited by: (1) The minimal experimental validation doesn't demonstrate real-world applicability; (2) The implementation is too preliminary to show meaningful impact; (3) The paper doesn't provide evidence that the proposed scoring system would lead to better deprecation decisions than manual processes; (4) There's no discussion of potential challenges in deploying such a system at scale or how repository maintainers might respond to automated deprecation suggestions; (5) The paper doesn't address how to handle false positives (incorrectly flagging datasets for deprecation) which could have significant negative consequences for the research community."
+    },
+    "Overall": {
+        "score": 5,
+        "justification": "The paper presents a potentially useful framework for dataset lifecycle management but falls short in providing convincing evidence of its effectiveness. The significant gap between the proposed methodology and the actual implementation in the experiment raises concerns about the maturity of the work. While the direction is promising, the current state represents a preliminary concept rather than a validated solution.",
+        "strengths": [
+            "Clear mathematical formulation of the deprecation scoring system",
+            "Addresses an important problem in ML dataset management",
+            "Proposes an automated approach to a currently manual process",
+            "Framework is modular and could be extended with additional signals"
+        ],
+        "weaknesses": [
+            "Extremely limited experimental validation with only two datasets",
+            "Discrepancy between described methodology and actual implementation in code",
+            "Lack of validation against ground truth deprecation decisions",
+            "No discussion of potential false positives or deployment challenges",
+            "Results don't demonstrate discriminative power of the scoring system"
+        ]
+    },
+    "Confidence": 4
+}

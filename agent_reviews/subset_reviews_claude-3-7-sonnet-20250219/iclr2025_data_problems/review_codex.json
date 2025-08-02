@@ -1,0 +1,37 @@
+{
+    "Clarity": {
+        "score": 7,
+        "justification": "The paper is generally well-written with a clear structure that follows standard scientific format. The authors effectively introduce the problem of data attribution in RAG systems and articulate their proposed solution (MRIA). The methodology section provides mathematical formulations for both retrieval and generation attribution modules. However, there are some areas that could be improved: (1) The explanation of CountSketch and low-rank Jacobian sketching techniques could be more detailed for readers unfamiliar with these methods; (2) The transition between the theoretical framework and experimental implementation lacks sufficient detail; (3) Some mathematical notation is introduced without clear definitions (e.g., the utility function f is not fully explained)."
+    },
+    "Novelty": {
+        "score": 6,
+        "justification": "The paper presents an incremental advance rather than a groundbreaking contribution. The core idea of combining retrieval attribution with generation attribution in RAG systems is valuable, but many of the individual components are adaptations of existing techniques. The use of CountSketch for Shapley value approximation and low-rank Jacobian sketching for influence estimation are established methods applied to a new context. The paper acknowledges related work in attribution methods but doesn't clearly articulate how MRIA substantially improves upon or differs from existing approaches like ARC-JSD [1] or SIM-Shapley [8]. The modular approach and end-to-end scoring are somewhat novel aspects, but the paper lacks comparison with state-of-the-art attribution methods."
+    },
+    "Soundness": {
+        "score": 4,
+        "justification": "The paper has several methodological issues that raise concerns about soundness: (1) The experimental evaluation is extremely limited, testing only the retrieval attribution module under a linear utility function where Shapley values trivially match similarity scores; (2) The generation attribution module is not evaluated at all despite being a key component of the framework; (3) The code provided only implements the retrieval attribution with a simplified approach that doesn't actually use CountSketch or randomized sampling as described in the methodology; (4) The perfect correlation results (τ = ρ = 1.00) are misleading since they're simply validating that two identical calculations yield identical results; (5) The dataset used (50 queries from AG News) is very small and may not represent real-world RAG scenarios; (6) There's no analysis of computational efficiency or memory usage despite these being key claimed advantages of the approach."
+    },
+    "Significance": {
+        "score": 5,
+        "justification": "The problem of attribution in RAG systems is important and relevant to the workshop's focus on data problems in foundation models. Transparent attribution has implications for compliance, trust, and fair compensation in data marketplaces. However, the paper's significance is limited by: (1) The incomplete evaluation that doesn't demonstrate the full capabilities of the proposed framework; (2) The lack of comparison with existing attribution methods to show improvement; (3) The absence of real-world use cases or applications that would benefit from this approach; (4) The preliminary nature of the results, with many key evaluations left for future work. The paper acknowledges these limitations but doesn't provide enough evidence that the proposed approach will have a substantial impact on the field."
+    },
+    "Overall": {
+        "score": 5,
+        "justification": "The paper addresses an important problem in the context of foundation models and proposes a potentially useful framework. However, the significant gaps between the described methodology and the implemented evaluation, along with the absence of crucial experimental results, substantially weaken the paper's contribution. The perfect correlation results are misleading given the simplified experimental setup.",
+        "strengths": [
+            "Addresses an important problem of attribution in RAG systems that is relevant to data marketplaces and foundation model transparency",
+            "Proposes a modular framework that theoretically combines retrieval and generation attribution",
+            "Provides mathematical formulations for both attribution components",
+            "Acknowledges limitations and outlines future work directions"
+        ],
+        "weaknesses": [
+            "Significant mismatch between the described methodology and the implemented code (no CountSketch, no randomized sampling)",
+            "Extremely limited evaluation that only tests retrieval attribution under a trivial linear utility function",
+            "No evaluation of the generation attribution module despite it being a key component",
+            "Misleading perfect correlation results that simply validate identical calculations yield identical results",
+            "Lack of comparison with existing attribution methods",
+            "No analysis of computational efficiency or memory usage despite these being key claimed advantages"
+        ]
+    },
+    "Confidence": 4
+}
