@@ -72,9 +72,11 @@ If you want to run our agent in an end-to-end manner, please create ```your_task
         └── <your_task2>
                └── task.md
 ```
+Please modify `your_task_folder` in `run_mlr_agent.py`. Otherwise, the task folder will be assigned a default name prefixed with `end2end_`.
+
 Then, run the following command:
 ```bash
-python run_mlr_agent.py --model_name <model_name> --task_folder <task_folder>
+python run_mlr_agent.py --model_name <model_name> --coding_agent <coding_agent_name>
 ```
 
 If you want to run the agent step by step, please set up your own configs in ```mlrbench/agent``` and then run
