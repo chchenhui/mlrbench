@@ -1,0 +1,83 @@
+Changing directory to gemini...
+----------------------------------------
+STEP 1: Generating DynoSafeBench dataset
+----------------------------------------
+Starting dataset generation with model: gpt-4o-mini
+
+Dataset generation complete. Saved 30 examples to dynosafe_benchmark.csv
+
+Dataset sample:
+           policy_name  ... ground_truth
+0          pua_content  ...        BLOCK
+1     financial_advice  ...        BLOCK
+2          pua_content  ...        BLOCK
+3  medical_information  ...        ALLOW
+4     financial_advice  ...        BLOCK
+
+[5 rows x 4 columns]
+----------------------------------------
+STEP 2: Running baseline evaluations
+----------------------------------------
+Running baseline evaluations...
+
+Evaluating Static Keyword Baseline...
+
+Evaluating LLM-as-Judge Baseline...
+
+Baseline evaluation complete.
+Keyword Baseline | Accuracy: 0.6000 | F1 (Block): 0.4000 | Latency: 0.09 ms
+LLM-as-Judge   | Accuracy: 1.0000 | F1 (Block): 1.0000 | Latency: 967.24 ms
+Results saved to baseline_results.json
+----------------------------------------
+STEP 3: Fine-tuning the DPE model
+----------------------------------------
+Starting DPE model fine-tuning using model: Qwen/Qwen2-0.5B-Instruct
+
+Dataset prepared: 24 training examples, 6 validation examples.
+trainable params: 540,672 || all params: 494,573,440 || trainable%: 0.1093
+
+Starting model training...
+{'loss': 0.7769, 'grad_norm': 0.5958507657051086, 'learning_rate': 0.0002, 'epoch': 0.33}
+{'loss': 0.6313, 'grad_norm': 0.5002388954162598, 'learning_rate': 0.00017777777777777779, 'epoch': 0.67}
+{'loss': 0.5415, 'grad_norm': 0.39256733655929565, 'learning_rate': 0.00015555555555555556, 'epoch': 1.0}
+{'eval_loss': 2.751511335372925, 'eval_runtime': 1.2972, 'eval_samples_per_second': 4.625, 'eval_steps_per_second': 0.771, 'epoch': 1.0}
+{'loss': 0.6061, 'grad_norm': 0.4165632426738739, 'learning_rate': 0.00013333333333333334, 'epoch': 1.33}
+{'loss': 0.7002, 'grad_norm': 0.44862622022628784, 'learning_rate': 0.00011111111111111112, 'epoch': 1.67}
+{'loss': 0.7712, 'grad_norm': 0.43513748049736023, 'learning_rate': 8.888888888888889e-05, 'epoch': 2.0}
+{'eval_loss': 2.699826955795288, 'eval_runtime': 0.6151, 'eval_samples_per_second': 9.754, 'eval_steps_per_second': 1.626, 'epoch': 2.0}
+{'loss': 0.7702, 'grad_norm': 0.4623231291770935, 'learning_rate': 6.666666666666667e-05, 'epoch': 2.33}
+{'loss': 0.8295, 'grad_norm': 0.5017645359039307, 'learning_rate': 4.4444444444444447e-05, 'epoch': 2.67}
+{'loss': 0.5485, 'grad_norm': 0.41116079688072205, 'learning_rate': 2.2222222222222223e-05, 'epoch': 3.0}
+{'eval_loss': 2.6776885986328125, 'eval_runtime': 0.5603, 'eval_samples_per_second': 10.709, 'eval_steps_per_second': 1.785, 'epoch': 3.0}
+{'train_runtime': 11.6337, 'train_samples_per_second': 6.189, 'train_steps_per_second': 0.774, 'train_loss': 0.6861682732899984, 'epoch': 3.0}
+Training complete.
+Saving LoRA adapter to dpe_model_adapter
+Training history saved to training_history.json
+----------------------------------------
+STEP 4: Evaluating the fine-tuned DPE
+----------------------------------------
+Starting DPE model evaluation...
+Loaded 6 examples for evaluation.
+Fine-tuned DPE model loaded successfully.
+
+Running inference on the test set...
+
+DPE model evaluation complete.
+DPE Model | Accuracy: 0.6667 | F1 (Block): 0.8000 | Latency: 276.65 ms
+Results saved to dpe_results.json
+----------------------------------------
+STEP 5: Generating result visualizations
+----------------------------------------
+Generating result visualizations...
+Performance comparison figure saved.
+Latency comparison figure saved.
+Training loss figure saved.
+
+Visualization script finished.
+----------------------------------------
+STEP 6: Cleaning up large files
+----------------------------------------
+Cleanup complete.
+----------------------------------------
+Experiment pipeline finished successfully!
+----------------------------------------

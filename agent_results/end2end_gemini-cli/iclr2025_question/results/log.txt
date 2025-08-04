@@ -1,0 +1,64 @@
+--- Starting Experiment: Disentangled Uncertainty Estimation ---
+Configuration: {
+  "model_name": "Qwen/Qwen2-0.5B-Instruct",
+  "batch_size": 4,
+  "num_epochs": 1,
+  "learning_rate": 5e-05,
+  "max_seq_length": 256,
+  "device": "cuda",
+  "results_dir": "results",
+  "log_file": "log.txt",
+  "dune_lambda": 0.5,
+  "dropout_rate": 0.1,
+  "mc_dropout_samples": 10
+}
+
+--- Preparing Dataset ---
+/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/site-packages/huggingface_hub/file_download.py:945: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+Downloading data:   0%|          | 0.00/223k [00:00<?, ?B/s]Downloading data: 100%|##########| 223k/223k [00:00<00:00, 270kB/s]Downloading data: 100%|##########| 223k/223k [00:00<00:00, 270kB/s]
+Generating validation split:   0%|          | 0/817 [00:00<?, ? examples/s]Generating validation split: 100%|##########| 817/817 [00:00<00:00, 63211.27 examples/s]
+Downloading readme: 0.00B [00:00, ?B/s]Downloading readme: 8.20kB [00:00, 11.3MB/s]
+Downloading data:   0%|          | 0.00/13.1M [00:00<?, ?B/s]Downloading data:  80%|########  | 10.5M/13.1M [00:00<00:00, 26.4MB/s]Downloading data: 100%|##########| 13.1M/13.1M [00:00<00:00, 30.4MB/s]
+Generating train split: 0 examples [00:00, ? examples/s]Generating train split: 15011 examples [00:00, 168989.80 examples/s]
+Filter:   0%|          | 0/1501 [00:00<?, ? examples/s]Filter: 100%|##########| 1501/1501 [00:00<00:00, 63641.28 examples/s]
+Using device: cuda
+
+--- Training Baseline Model (Token Entropy) ---
+/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/site-packages/huggingface_hub/file_download.py:945: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/site-packages/transformers/optimization.py:521: FutureWarning: This implementation of AdamW is deprecated and will be removed in a future version. Use the PyTorch implementation torch.optim.AdamW instead, or set `no_deprecation_warning=True` to disable this warning
+  warnings.warn(
+Baseline Epoch 1/1, Loss: 2.5309
+Evaluating Baseline Model...
+Downloading data:   0%|          | 0.00/271k [00:00<?, ?B/s]Downloading data: 100%|##########| 271k/271k [00:00<00:00, 548kB/s]Downloading data: 100%|##########| 271k/271k [00:00<00:00, 547kB/s]
+Generating validation split:   0%|          | 0/817 [00:00<?, ? examples/s]Generating validation split: 100%|##########| 817/817 [00:00<00:00, 64150.86 examples/s]
+Baseline Hallucination Detection AUROC: 0.4862
+
+--- Training MC Dropout Model ---
+/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/site-packages/huggingface_hub/file_download.py:945: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/site-packages/transformers/optimization.py:521: FutureWarning: This implementation of AdamW is deprecated and will be removed in a future version. Use the PyTorch implementation torch.optim.AdamW instead, or set `no_deprecation_warning=True` to disable this warning
+  warnings.warn(
+MC Dropout Epoch 1/1, Loss: 2.5524
+Evaluating MC Dropout Model...
+MC Dropout Hallucination Detection AUROC: 0.5000
+
+--- Training DUnE Model ---
+/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/site-packages/huggingface_hub/file_download.py:945: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+/home/chenhui/miniconda3/envs/mlrbench/lib/python3.12/site-packages/transformers/optimization.py:521: FutureWarning: This implementation of AdamW is deprecated and will be removed in a future version. Use the PyTorch implementation torch.optim.AdamW instead, or set `no_deprecation_warning=True` to disable this warning
+  warnings.warn(
+DUnE Epoch 1/1, Loss: 2.6106
+Evaluating DUnE Model...
+DUnE Hallucination Detection AUROC: 0.5041
+
+--- Generating Results ---
+Saved detailed results to results/experiment_results.json
+Saved figure: results/hallucination_detection_auroc.png
+Generated results summary: results/results.md
+
+--- Cleaning up large files ---
+Cleanup complete.
+
+Experiment finished. All outputs are in the 'results' directory.
