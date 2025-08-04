@@ -1,0 +1,34 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-written and structured in a logical manner. The authors clearly articulate their motivation, methodology, and findings. The introduction effectively establishes the problem of hallucination in LLMs and the need to disentangle different types of uncertainty. The methodology section provides a detailed explanation of the DUnE-LLM architecture, including the uncertainty prediction head and loss function. The figures and tables are well-presented and support the text. However, there are some areas that could be improved: (1) The mathematical notation in Section 3.3 could benefit from more explanation, particularly for readers less familiar with uncertainty quantification; (2) The transition between sections could be smoother in some places; (3) Some technical terms are used without sufficient explanation."
+    },
+    "Novelty": {
+        "score": 6,
+        "justification": "The paper presents a somewhat novel approach to uncertainty quantification in LLMs by explicitly disentangling epistemic and aleatoric uncertainty. The concept of separating these types of uncertainty is not new in machine learning broadly, but applying it specifically to LLMs for hallucination detection is relatively novel. The authors propose a new model architecture with an uncertainty prediction head and a specialized loss function. However, the core techniques used (fine-tuning with an auxiliary head, using a specialized loss function) are fairly standard in the field. The paper builds incrementally on existing work rather than presenting a groundbreaking new approach. The references cited are recent (2024-2025), suggesting the authors are aware of and building upon current research."
+    },
+    "Soundness": {
+        "score": 4,
+        "justification": "The paper has several methodological issues that raise concerns about its soundness: (1) The experimental results show minimal improvement over baselines - the DUnE model achieves an AUROC of 0.5041 compared to MC Dropout at 0.5000 and Entropy at 0.4862, which is barely above random chance (0.5); (2) The code reveals that only 10% of the TruthfulQA dataset was used for evaluation, and only 10% of training datasets were used, which is insufficient for drawing robust conclusions; (3) The model was only trained for one epoch with a very small batch size of 4, which is inadequate for proper convergence; (4) The authors acknowledge using a small 0.5B parameter model, which may not be capable enough for the task; (5) The visualization in Figure 1 is misleading as it uses a truncated y-axis that exaggerates tiny differences between models; (6) The paper claims disentanglement of uncertainty types but provides no direct evidence that the model has actually learned to separate them correctly."
+    },
+    "Significance": {
+        "score": 5,
+        "justification": "The paper addresses an important problem in LLM development - hallucination detection and uncertainty quantification. If successful, disentangling different types of uncertainty could indeed help build more reliable AI systems that can be deployed in high-stakes domains. However, the actual impact of this specific work is limited by: (1) The marginal performance improvement over baselines (AUROC of 0.5041 vs. 0.5000), which is not practically significant; (2) The use of a small model (0.5B parameters) when most deployed LLMs are much larger; (3) The lack of evaluation on creative generation quality to verify that the approach preserves this capability while reducing hallucinations; (4) The absence of comparison with more recent and sophisticated hallucination detection methods. The authors acknowledge these limitations, which is commendable, but they significantly reduce the immediate impact of the work."
+    },
+    "Overall": {
+        "score": 5,
+        "strengths": [
+            "The paper addresses an important problem in LLM development - distinguishing between factual errors and creative generation",
+            "The conceptual framework of disentangling epistemic and aleatoric uncertainty is theoretically sound and well-motivated",
+            "The paper is generally well-written and structured, with clear explanations of the methodology",
+            "The authors are transparent about the limitations of their work"
+        ],
+        "weaknesses": [
+            "The experimental results show minimal improvement over baselines (AUROC of 0.5041 vs. 0.5000 for MC Dropout), barely above random chance",
+            "The experimental setup is inadequate: using only 10% of datasets, training for just one epoch with a small batch size, and using a small 0.5B parameter model",
+            "There is no direct evidence that the model has actually learned to disentangle the two types of uncertainty correctly",
+            "The visualization in Figure 1 uses a truncated y-axis that visually exaggerates tiny, practically insignificant differences between models"
+        ]
+    },
+    "Confidence": 4
+}

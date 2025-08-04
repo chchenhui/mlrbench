@@ -1,0 +1,34 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-written and structured in a logical manner. The authors clearly articulate their hypothesis that backdoor attacks leave structural artifacts in the weight space that can be detected using permutation-equivariant models. The methodology section provides a detailed explanation of how neural networks are represented as graphs and how the GNN detector works. The experimental setup is thoroughly described, including model zoo generation, training details, and evaluation metrics. The figures and tables effectively illustrate the results. However, there are some areas that could be improved: the abstract could be more concise, and some technical details about the graph representation could be explained more clearly, particularly how the node features are constructed."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper presents a novel approach to backdoor detection by treating neural network weights as a data modality and leveraging graph neural networks to respect the permutation symmetry of neurons. This perspective is relatively unexplored in the backdoor detection literature, which typically focuses on data-dependent or attack-specific methods. The authors position their work within the emerging field of weight space analysis, which is a promising direction. However, the core techniques used (GNNs for graph classification) are well-established, and the application, while innovative, is an extension of existing approaches rather than a fundamentally new paradigm. The paper acknowledges this by positioning itself as an 'initial step' in this direction."
+    },
+    "Soundness": {
+        "score": 5,
+        "justification": "The paper's methodology is theoretically sound, but the experimental validation has significant limitations. The model zoo is extremely small (only 40 models) and consists of simple MLPs trained on synthetic data with a basic backdoor trigger. This limited scale raises questions about the generalizability of the results. The experimental results themselves are inconclusive - the GNN detector failed to learn anything meaningful (performing no better than random guessing with 0.5 accuracy), while the MLP baseline showed limited success with high precision but low recall. The code provided confirms these results, showing that the GNN's validation accuracy remains flat at 0.5 throughout training, indicating it failed to converge. While the authors are transparent about these limitations, the lack of positive results undermines the soundness of the approach."
+    },
+    "Significance": {
+        "score": 6,
+        "justification": "The paper addresses an important problem in AI security - detecting backdoors in neural networks without requiring access to clean data or prior knowledge of the attack. The proposed approach of analyzing weight spaces directly could potentially lead to more robust and generalizable detection methods. However, the significance is limited by the preliminary nature of the results and the lack of demonstrated effectiveness. The authors correctly identify promising future directions, such as scaling up the model zoo and incorporating more sophisticated backdoor attacks, which could increase the impact of this line of research. The work provides a foundation for future research in weight space analysis for security applications, but its current practical significance is modest given the inconclusive results."
+    },
+    "Overall": {
+        "score": 6,
+        "strengths": [
+            "Novel framing of backdoor detection as a weight space analysis problem using permutation-equivariant GNNs",
+            "Clear articulation of the theoretical motivation and potential advantages of the approach",
+            "Transparent reporting of experimental results, including limitations and failures",
+            "Well-structured paper with logical flow and comprehensive literature review"
+        ],
+        "weaknesses": [
+            "Experimental validation is extremely limited in scale (only 40 simple MLP models)",
+            "The proposed GNN detector completely fails to learn, performing no better than random guessing",
+            "Lack of experiments on real-world models or datasets, using only synthetic data and simple backdoor triggers",
+            "Insufficient exploration of alternative GNN architectures or node/edge feature representations that might improve performance"
+        ]
+    },
+    "Confidence": 4
+}

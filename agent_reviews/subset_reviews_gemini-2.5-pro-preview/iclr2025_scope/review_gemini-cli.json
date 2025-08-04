@@ -1,0 +1,34 @@
+{
+    "Clarity": {
+        "score": 7,
+        "justification": "The paper is generally well-written and presents its core idea—a proactive router for zero-shot task adaptation—in a clear and logical manner. The introduction effectively motivates the problem, and the methodology section provides a coherent theoretical description of the proposed architecture. However, the clarity is significantly undermined by major contradictions between the paper's text and the provided source code. For instance, Section 4 states, 'The question serves as the task description (T_{desc}),' implying instance-level adaptation. In contrast, the code in `run_experiment.py` uses a single, fixed string for all samples: `task_description = \"Answer the following boolean question based on the passage.\"`. Similarly, the paper claims to replace the FFN layer in 'each encoder block' with an MoE layer, while the code implements only a single MoE layer after the entire encoder. These discrepancies create critical ambiguity about the actual experiment performed."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The central concept of using a meta-network (hypernetwork) to generate task-specific routing parameters from a natural language description for zero-shot adaptation in MoE models is novel. It presents a distinct approach compared to existing methods that rely on instance-level routing or require gradient-based fine-tuning (PEFT). The idea directly addresses the workshop's theme of creating adaptive foundation models. However, the paper itself does not provide evidence of the idea's effectiveness, and it combines existing concepts (hypernetworks, meta-learning, MoEs) rather than introducing a completely new primitive. The references section also contains numerous citations to papers from 2025, which appear to be non-existent or misattributed, raising questions about the thoroughness of the literature review."
+    },
+    "Soundness": {
+        "score": 2,
+        "justification": "The paper's soundness is critically flawed. \n1. **Invalid Experimental Setup**: The experiment does not test the paper's central hypothesis. The code uses a static task description for all data points, meaning the 'Proactive Router' generates a single, fixed bias for the entire task. This completely negates the concept of dynamic, on-the-fly adaptation based on instance-specific instructions (the question) as claimed in the paper. The experiment therefore fails to evaluate the proposed method. \n2. **Inconsistent Implementation**: The model architecture implemented in the code (a single MoE layer post-encoder) is a much simpler and less impactful version of the architecture described in the paper ('MoE layer in each encoder block'). \n3. **Inadequate Scale and Dataset Choice**: Using a single-task dataset (BoolQ) to evaluate a method designed for multi-task generalization is inappropriate. Furthermore, training on only 100 samples for one epoch is insufficient to draw any meaningful conclusions. \n4. **Unreliable Results**: The results in Table 1 and the loss curves in Figures 1-3 are generated from this fundamentally flawed experiment, rendering them meaningless. The proposed PRo-MoE is shown to be significantly worse than the baseline, and the paper offers no successful validation. The loss curve figures are also suspicious, showing only a single validation point and an empty training loss curve, which is inconsistent with the logging configuration in the provided code (`logging_steps=10` on 25 total steps)."
+    },
+    "Significance": {
+        "score": 4,
+        "justification": "The problem addressed—enabling efficient, zero-shot adaptation of foundation models to new tasks—is highly significant and relevant to the machine learning community, particularly in the context of the workshop's themes. A successful solution would have a substantial impact on serving large models and enabling personalization. However, this paper fails to demonstrate that its proposed method is a viable solution. The experimental results are negative (the baseline performs better) and, more importantly, invalid due to the flawed methodology. As a result, the paper in its current form makes no significant contribution to solving the problem it sets out to address. The score reflects the importance of the problem domain, not the contribution of this specific work."
+    },
+    "Overall": {
+        "score": 2,
+        "strengths": [
+            "Proposes a novel and interesting idea for zero-shot adaptation of Mixture-of-Experts models.",
+            "Addresses a highly significant and relevant problem in the field of efficient and adaptive foundation models.",
+            "The paper is well-structured and clearly written in its high-level description of the concept."
+        ],
+        "weaknesses": [
+            "The experimental implementation is fatally flawed, as the code does not match the method described in the paper, invalidating all results and conclusions.",
+            "The presented results are negative, showing the proposed method performs worse than a standard MoE baseline.",
+            "The experimental design is inadequate in terms of scale (100 samples, 1 epoch) and dataset choice (a single-task dataset for a multi-task adaptation method).",
+            "The paper contains misleading information regarding the model architecture and the experimental setup (i.e., the source of the task description).",
+            "The use of fake or misattributed citations undermines the academic integrity of the work."
+        ]
+    },
+    "Confidence": 5
+}

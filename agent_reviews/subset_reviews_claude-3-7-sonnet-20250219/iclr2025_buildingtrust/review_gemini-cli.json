@@ -1,0 +1,35 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-written and structured in a logical manner. The authors clearly articulate the problem (static guardrails being brittle and slow to adapt), their proposed solution (Dynamic Policy Enforcers), and the methodology. The architecture of the DPE framework is explained thoroughly with a step-by-step workflow. The experimental setup, including dataset generation, model training, and evaluation metrics, is detailed comprehensively. Figures and tables effectively support the text, particularly the performance comparison and latency charts. However, there are some minor areas that could be improved: the explanation of the training objective could be more accessible to non-experts, and the paper would benefit from more detailed discussion of the limitations of the small-scale experiment."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper presents a novel approach to LLM safety by introducing a framework that enables real-time adaptation to natural language policies. While the concept of using an LLM as a guardrail is not entirely new (as acknowledged in the related work section), the specific focus on training a small, efficient model to interpret declarative natural language policies provided at inference time is innovative. The authors clearly differentiate their work from existing approaches like NeMo Guardrails, GuardAgent, and inference-time alignment methods. The combination of dynamic policy adaptation with computational efficiency represents a meaningful advance over existing research, though it builds upon rather than completely reimagines current approaches to LLM safety."
+    },
+    "Soundness": {
+        "score": 6,
+        "justification": "The methodology is generally sound, but there are significant limitations in the experimental validation. The experiment uses a very small dataset ('DynoSafeBench') with only 30 examples spanning just 3 policies, which raises questions about the robustness of the findings. The test set appears to contain only 6 examples based on the dpe_results.json file, which is insufficient for reliable evaluation. Additionally, while the paper claims the DPE framework enables 'zero-shot adaptation to new guidelines,' this capability isn't directly tested in the experiments - there are no tests showing how the model performs on entirely new policies not seen during training. The code implementation appears consistent with the described methodology, and the training process seems appropriate, but the limited scale of validation undermines the strength of the conclusions."
+    },
+    "Significance": {
+        "score": 7,
+        "justification": "The paper addresses an important problem in LLM safety - the need for guardrails that can adapt quickly to new policies without retraining. The proposed DPE framework offers a practical solution that balances safety enforcement with computational efficiency, which is crucial for real-world deployment. The experimental results, though limited in scale, demonstrate that a small 0.5B parameter model can achieve a reasonable F1-score (0.80) while being significantly faster than larger models. This approach could have meaningful impact on how safety systems are implemented in production LLM applications, particularly in contexts where regulations or policies change frequently. The significance is somewhat limited by the preliminary nature of the experiments and the lack of testing on more complex, real-world policy scenarios."
+    },
+    "Overall": {
+        "score": 6,
+        "justification": "While the paper presents a novel and potentially impactful approach to LLM safety, the extremely limited experimental validation (only 6 test examples) significantly undermines confidence in the results. The core idea is promising and well-articulated, but more extensive testing is needed to establish its effectiveness.",
+        "strengths": [
+            "Clear articulation of a practical problem in LLM safety and a novel approach to solving it",
+            "Well-designed architecture that balances safety enforcement with computational efficiency",
+            "Promising initial results showing that a small model can effectively enforce policies with lower latency",
+            "Complete implementation with reproducible code that matches the paper's description"
+        ],
+        "weaknesses": [
+            "Extremely small-scale evaluation (only 6 test examples) that limits confidence in the results",
+            "No direct testing of the claimed ability to adapt to entirely new policies not seen during training",
+            "Limited diversity in the policies tested (only 3 types)",
+            "Gap between the theoretical capabilities described and what was actually demonstrated in experiments"
+        ]
+    },
+    "Confidence": 4
+}

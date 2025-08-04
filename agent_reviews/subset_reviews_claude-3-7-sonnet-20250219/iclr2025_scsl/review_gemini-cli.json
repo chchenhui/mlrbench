@@ -1,0 +1,35 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-written and structured in a logical manner. The authors clearly articulate the problem of spurious correlations in foundation models and the need for parameter-efficient solutions. The methodology section is particularly strong, with detailed explanations of the SCA-Adapter framework, including mathematical formulations of the orthogonal gradient projection mechanism. Figures and tables effectively support the text. However, there are some areas that could be improved: the explanation of the automatic identification of spurious features could be more detailed, and the discussion of the unexpected experimental results (0.0 WGA) could be more thorough in connecting back to the theoretical framework."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper presents a novel approach by combining parameter-efficient fine-tuning with robustness to spurious correlations. The core innovation is the orthogonal gradient projection mechanism that forces the task adapter to learn features orthogonal to those exploited by the spurious adapter. This is a new contribution to the field, as most existing methods either require group annotations or full model retraining. However, the basic components (adapters, gradient orthogonalization) build upon existing techniques, and the automatic identification of spurious features uses standard saliency methods. The paper acknowledges these limitations and positions itself as an initial exploration of this direction rather than a completely new paradigm."
+    },
+    "Soundness": {
+        "score": 4,
+        "justification": "The paper has significant methodological issues that undermine its soundness. The most critical problem is the experimental results: the proposed SCA-Adapter achieves 0.0 worst-group accuracy (WGA), which indicates a complete failure in addressing the core problem of spurious correlations. This contradicts the paper's main claim about improving robustness. The code reveals several potential issues with the implementation: the spurious feature identification relies on basic saliency maps that may not accurately capture the true spurious correlations, and the orthogonal projection mechanism may be removing crucial gradient information. Additionally, there's a discrepancy between the results reported in the paper and what appears in the code's output - the paper claims SCA-Adapter outperforms LoRA in WGA, but the figures show it performing worse (0.0 vs 0.066). The experimental setup also uses a simulated version of Waterbirds with a small sample size, raising questions about the reliability of the results."
+    },
+    "Significance": {
+        "score": 5,
+        "justification": "The paper addresses an important problem at the intersection of parameter-efficient fine-tuning and robustness to spurious correlations. This is a significant area of research given the increasing size of foundation models and the persistent challenge of spurious correlations. The proposed approach, if successful, could have broad applications across various domains where both efficiency and robustness are crucial. However, the actual significance is severely limited by the poor experimental results. The complete failure on worst-group accuracy (0.0 WGA) suggests that the current implementation does not solve the stated problem. While the paper presents this as a 'cautionary tale' with lessons for future work, the lack of a working solution reduces its immediate impact. The paper does contribute a conceptual framework that could inspire future research, but without demonstrating empirical success, its significance is primarily theoretical."
+    },
+    "Overall": {
+        "score": 5,
+        "justification": "The paper presents a novel and potentially impactful approach to addressing spurious correlations in a parameter-efficient manner. However, the experimental results show a complete failure in improving worst-group accuracy (0.0 WGA), which is the primary metric for robustness to spurious correlations. This fundamental contradiction between the method's goals and its performance severely undermines the paper's overall quality. While the authors frame this as a 'cautionary tale' with lessons for future work, the lack of a working solution limits the paper's contribution. The theoretical framework and problem formulation are sound, but the implementation and empirical validation have critical flaws.",
+        "strengths": [
+            "Novel combination of parameter-efficient fine-tuning with robustness to spurious correlations",
+            "Clear and well-structured presentation of the problem and proposed method",
+            "Transparent reporting of negative results and thoughtful analysis of failure modes",
+            "Parameter efficiency is demonstrated (0.20M vs 0.49M parameters compared to LoRA)"
+        ],
+        "weaknesses": [
+            "Complete failure on worst-group accuracy (0.0 WGA), contradicting the main claim about improving robustness",
+            "Unreliable spurious feature identification method based on basic saliency maps",
+            "Discrepancy between results claimed in the paper and those shown in the figures/code",
+            "Limited experimental validation using only a simulated dataset with small sample size"
+        ]
+    },
+    "Confidence": 4
+}

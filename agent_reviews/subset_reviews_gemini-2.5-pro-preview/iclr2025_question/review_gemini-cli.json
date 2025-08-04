@@ -1,0 +1,33 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-written, with a clear structure and logical flow. The introduction effectively frames the problem of conflated uncertainty types in LLMs and clearly states the paper's contributions. The methodology section explains the proposed architecture, dataset, and loss function in a way that is easy to follow. However, the clarity of the analysis section is lower, as it presents extremely weak results as a success, which can be confusing and misleading to the reader."
+    },
+    "Novelty": {
+        "score": 6,
+        "justification": "The core idea of applying uncertainty disentanglement (epistemic vs. aleatoric) to LLMs for hallucination detection is a novel and interesting direction. While supervised uncertainty quantification exists, the specific framework involving a specialized loss function and a curated dataset (DUnD) to explicitly separate these two uncertainty types is a new contribution. The approach is an incremental but clever combination of existing ideas applied to a pressing problem in modern AI."
+    },
+    "Soundness": {
+        "score": 2,
+        "justification": "The paper suffers from critical soundness issues. Firstly, the methodology has a significant flaw: the loss function always penalizes epistemic uncertainty (U_E), training it to be 0. The paper claims high U_E is learned 'implicitly' for difficult questions, but this mechanism is not enforced or justified, making the core of the method questionable. Secondly, and most critically, the experimental results are extremely weak. The reported AUROC scores for hallucination detection are 0.4862 (worse than random), 0.5000 (random), and 0.5041 (marginally better than random). These results do not support the paper's claims of effectiveness. Thirdly, the analysis and conclusion misrepresent these near-random results as a successful validation of the hypothesis, which is a major flaw in scientific reporting. While the provided code is consistent with the paper and allows for reproducibility, it only serves to confirm the method's failure in the described setup."
+    },
+    "Significance": {
+        "score": 3,
+        "justification": "The paper addresses a problem of high significance: making LLMs more reliable by detecting hallucinations through better uncertainty quantification. A successful method for disentangling desirable and undesirable uncertainty would be a major breakthrough. However, the paper fails to deliver a working solution. The experimental results are so weak that they have no significant impact; they essentially demonstrate that the proposed method does not work under the tested conditions. The paper's contribution is therefore limited to the idea itself, which is not backed by empirical evidence. In its current state, the work is unlikely to have a lasting impact on the field."
+    },
+    "Overall": {
+        "score": 2,
+        "strengths": [
+            "Addresses a highly important and relevant problem in LLM research (hallucination and UQ).",
+            "The core concept of disentangling epistemic and aleatoric uncertainty is well-motivated and conceptually interesting.",
+            "The paper is generally well-written and provides reproducible code, which is a good practice."
+        ],
+        "weaknesses": [
+            "The experimental results are critically weak (AUROC ≈ 0.5), indicating the proposed method performs no better than random chance at the evaluation task. This is a fatal flaw.",
+            "The paper's conclusion and analysis drastically misinterpret the poor results, claiming success where there is none. This is a serious issue of scientific soundness.",
+            "The methodological assumption that high epistemic uncertainty will be learned implicitly is not well-justified or enforced by the training objective.",
+            "The experimental setup is very limited (0.5B model, 1 epoch), making it difficult to draw any robust conclusions."
+        ]
+    },
+    "Confidence": 5
+}

@@ -1,0 +1,35 @@
+{
+    "Clarity": {
+        "score": 8,
+        "justification": "The paper is well-written and structured in a logical manner. The authors clearly articulate the problem (sparse binary feedback in code LLMs) and their proposed solution (Execution-Trace Alignment). The methodology section provides a detailed explanation of how execution traces are generated and utilized in the alignment process. Key concepts are explained with concrete examples, such as the sample execution trace for a failing program. The paper also includes clear definitions of the two proposed methods (ETA-RM and ETA-DPO) with their respective mathematical formulations. However, there are some areas where additional clarity would be beneficial, particularly in the experimental setup section, where the authors acknowledge limitations in their implementation."
+    },
+    "Novelty": {
+        "score": 7,
+        "justification": "The paper presents a novel approach to fine-tuning code-generating LLMs by using detailed execution traces as feedback signals rather than binary pass/fail outcomes. The authors effectively differentiate their work from existing approaches in the related work section, noting that while previous research has incorporated execution information, ETA is 'the first to propose a systematic framework for using detailed, step-wise execution traces as the primary feedback mechanism in modern alignment paradigms like DPO and RLHF.' The concept of using execution traces to create preference pairs for DPO is innovative. However, the core idea builds upon existing alignment techniques (DPO, RLHF) and execution tracing, which somewhat limits its novelty."
+    },
+    "Soundness": {
+        "score": 4,
+        "justification": "The paper has significant methodological weaknesses that undermine its soundness. The experimental section reveals that the authors were only able to implement a supervised fine-tuning (SFT) baseline using the gpt2 model on a very small subset of 10 examples from HumanEval. They explicitly state they encountered 'prohibitive technical difficulties' that prevented them from implementing their proposed ETA methods. The results show that the baseline model failed on all 10 test cases (0% pass rate), but no results are provided for the proposed methods. The code repository confirms these limitations, showing only the implementation of the baseline and not the proposed ETA methods. This means the paper's central claims about the effectiveness of execution-trace alignment remain unverified. While the theoretical framework is sound, the lack of empirical validation is a major weakness."
+    },
+    "Significance": {
+        "score": 6,
+        "justification": "The problem addressed by the paper is significant for the field of code generation using LLMs. The authors correctly identify a key limitation in current alignment techniques: the sparse nature of binary feedback signals. Their proposed solution of using execution traces to provide richer feedback has the potential to improve model performance in debugging and self-correction. The approach could be applicable to a wide range of code generation tasks and models. However, the significance is diminished by the lack of empirical results demonstrating the effectiveness of the proposed methods. The paper acknowledges this limitation and positions itself as presenting a methodology with 'preliminary experimental results,' but without actual implementation of the proposed methods, the significance remains theoretical rather than demonstrated."
+    },
+    "Overall": {
+        "score": 5,
+        "justification": "The paper presents a well-articulated and potentially valuable approach to improving code LLM alignment, but is severely limited by the lack of empirical validation of its core proposals. While the theoretical framework is sound and the writing is clear, the failure to implement and test the proposed methods means the paper's contributions remain speculative.",
+        "strengths": [
+            "Clear articulation of the problem and proposed solution",
+            "Well-structured methodology with detailed explanation of execution trace generation and utilization",
+            "Novel approach to using execution traces as preference signals for alignment",
+            "Addresses an important limitation in current code LLM alignment techniques"
+        ],
+        "weaknesses": [
+            "Failure to implement and test the proposed ETA methods",
+            "Experimental results limited to a baseline that performed poorly (0% pass rate)",
+            "Very small dataset used for experiments (only 10 examples)",
+            "Claims about the effectiveness of the proposed methods remain unverified"
+        ]
+    },
+    "Confidence": 5
+}
