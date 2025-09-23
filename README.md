@@ -58,6 +58,10 @@ export OPENAI_API_KEY="your-openai-api-key-here"
 export ANTHROPIC_API_KEY="your-anthropic-api-key-here"
 export OPENROUTER_API_KEY="your-openrouter-api-key-here"
 ```
+If you want to use ```gemini cli```, please set up GEMINI API key:
+```bash
+export GEMINI_API_KEY="your-gemini-api-key-here"
+```
 Also, remember to ```huggingface-cli login``` for dataset/model downloads.
 
 ## 🚀 MLR Agent
