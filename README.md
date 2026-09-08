@@ -120,4 +120,4 @@ Please cite our paper if you find our work helpful:
       year={2025}
 }
 ```
-Please feel free to contact chchenhui233@gmail.com if you have any questions.
+Please feel free to contact chchenhui233@gmail.com or open an issue if you have any questions.
